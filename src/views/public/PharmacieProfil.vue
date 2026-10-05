@@ -5,7 +5,7 @@
       <div class="pub-container">
         <div v-if="loading" style="text-align:center;padding:20px;color:#6b7280;">Chargement...</div>
         <div v-else-if="pharmacy" class="pp-hero-row">
-          <div class="pp-hero-icon"><Hospital size="1em" /></div>
+          <div class="pp-hero-icon" :style="pharmacyLogoUrl(pharmacy) ? 'background:#fff;overflow:hidden;' : ''"><img v-if="pharmacyLogoUrl(pharmacy)" :src="pharmacyLogoUrl(pharmacy)" :alt="pharmacy.name" style="width:100%;height:100%;object-fit:contain;"/><Hospital v-else size="1em" /></div>
           <div style="flex:1;min-width:0;overflow-wrap:anywhere;">
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;flex-wrap:wrap;">
               <h1 class="pp-title">{{ pharmacy.name }}</h1>
@@ -145,6 +145,7 @@ import { useCartStore } from '../../stores/cart.js'
 import { useToastStore } from '../../stores/toast.js'
 import { formatDutyDays, formatDutyHours } from '../../utils/duty.js'
 import DutyBadge from '../../components/DutyBadge.vue'
+import { pharmacyLogoUrl } from '../../utils/logo.js'
 
 const route     = useRoute()
 const cartStore = useCartStore()

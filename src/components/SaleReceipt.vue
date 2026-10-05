@@ -9,6 +9,7 @@
         <div class="modal-bd" style="background:#f3f4f6;display:flex;justify-content:center;">
           <div ref="ticket" class="ticket">
             <div class="t-center">
+              <img v-if="logoUrl" :src="logoUrl" alt="" class="t-logo"/>
               <div class="t-shop">{{ pharmacy?.name || 'Pharmacie' }}</div>
               <div v-if="pharmacyLine" class="t-muted">{{ pharmacyLine }}</div>
               <div v-if="pharmacy?.phone" class="t-muted">Tél : {{ pharmacy.phone }}</div>
@@ -58,6 +59,7 @@
 import { Receipt, Printer, X } from 'lucide-vue-next'
 import { ref, computed } from 'vue'
 import { useAuthStore } from '../stores/auth.js'
+import { pharmacyLogoUrl } from '../utils/logo.js'
 
 // `sale` : une vente, ou une commande en ligne ramenée au même format (voir CommandesEnLigne.vue)
 const props = defineProps({
@@ -72,6 +74,7 @@ const PAYMENT = { CASH: 'Espèces', CARD: 'Carte', TRANSFER: 'Virement', INSURAN
 const auth     = useAuthStore()
 const ticket   = ref(null)
 const pharmacy = computed(() => auth.user?.pharmacy)
+const logoUrl  = computed(() => pharmacyLogoUrl(pharmacy.value))
 const pharmacyLine = computed(() => [pharmacy.value?.address, pharmacy.value?.city].filter(Boolean).join(', '))
 const subtotal = computed(() => (props.sale?.details || []).reduce((s, d) => s + Number(d.total ?? d.price * d.quantity), 0))
 
@@ -90,16 +93,19 @@ function print() {
     <body>${ticket.value.outerHTML}</body></html>`)
   doc.close()
   frame.contentWindow.focus()
-  setTimeout(() => {
+  // Wait for the logo (if any) so it is not missing from the printed ticket
+  const images = [...doc.images].map(img => img.complete ? null : new Promise(r => { img.onload = img.onerror = r }))
+  Promise.all(images).then(() => setTimeout(() => {
     frame.contentWindow.print()
     setTimeout(() => frame.remove(), 1000)
-  }, 100)
+  }, 100))
 }
 
 const TICKET_CSS = `
 .ticket{width:72mm;background:#fff;color:#111;font-family:'Courier New',monospace;font-size:12px;line-height:1.45;padding:12px;box-sizing:border-box}
 .t-center{text-align:center}
 .t-shop{font-size:15px;font-weight:700;text-transform:uppercase;margin-bottom:2px}
+.t-logo{display:block;max-width:40mm;max-height:20mm;margin:0 auto 6px;object-fit:contain}
 .t-muted{color:#555;font-size:11px}
 .t-mono{font-family:'Courier New',monospace;white-space:nowrap}
 .t-sep{border-top:1px dashed #999;margin:8px 0}
@@ -116,6 +122,7 @@ const TICKET_CSS = `
 .ticket{width:72mm;background:#fff;color:#111;font-family:'Courier New',monospace;font-size:12px;line-height:1.45;padding:12px;box-sizing:border-box;box-shadow:0 2px 10px rgba(0,0,0,.12)}
 .ticket .t-center{text-align:center}
 .ticket .t-shop{font-size:15px;font-weight:700;text-transform:uppercase;margin-bottom:2px}
+.ticket .t-logo{display:block;max-width:40mm;max-height:20mm;margin:0 auto 6px;object-fit:contain}
 .ticket .t-muted{color:#555;font-size:11px}
 .ticket .t-mono{font-family:'Courier New',monospace;white-space:nowrap}
 .ticket .t-sep{border-top:1px dashed #999;margin:8px 0}

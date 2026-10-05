@@ -41,6 +41,25 @@
       </div>
     </div>
 
+    <!-- Logo -->
+    <div class="card card-p">
+      <h3 style="font-weight:700;margin:0 0 4px;"><ImageIcon size="1em" /> Logo</h3>
+      <p style="font-size:.8rem;color:#6b7280;margin:0 0 14px;">Affiché dans le menu, sur les reçus et sur votre page publique. PNG, JPEG ou WebP.</p>
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+        <div style="width:88px;height:88px;border-radius:14px;border:1px solid var(--border);background:#f9fafb;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;">
+          <img v-if="logoUrl" :src="logoUrl" alt="Logo de la pharmacie" style="max-width:100%;max-height:100%;object-fit:contain;"/>
+          <Pill v-else size="2em" style="color:#16a34a;" />
+        </div>
+        <div v-if="isAdmin" style="display:flex;gap:8px;flex-wrap:wrap;">
+          <input ref="logoInput" type="file" accept="image/png,image/jpeg,image/webp" style="display:none;" @change="onLogoPicked"/>
+          <button class="btn btn-primary btn-sm" @click="logoInput.click()" :disabled="savingLogo">{{ savingLogo ? '...' : (logoUrl ? 'Changer le logo' : 'Ajouter un logo') }}</button>
+          <button v-if="logoUrl" class="btn btn-sm" @click="removeLogo" :disabled="savingLogo">Supprimer</button>
+        </div>
+        <p v-else style="font-size:.8rem;color:#6b7280;margin:0;">Seul l'administrateur peut modifier le logo.</p>
+      </div>
+      <div v-if="logoMsg" class="alert" :class="logoMsg.ok?'alert-green':'alert-red'" style="margin-top:12px;">{{ logoMsg.text }}</div>
+    </div>
+
     <!-- Duty schedule -->
     <div class="card card-p">
       <h3 style="font-weight:700;margin:0 0 4px;"><Moon size="1em" /> Garde</h3>
@@ -86,13 +105,14 @@
 </template>
 
 <script setup>
-import { Moon, LogOut } from 'lucide-vue-next'
+import { Moon, LogOut, Pill, Image as ImageIcon } from 'lucide-vue-next'
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore }   from '../stores/auth.js'
 import { usePharmaStore } from '../stores/pharma.js'
 import { authApi }        from '../services/api.js'
 import { WEEK_DAYS }      from '../utils/duty.js'
+import { pharmacyLogoUrl, resizeImage } from '../utils/logo.js'
 
 const auth   = useAuthStore()
 const store  = usePharmaStore()
@@ -138,6 +158,43 @@ onMounted(async () => {
     loadDuty(auth.user?.pharmacy)
   } catch (e) { /* keep cached values if refresh fails */ }
 })
+
+const logoInput  = ref(null)
+const savingLogo = ref(false)
+const logoMsg    = ref(null)
+const logoUrl    = computed(() => pharmacyLogoUrl(auth.user?.pharmacy))
+
+function setLogoVersion(logo_updated_at) {
+  auth.setUser({ pharmacy: { ...auth.user?.pharmacy, logo_updated_at } })
+}
+
+async function onLogoPicked(e) {
+  const file = e.target.files?.[0]
+  e.target.value = ''
+  if (!file) return
+  logoMsg.value = null
+  if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) { logoMsg.value = { ok: false, text: 'Format non supporté (PNG, JPEG ou WebP).' }; return }
+  savingLogo.value = true
+  try {
+    const res = await authApi.updateLogo({ logo: await resizeImage(file) })
+    setLogoVersion(res.data.logo_updated_at)
+    logoMsg.value = { ok: true, text: 'Logo enregistré.' }
+  } catch (err) {
+    logoMsg.value = { ok: false, text: '' + err.message }
+  } finally { savingLogo.value = false }
+}
+
+async function removeLogo() {
+  logoMsg.value = null
+  savingLogo.value = true
+  try {
+    await authApi.deleteLogo()
+    setLogoVersion(null)
+    logoMsg.value = { ok: true, text: 'Logo supprimé.' }
+  } catch (err) {
+    logoMsg.value = { ok: false, text: '' + err.message }
+  } finally { savingLogo.value = false }
+}
 
 async function saveDuty() {
   dutyMsg.value = null

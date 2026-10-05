@@ -115,7 +115,10 @@
             <div class="pub-card-content">
               <div class="pub-card-header">
                 <div class="pub-card-pharmacy">
-                  <div class="pub-card-icon"><Hospital size="1em" /></div>
+                  <div class="pub-card-icon" :class="{ 'has-logo': pharmacyLogoUrl(ph) }">
+                    <img v-if="pharmacyLogoUrl(ph)" :src="pharmacyLogoUrl(ph)" :alt="ph.name"/>
+                    <Hospital v-else size="1em" />
+                  </div>
                   <div class="pub-card-info">
                     <div class="pub-card-name">{{ ph.name }}</div>
                     <div class="pub-card-city"><MapPin size="1em" /> {{ ph.city || 'Mauritanie' }}</div>
@@ -164,6 +167,7 @@ import { useRouter } from 'vue-router'
 import { useCartStore } from '../../stores/cart.js'
 import { dutyStatus, formatDutyDays, formatDutyHours } from '../../utils/duty.js'
 import DutyBadge from '../../components/DutyBadge.vue'
+import { pharmacyLogoUrl } from '../../utils/logo.js'
 
 const router    = useRouter()
 const cartStore = useCartStore()
@@ -966,6 +970,8 @@ onMounted(() => {
   font-size: 1.2rem;
   flex-shrink: 0;
 }
+.pub-card-icon.has-logo { background: #fff; overflow: hidden; }
+.pub-card-icon img { width: 100%; height: 100%; object-fit: contain; }
 
 @media (min-width: 640px) {
   .pub-card-icon {

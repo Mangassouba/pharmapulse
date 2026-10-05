@@ -4,9 +4,9 @@
     <header class="pub-header">
       <div class="pub-container">
         <RouterLink to="/pharmacies" class="pub-logo">
-          <div class="pub-logo-icon"><Pill :size="20" color="white" /></div>
+          <div class="pub-logo-icon"><SiteLogo :size="20" color="white" /></div>
           <div>
-            <div class="pub-logo-name">Pharma<span>Pulse</span></div>
+            <div class="pub-logo-name"><SiteName /></div>
             <div class="pub-logo-sub">Trouver votre médicament</div>
           </div>
         </RouterLink>
@@ -54,7 +54,7 @@
       <div class="pub-container">
         <div class="pub-footer-grid">
           <div>
-            <div style="font-weight:800;font-size:1.1rem;margin-bottom:8px;">Pharma<span style="color:#16a34a">Pulse</span></div>
+            <div style="font-weight:800;font-size:1.1rem;margin-bottom:8px;"><SiteName accent="#16a34a" /></div>
             <p style="color:#9ca3af;font-size:.85rem;line-height:1.6;">Trouvez vos médicaments dans les pharmacies proches de chez vous, commandez en ligne et récupérez en pharmacie.</p>
           </div>
           <div>
@@ -76,7 +76,7 @@
           </div>
         </div>
         <div style="border-top:1px solid #1f2937;margin-top:24px;padding-top:16px;text-align:center;color:#4b5563;font-size:.78rem;">
-          © {{ new Date().getFullYear() }} PharmaPulse — Plateforme SaaS de gestion de pharmacie
+          © {{ new Date().getFullYear() }} {{ site.name }} — Plateforme SaaS de gestion de pharmacie
         </div>
       </div>
     </footer>
@@ -84,11 +84,15 @@
 </template>
 
 <script setup>
+import SiteLogo from '../SiteLogo.vue'
+import SiteName from '../SiteName.vue'
+import { useSiteStore } from '../../stores/site.js'
+const site = useSiteStore()
 import { ref, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useCartStore } from '../../stores/cart.js'
 import { useAuthStore } from '../../stores/auth.js'
-import { Pill, Search, X, MapPin, ShoppingCart, LogIn, LayoutDashboard, Mail, Phone, Clock } from 'lucide-vue-next'
+import { Search, X, MapPin, ShoppingCart, LogIn, LayoutDashboard, Mail, Phone, Clock } from 'lucide-vue-next'
 
 const router    = useRouter()
 const route     = useRoute()

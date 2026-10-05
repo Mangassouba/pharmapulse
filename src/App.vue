@@ -14,5 +14,7 @@
 <script setup>
 import { CircleCheck, CircleX, TriangleAlert } from 'lucide-vue-next'
 import { useToastStore } from './stores/toast.js'
+import { useSiteStore } from './stores/site.js'
 const toastStore = useToastStore()
+useSiteStore().fetch()
 </script>

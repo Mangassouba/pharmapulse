@@ -2,7 +2,7 @@
   <div class="auth-bg">
     <div class="auth-card">
       <div style="text-align:center;margin-bottom:24px;">
-        <div style="width:52px;height:52px;border-radius:14px;background:#f0fdf4;border:1px solid #bbf7d0;display:flex;align-items:center;justify-content:center;font-size:1.6rem;margin:0 auto 12px;"><Pill size="1em" /></div>
+        <div style="width:52px;height:52px;border-radius:14px;background:#f0fdf4;border:1px solid #bbf7d0;display:flex;align-items:center;justify-content:center;font-size:1.6rem;margin:0 auto 12px;"><SiteLogo /></div>
         <h1 style="font-size:1.4rem;font-weight:800;margin:0;">Créer votre pharmacie</h1>
         <p style="color:#6b7280;font-size:.82rem;margin:4px 0 0;">Accès immédiat — SaaS sécurisé</p>
       </div>
@@ -23,7 +23,8 @@
   </div>
 </template>
 <script setup>
-import { Pill, CircleX } from 'lucide-vue-next'
+import SiteLogo from '../../components/SiteLogo.vue'
+import { CircleX } from 'lucide-vue-next'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../../stores/auth.js'

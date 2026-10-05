@@ -37,7 +37,10 @@ export const authApi = {
   logout:         () => api.post('/auth/logout'),
   changePassword: d => api.put('/auth/password', d),
   updateDuty:     d => api.put('/auth/pharmacy/duty', d),
+  updateLogo:     d => api.put('/auth/pharmacy/logo', d),
+  deleteLogo:     () => api.delete('/auth/pharmacy/logo'),
 }
+export const siteApi       = { get: () => api.get('/public/site') }
 export const dashboardApi  = { get: () => api.get('/dashboard') }
 export const productApi    = {
   list:   p => api.get('/products', { params: p }),
@@ -100,6 +103,9 @@ export const notifApi      = {
 }
 export const superApi      = {
   login:          d => api.post('/super/auth/login', d),
+  updateSite:     d => api.put('/super/site', d),
+  updateSiteLogo: d => api.put('/super/site/logo', d),
+  deleteSiteLogo: () => api.delete('/super/site/logo'),
   forgotPassword: d => api.post('/super/auth/forgot-password', d),
   resetPassword:  d => api.post('/super/auth/reset-password', d),
   stats:          () => api.get('/super/stats'),

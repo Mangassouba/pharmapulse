@@ -35,7 +35,7 @@
         <div v-for="ph in filtered" :key="ph.id" class="pub-card">
           <div class="lp-card-body">
             <div class="lp-card-head">
-              <div style="width:50px;height:50px;border-radius:14px;background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1px solid #bbf7d0;display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;"><Hospital size="1em" /></div>
+              <div style="width:50px;height:50px;border-radius:14px;background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1px solid #bbf7d0;display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;overflow:hidden;" :style="pharmacyLogoUrl(ph) ? 'background:#fff;' : ''"><img v-if="pharmacyLogoUrl(ph)" :src="pharmacyLogoUrl(ph)" :alt="ph.name" style="width:100%;height:100%;object-fit:contain;"/><Hospital v-else size="1em" /></div>
               <div style="flex:1;min-width:0;">
                 <div style="font-weight:700;font-size:1rem;margin-bottom:3px;">{{ ph.name }}</div>
                 <div style="font-size:.78rem;color:#6b7280;"><MapPin size="1em" /> {{ [ph.address, ph.city, ph.country].filter(Boolean).join(', ') || 'Mauritanie' }}</div>
@@ -87,6 +87,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useCartStore } from '../../stores/cart.js'
 import { dutyStatus, formatDutyDays, formatDutyHours } from '../../utils/duty.js'
 import DutyBadge from '../../components/DutyBadge.vue'
+import { pharmacyLogoUrl } from '../../utils/logo.js'
 
 const cartStore = useCartStore()
 const search    = ref('')

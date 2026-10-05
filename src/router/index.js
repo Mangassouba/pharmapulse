@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore }       from '../stores/auth.js'
 import { useSuperAdminStore } from '../stores/superAdmin.js'
+import { useSiteStore }       from '../stores/site.js'
 
 // Auth
 const Login      = () => import('../views/auth/Login.vue')
@@ -33,6 +34,7 @@ const SuperDashboard  = () => import('../views/superadmin/SuperDashboard.vue')
 const SuperPharmacies = () => import('../views/superadmin/SuperPharmacies.vue')
 const SuperUsers      = () => import('../views/superadmin/SuperUsers.vue')
 const SuperLogs       = () => import('../views/superadmin/SuperLogs.vue')
+const SuperParametres = () => import('../views/superadmin/SuperParametres.vue')
 
 // Public storefront
 const PublicLayout    = () => import('../components/layout/PublicLayout.vue')
@@ -60,6 +62,7 @@ const routes = [
       { path:'pharmacies',    component:SuperPharmacies },
       { path:'utilisateurs',  component:SuperUsers      },
       { path:'logs',          component:SuperLogs       },
+      { path:'parametres',    component:SuperParametres },
     ]
   },
 
@@ -109,7 +112,7 @@ router.beforeEach(to => {
 })
 
 router.afterEach(to => {
-  document.title = to.meta.title ? `${to.meta.title} — PharmaPulse` : 'PharmaPulse'
+  useSiteStore().pageTitle = to.meta.title || ''
 })
 
 export default router

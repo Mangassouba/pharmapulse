@@ -2,8 +2,8 @@
   <div class="auth-bg">
     <div class="auth-card">
       <div style="text-align:center;margin-bottom:28px;">
-        <div style="width:52px;height:52px;border-radius:14px;background:#f0fdf4;border:1px solid #bbf7d0;display:flex;align-items:center;justify-content:center;font-size:1.6rem;margin:0 auto 12px;"><Pill size="1em" /></div>
-        <h1 style="font-size:1.5rem;font-weight:800;margin:0;">Pharma<span style="color:#16a34a">Pulse</span></h1>
+        <div style="width:52px;height:52px;border-radius:14px;background:#f0fdf4;border:1px solid #bbf7d0;display:flex;align-items:center;justify-content:center;font-size:1.6rem;margin:0 auto 12px;"><SiteLogo /></div>
+        <h1 style="font-size:1.5rem;font-weight:800;margin:0;"><SiteName accent="#16a34a" /></h1>
         <p style="color:#6b7280;font-size:.85rem;margin:4px 0 0;">Mot de passe oublié</p>
       </div>
       <div v-if="error" class="alert alert-red" style="margin-bottom:14px;"><CircleX size="1em" /> {{ error }}</div>
@@ -22,7 +22,9 @@
   </div>
 </template>
 <script setup>
-import { Pill, CircleX, CircleCheck } from 'lucide-vue-next'
+import SiteName from '../../components/SiteName.vue'
+import SiteLogo from '../../components/SiteLogo.vue'
+import { CircleX, CircleCheck } from 'lucide-vue-next'
 import { ref } from 'vue'
 import { authApi } from '../../services/api.js'
 const email = ref(''); const error = ref(''); const sent = ref(''); const loading = ref(false)

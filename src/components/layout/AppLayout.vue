@@ -3,9 +3,12 @@
     <aside class="sidebar" :class="{collapsed}">
       <!-- Logo -->
       <div class="nav-logo">
-        <div class="nav-logo-icon"><Pill size="1em" /></div>
+        <div class="nav-logo-icon" :style="logoUrl ? 'background:#fff;overflow:hidden;' : ''">
+          <img v-if="logoUrl" :src="logoUrl" alt="" style="width:100%;height:100%;object-fit:contain;"/>
+          <SiteLogo v-else />
+        </div>
         <div v-show="!collapsed" class="nav-logo-text">
-          <strong>Pharma<span style="color:var(--green)">Pulse</span></strong>
+          <strong><SiteName accent="var(--green)" /></strong>
           <span>{{ auth.user?.pharmacy?.name || '' }}</span>
         </div>
       </div>
@@ -123,17 +126,23 @@
 </template>
 
 <script setup>
-import { Pill, House, Bell, Package, Tag, PackagePlus, Banknote, RefreshCw, ClipboardList, CalendarClock, ShoppingCart, Globe, Users, Settings, LogOut, TriangleAlert, Sun, Moon, Component } from 'lucide-vue-next'
+import SiteLogo from '../SiteLogo.vue'
+import SiteName from '../SiteName.vue'
+import { useSiteStore } from '../../stores/site.js'
+import { House, Bell, Package, Tag, PackagePlus, Banknote, RefreshCw, ClipboardList, CalendarClock, ShoppingCart, Globe, Users, Settings, LogOut, TriangleAlert, Sun, Moon, Component } from 'lucide-vue-next'
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore }   from '../../stores/auth.js'
 import { usePharmaStore } from '../../stores/pharma.js'
 import { useThemeStore }  from '../../stores/theme.js'
 import { orderApi }       from '../../services/api.js'
+import { pharmacyLogoUrl } from '../../utils/logo.js'
 
 const route  = useRoute()
 const router = useRouter()
 const auth   = useAuthStore()
+const site   = useSiteStore()
+const logoUrl = computed(() => pharmacyLogoUrl(auth.user?.pharmacy))
 const store  = usePharmaStore()
 const theme  = useThemeStore()
 
@@ -161,7 +170,7 @@ const pageTitles = {
   '/app/utilisateurs':        'Utilisateurs',
   '/app/parametres':          'Paramètres',
 }
-const pageTitle = computed(() => pageTitles[route.path] || 'PharmaPulse')
+const pageTitle = computed(() => pageTitles[route.path] || site.name)
 
 async function fetchOnlineCount() {
   try {

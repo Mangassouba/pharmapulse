@@ -28,7 +28,10 @@
             <tr v-for="p in pharmacies" :key="p.id" style="border-bottom:1px solid #f5f0ff;">
               <td>
                 <div style="display:flex;align-items:center;gap:10px;">
-                  <div style="width:34px;height:34px;border-radius:8px;background:#f5f3ff;color:#7c3aed;font-weight:800;font-size:.85rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;">{{ p.name.charAt(0) }}</div>
+                  <div style="width:34px;height:34px;border-radius:8px;background:#f5f3ff;color:#7c3aed;font-weight:800;font-size:.85rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;" :style="pharmacyLogoUrl(p) ? 'background:#fff;border:1px solid #ede9fe;' : ''">
+                    <img v-if="pharmacyLogoUrl(p)" :src="pharmacyLogoUrl(p)" :alt="p.name" loading="lazy" style="width:100%;height:100%;object-fit:contain;"/>
+                    <template v-else>{{ p.name.charAt(0) }}</template>
+                  </div>
                   <div><div style="font-weight:600;">{{ p.name }}</div><div style="font-size:.72rem;color:#6b7280;">{{ p.email||'—' }}</div></div>
                 </div>
               </td>
@@ -68,7 +71,7 @@
     <Teleport to="body">
       <div v-if="detailPh" class="modal-bg" @click.self="detailPh=null">
         <div class="modal" style="max-width:680px;">
-          <div class="modal-hd"><h3><Hospital size="1em" /> {{ detailPh.name }}</h3><button class="btn btn-icon" @click="detailPh=null"><X size="1em" /></button></div>
+          <div class="modal-hd"><h3 style="display:flex;align-items:center;gap:8px;"><img v-if="pharmacyLogoUrl(detailPh)" :src="pharmacyLogoUrl(detailPh)" alt="" style="width:28px;height:28px;object-fit:contain;border-radius:6px;border:1px solid #ede9fe;background:#fff;"/><Hospital v-else size="1em" /> {{ detailPh.name }}</h3><button class="btn btn-icon" @click="detailPh=null"><X size="1em" /></button></div>
           <div class="modal-bd">
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
               <div>
@@ -194,6 +197,7 @@ import { superApi }         from '../../services/api.js'
 import { useToastStore }    from '../../stores/toast.js'
 import { useSuperAdminStore } from '../../stores/superAdmin.js'
 import { formatDutyDays, formatDutyHours } from '../../utils/duty.js'
+import { pharmacyLogoUrl } from '../../utils/logo.js'
 
 const toast      = useToastStore()
 const superStore = useSuperAdminStore()

@@ -2,9 +2,9 @@
   <div class="super-layout">
     <aside class="super-sidebar">
       <div style="padding:18px 16px;border-bottom:1px solid rgba(255,255,255,.1);display:flex;align-items:center;gap:10px;">
-        <div style="width:34px;height:34px;border-radius:8px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:1.1rem;"><Shield size="1em" /></div>
+        <div style="width:34px;height:34px;border-radius:8px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:1.1rem;"><SiteLogo :fallback="Shield" /></div>
         <div>
-          <div style="font-weight:800;font-size:.9rem;color:#fff;">Pharma<span style="color:#a78bfa">Pulse</span></div>
+          <div style="font-weight:800;font-size:.9rem;color:#fff;"><SiteName accent="#a78bfa" /></div>
           <div style="font-size:.65rem;color:#a78bfa;font-weight:700;letter-spacing:.08em;">SUPER ADMIN</div>
         </div>
       </div>
@@ -14,6 +14,7 @@
         <RouterLink to="/super/pharmacies"   class="snav-link" :class="{active:route.path.startsWith('/super/pharmacies')}"><span><Hospital size="1em" /></span> Pharmacies</RouterLink>
         <RouterLink to="/super/utilisateurs" class="snav-link" :class="{active:route.path==='/super/utilisateurs'}"><span><Users size="1em" /></span> Utilisateurs</RouterLink>
         <RouterLink to="/super/logs"         class="snav-link" :class="{active:route.path==='/super/logs'}"><span><ClipboardList size="1em" /></span> Journaux</RouterLink>
+        <RouterLink to="/super/parametres"   class="snav-link" :class="{active:route.path==='/super/parametres'}"><span><Settings size="1em" /></span> Paramètres</RouterLink>
       </nav>
 
       <div style="padding:12px 14px;border-top:1px solid rgba(255,255,255,.1);display:flex;align-items:center;gap:8px;">
@@ -50,7 +51,9 @@
 </template>
 
 <script setup>
-import { Shield, ChartColumn, Hospital, Users, ClipboardList, LogOut, Component } from 'lucide-vue-next'
+import { Shield, ChartColumn, Hospital, Users, ClipboardList, LogOut, Component, Settings } from 'lucide-vue-next'
+import SiteLogo from '../SiteLogo.vue'
+import SiteName from '../SiteName.vue'
 import { computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useSuperAdminStore } from '../../stores/superAdmin.js'
@@ -60,7 +63,7 @@ const router      = useRouter()
 const superStore  = useSuperAdminStore()
 const initials    = computed(() => (superStore.admin?.name||'SA').slice(0,2).toUpperCase())
 const todayStr    = computed(() => new Date().toLocaleDateString('fr-FR',{weekday:'long',year:'numeric',month:'long',day:'numeric'}))
-const titles      = { '/super':'Dashboard Plateforme', '/super/pharmacies':'Gestion Pharmacies', '/super/utilisateurs':'Tous les Utilisateurs', '/super/logs':'Journaux d\'activité' }
+const titles      = { '/super':'Dashboard Plateforme', '/super/pharmacies':'Gestion Pharmacies', '/super/utilisateurs':'Tous les Utilisateurs', '/super/logs':'Journaux d\'activité', '/super/parametres':'Paramètres du site' }
 const pageTitle   = computed(() => titles[route.path] || 'Super Admin')
 function doLogout() { superStore.logout(); router.push('/super/login') }
 onMounted(() => superStore.fetchStats())
