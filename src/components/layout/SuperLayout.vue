@@ -2,7 +2,7 @@
   <div class="super-layout">
     <aside class="super-sidebar">
       <div style="padding:18px 16px;border-bottom:1px solid rgba(255,255,255,.1);display:flex;align-items:center;gap:10px;">
-        <div style="width:34px;height:34px;border-radius:8px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:1.1rem;">🛡️</div>
+        <div style="width:34px;height:34px;border-radius:8px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:1.1rem;"><Shield size="1em" /></div>
         <div>
           <div style="font-weight:800;font-size:.9rem;color:#fff;">Pharma<span style="color:#a78bfa">Pulse</span></div>
           <div style="font-size:.65rem;color:#a78bfa;font-weight:700;letter-spacing:.08em;">SUPER ADMIN</div>
@@ -10,10 +10,10 @@
       </div>
 
       <nav style="flex:1;padding:10px 0;">
-        <RouterLink to="/super"              class="snav-link" :class="{active:route.path==='/super'}"><span>📊</span> Dashboard</RouterLink>
-        <RouterLink to="/super/pharmacies"   class="snav-link" :class="{active:route.path.startsWith('/super/pharmacies')}"><span>🏥</span> Pharmacies</RouterLink>
-        <RouterLink to="/super/utilisateurs" class="snav-link" :class="{active:route.path==='/super/utilisateurs'}"><span>👥</span> Utilisateurs</RouterLink>
-        <RouterLink to="/super/logs"         class="snav-link" :class="{active:route.path==='/super/logs'}"><span>📋</span> Journaux</RouterLink>
+        <RouterLink to="/super"              class="snav-link" :class="{active:route.path==='/super'}"><span><ChartColumn size="1em" /></span> Dashboard</RouterLink>
+        <RouterLink to="/super/pharmacies"   class="snav-link" :class="{active:route.path.startsWith('/super/pharmacies')}"><span><Hospital size="1em" /></span> Pharmacies</RouterLink>
+        <RouterLink to="/super/utilisateurs" class="snav-link" :class="{active:route.path==='/super/utilisateurs'}"><span><Users size="1em" /></span> Utilisateurs</RouterLink>
+        <RouterLink to="/super/logs"         class="snav-link" :class="{active:route.path==='/super/logs'}"><span><ClipboardList size="1em" /></span> Journaux</RouterLink>
       </nav>
 
       <div style="padding:12px 14px;border-top:1px solid rgba(255,255,255,.1);display:flex;align-items:center;gap:8px;">
@@ -22,7 +22,7 @@
           <div style="font-size:.8rem;font-weight:700;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ superStore.admin?.name }}</div>
           <div style="font-size:.68rem;color:#a78bfa;">Super Admin</div>
         </div>
-        <button @click="doLogout" style="background:transparent;border:1px solid rgba(255,255,255,.2);width:28px;height:28px;border-radius:6px;cursor:pointer;color:#fff;font-size:.85rem;display:flex;align-items:center;justify-content:center;">🚪</button>
+        <button @click="doLogout" style="background:transparent;border:1px solid rgba(255,255,255,.2);width:28px;height:28px;border-radius:6px;cursor:pointer;color:#fff;font-size:.85rem;display:flex;align-items:center;justify-content:center;"><LogOut size="1em" /></button>
       </div>
     </aside>
 
@@ -50,6 +50,7 @@
 </template>
 
 <script setup>
+import { Shield, ChartColumn, Hospital, Users, ClipboardList, LogOut, Component } from 'lucide-vue-next'
 import { computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useSuperAdminStore } from '../../stores/superAdmin.js'

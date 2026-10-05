@@ -1,7 +1,7 @@
 <template>
   <div style="display:flex;flex-direction:column;gap:16px;">
     <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
-      <div class="search-box" style="flex:1;max-width:280px;"><span class="search-icon">🔍</span><input v-model="search" class="inp" placeholder="Client..." @input="debouncedFetch"/></div>
+      <div class="search-box" style="flex:1;max-width:280px;"><span class="search-icon"><Search size="1em" /></span><input v-model="search" class="inp" placeholder="Client..." @input="debouncedFetch"/></div>
       <div style="display:flex;gap:8px;"><select v-model="filterStatus" class="inp" style="width:155px;" @change="fetchData"><option value="">Tous statuts</option><option value="PENDING">En attente</option><option value="CONFIRMED">Confirmée</option><option value="SHIPPED">Expédiée</option><option value="DELIVERED">Livrée</option><option value="CANCELLED">Annulée</option></select><button class="btn btn-primary" @click="openAdd">+ Nouvelle commande</button></div>
     </div>
     <div class="card">
@@ -14,13 +14,13 @@
               <td style="font-family:'JetBrains Mono',monospace;font-size:.8rem;color:#6b7280;">{{ store.fmt(o.order_date) }}</td>
               <td style="font-weight:600;">{{ o.customer }}</td>
               <td style="font-size:.8rem;color:#6b7280;">{{ o.details?.length ?? 0 }} art.</td>
-              <td style="font-family:'JetBrains Mono',monospace;font-weight:700;color:#16a34a;">{{ Number(o.total_amount||0).toLocaleString('fr-FR') }} F</td>
+              <td style="font-family:'JetBrains Mono',monospace;font-weight:700;color:#16a34a;">{{ Number(o.total_amount||0).toLocaleString('fr-FR') }} MRU</td>
               <td style="font-family:'JetBrains Mono',monospace;font-size:.8rem;color:#6b7280;">{{ o.delivery_date?store.fmt(o.delivery_date):'—' }}</td>
               <td><span class="badge" :class="{PENDING:'badge-yellow',CONFIRMED:'badge-blue',SHIPPED:'badge-purple',DELIVERED:'badge-green',CANCELLED:'badge-red'}[o.status]">{{ {PENDING:'EN ATTENTE',CONFIRMED:'CONFIRMÉE',SHIPPED:'EXPÉDIÉE',DELIVERED:'LIVRÉE',CANCELLED:'ANNULÉE'}[o.status] }}</span></td>
               <td>
                 <div style="display:flex;gap:5px;" v-if="o.status!=='CANCELLED'&&o.status!=='DELIVERED'">
                   <select class="inp" style="width:140px;font-size:.78px;padding:4px 8px;" @change="updateStatus(o,$event.target.value)"><option value="">Changer statut...</option><option v-for="s in nextStatuses(o.status)" :key="s.v" :value="s.v">{{ s.l }}</option></select>
-                  <button v-if="o.status==='PENDING'" class="btn btn-danger btn-xs" @click="cancelOrder(o)">✕</button>
+                  <button v-if="o.status==='PENDING'" class="btn btn-danger btn-xs" @click="cancelOrder(o)"><X size="1em" /></button>
                 </div>
               </td>
             </tr>
@@ -37,7 +37,7 @@
     <Teleport to="body">
       <div v-if="showModal" class="modal-bg" @click.self="showModal=false">
         <div class="modal">
-          <div class="modal-hd"><h3>Nouvelle commande</h3><button class="btn btn-icon" @click="showModal=false">✕</button></div>
+          <div class="modal-hd"><h3>Nouvelle commande</h3><button class="btn btn-icon" @click="showModal=false"><X size="1em" /></button></div>
           <div class="modal-bd">
             <div class="form-grid form-2col" style="gap:12px;margin-bottom:14px;">
               <div><label class="lbl">Client *</label><input v-model="form.customer" class="inp"/></div>
@@ -50,10 +50,10 @@
               <div style="flex:2;"><select v-model="item.productId" class="inp" @change="autofillPrice(item)"><option value="">— Produit —</option><option v-for="p in store.products" :key="p.id" :value="p.id">{{ p.name }}</option></select></div>
               <div style="width:75px;"><input v-model.number="item.quantity" type="number" min="1" class="inp" placeholder="Qté"/></div>
               <div style="width:100px;"><input v-model.number="item.price" type="number" min="0" class="inp" placeholder="Prix"/></div>
-              <button class="btn btn-icon" @click="form.items.splice(i,1)" style="border-color:#fecaca;">✕</button>
+              <button class="btn btn-icon" @click="form.items.splice(i,1)" style="border-color:#fecaca;"><X size="1em" /></button>
             </div>
-            <div style="text-align:right;font-family:'JetBrains Mono',monospace;font-weight:700;color:#16a34a;margin-top:8px;">Total : {{ Number(formTotal).toLocaleString('fr-FR') }} F</div>
-            <div v-if="formErr" class="alert alert-red" style="margin-top:10px;">❌ {{ formErr }}</div>
+            <div style="text-align:right;font-family:'JetBrains Mono',monospace;font-weight:700;color:#16a34a;margin-top:8px;">Total : {{ Number(formTotal).toLocaleString('fr-FR') }} MRU</div>
+            <div v-if="formErr" class="alert alert-red" style="margin-top:10px;"><CircleX size="1em" /> {{ formErr }}</div>
           </div>
           <div class="modal-ft"><button class="btn btn-outline" @click="showModal=false">Annuler</button><button class="btn btn-primary" @click="save" :disabled="saving">{{ saving?'...':'Créer la commande' }}</button></div>
         </div>
@@ -62,6 +62,7 @@
   </div>
 </template>
 <script setup>
+import { Search, X, CircleX } from 'lucide-vue-next'
 import { ref, computed, onMounted } from 'vue'
 import { usePharmaStore } from '../stores/pharma.js'
 import { useToastStore }  from '../stores/toast.js'

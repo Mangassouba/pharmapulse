@@ -7,7 +7,7 @@
     </div>
     <!-- Form -->
     <div class="card card-p">
-      <h3 style="font-weight:700;margin:0 0 16px;">📥 Enregistrer une réception</h3>
+      <h3 style="font-weight:700;margin:0 0 16px;"><PackagePlus size="1em" /> Enregistrer une réception</h3>
       <div class="form-grid form-2col" style="max-width:700px;gap:12px;margin-bottom:14px;">
         <div><label class="lbl">Fournisseur *</label><input v-model="form.supplier" class="inp" placeholder="Ex: Pharmagroupe" list="sup-list"/><datalist id="sup-list"><option v-for="s in suppliers" :key="s" :value="s"/></datalist></div>
         <div><label class="lbl">N° Facture</label><input v-model="form.invoice_number" class="inp" placeholder="FAC-2024-XXXX"/></div>
@@ -17,14 +17,14 @@
       <div v-for="(item,i) in form.items" :key="i" style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;padding:12px;background:#f9fafb;border-radius:9px;border:1px solid #f3f4f6;margin-bottom:8px;">
         <div style="flex:2;min-width:180px;"><label class="lbl">Produit *</label><select v-model="item.productId" class="inp"><option value="">— Choisir —</option><option v-for="p in store.products" :key="p.id" :value="p.id">{{ p.name }} ({{ p.stock }}u)</option></select></div>
         <div style="width:80px;"><label class="lbl">Qté *</label><input v-model.number="item.quantity" type="number" min="1" class="inp"/></div>
-        <div style="width:110px;"><label class="lbl">Prix achat (F)</label><input v-model.number="item.price" type="number" min="0" class="inp"/></div>
+        <div style="width:110px;"><label class="lbl">Prix achat (MRU)</label><input v-model.number="item.price" type="number" min="0" class="inp"/></div>
         <div style="width:120px;"><label class="lbl">N° Lot</label><input v-model="item.batchNumber" class="inp"/></div>
         <div style="width:140px;"><label class="lbl">Date péremption</label><input v-model="item.expirationDate" type="date" class="inp"/></div>
-        <button class="btn btn-icon" @click="form.items.splice(i,1)" style="border-color:#fecaca;">✕</button>
+        <button class="btn btn-icon" @click="form.items.splice(i,1)" style="border-color:#fecaca;"><X size="1em" /></button>
       </div>
-      <div v-if="formTotal>0" style="padding:12px;background:#f0fdf4;border-radius:8px;display:flex;justify-content:space-between;font-size:.875rem;"><span>Total estimé</span><strong style="color:#16a34a;font-family:'JetBrains Mono',monospace;">{{ Number(formTotal).toLocaleString('fr-FR') }} F</strong></div>
-      <div v-if="formErr" class="alert alert-red" style="margin-top:12px;">❌ {{ formErr }}</div>
-      <button class="btn btn-primary" style="margin-top:14px;" @click="save" :disabled="saving">{{ saving?'Enregistrement...':'📥 Enregistrer la réception' }}</button>
+      <div v-if="formTotal>0" style="padding:12px;background:#f0fdf4;border-radius:8px;display:flex;justify-content:space-between;font-size:.875rem;"><span>Total estimé</span><strong style="color:#16a34a;font-family:'JetBrains Mono',monospace;">{{ Number(formTotal).toLocaleString('fr-FR') }} MRU</strong></div>
+      <div v-if="formErr" class="alert alert-red" style="margin-top:12px;"><CircleX size="1em" /> {{ formErr }}</div>
+      <button class="btn btn-primary" style="margin-top:14px;" @click="save" :disabled="saving">{{ saving?'Enregistrement...':'Enregistrer la réception' }}</button>
     </div>
     <!-- History -->
     <div class="card">
@@ -38,13 +38,13 @@
               <td style="font-family:'JetBrains Mono',monospace;font-size:.8rem;color:#6b7280;">{{ store.fmt(r.reception_date) }}</td>
               <td style="font-weight:600;">{{ r.supplier }}</td>
               <td style="font-size:.8rem;color:#6b7280;">{{ r.details?.length ?? 0 }} produit(s)</td>
-              <td style="font-family:'JetBrains Mono',monospace;font-weight:700;color:#16a34a;">{{ Number(r.total_amount||0).toLocaleString('fr-FR') }} F</td>
+              <td style="font-family:'JetBrains Mono',monospace;font-weight:700;color:#16a34a;">{{ Number(r.total_amount||0).toLocaleString('fr-FR') }} MRU</td>
               <td><span class="badge" :class="r.status==='COMPLETED'?'badge-green':r.status==='PENDING'?'badge-yellow':'badge-red'">{{ {COMPLETED:'COMPLÉTÉE',PENDING:'EN ATTENTE',PARTIAL:'PARTIELLE',CANCELLED:'ANNULÉE'}[r.status] }}</span></td>
               <td>
                 <div style="display:flex;gap:5px;" v-if="r.status==='PENDING'">
-                  <button class="btn btn-primary btn-sm" @click="complete(r,'COMPLETED')">✅ Valider</button>
+                  <button class="btn btn-primary btn-sm" @click="complete(r,'COMPLETED')"><CircleCheck size="1em" /> Valider</button>
                   <button class="btn btn-outline btn-sm" @click="complete(r,'PARTIAL')">Partielle</button>
-                  <button class="btn btn-danger btn-sm" @click="complete(r,'CANCELLED')">✕</button>
+                  <button class="btn btn-danger btn-sm" @click="complete(r,'CANCELLED')"><X size="1em" /></button>
                 </div>
                 <span v-else style="font-size:.8rem;color:#6b7280;">—</span>
               </td>
@@ -57,12 +57,13 @@
   </div>
 </template>
 <script setup>
+import { PackagePlus, X, CircleX, CircleCheck } from 'lucide-vue-next'
 import { ref, computed, onMounted } from 'vue'
 import { usePharmaStore } from '../stores/pharma.js'
 import { useToastStore }  from '../stores/toast.js'
 const store=usePharmaStore(); const toast=useToastStore()
 const saving=ref(false); const formErr=ref(''); const filterStatus=ref('')
-const suppliers=['Pharmagroupe Sénégal','MedDist Dakar','SanofiDist','CAMES Pharma','LABOREX']
+const suppliers=['CAMEC','Pharmagroupe Mauritanie','MedDist Nouakchott','SanofiDist','LABOREX']
 const emptyItem = () => ({ productId:'',quantity:1,price:0,batchNumber:'',expirationDate:'' })
 const form = ref({ supplier:'', invoice_number:'', items:[emptyItem()] })
 const completed = computed(() => store.receptions.filter(r=>r.status==='COMPLETED').length)

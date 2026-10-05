@@ -2,14 +2,14 @@
   <div class="auth-bg">
     <div class="auth-card">
       <div style="text-align:center;margin-bottom:24px;">
-        <div style="width:52px;height:52px;border-radius:14px;background:#f0fdf4;border:1px solid #bbf7d0;display:flex;align-items:center;justify-content:center;font-size:1.6rem;margin:0 auto 12px;">💊</div>
+        <div style="width:52px;height:52px;border-radius:14px;background:#f0fdf4;border:1px solid #bbf7d0;display:flex;align-items:center;justify-content:center;font-size:1.6rem;margin:0 auto 12px;"><Pill size="1em" /></div>
         <h1 style="font-size:1.4rem;font-weight:800;margin:0;">Créer votre pharmacie</h1>
         <p style="color:#6b7280;font-size:.82rem;margin:4px 0 0;">Accès immédiat — SaaS sécurisé</p>
       </div>
-      <div v-if="error" class="alert alert-red" style="margin-bottom:12px;">❌ {{ error }}</div>
+      <div v-if="error" class="alert alert-red" style="margin-bottom:12px;"><CircleX size="1em" /> {{ error }}</div>
       <div class="form-grid" style="gap:12px;">
-        <div><label class="lbl">Nom de la pharmacie *</label><input v-model="form.pharmacyName" class="inp" placeholder="Pharmacie de la Paix"/></div>
-        <div><label class="lbl">Votre nom *</label><input v-model="form.name" class="inp" placeholder="Dr. Aminata Diallo"/></div>
+        <div><label class="lbl">Nom de la pharmacie *</label><input v-model="form.pharmacyName" class="inp" placeholder="Pharmacie Chifa"/></div>
+        <div><label class="lbl">Votre nom *</label><input v-model="form.name" class="inp" placeholder="Dr. Mohamed Ould Ahmed"/></div>
         <div><label class="lbl">Email *</label><input v-model="form.email" class="inp" type="email"/></div>
         <div><label class="lbl">Mot de passe * (min. 6)</label><input v-model="form.password" class="inp" type="password" @keyup.enter="submit"/></div>
       </div>
@@ -23,6 +23,7 @@
   </div>
 </template>
 <script setup>
+import { Pill, CircleX } from 'lucide-vue-next'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../../stores/auth.js'

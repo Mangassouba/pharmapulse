@@ -7,7 +7,7 @@
       <div class="card card-p"><div style="font-size:1.4rem;font-weight:800;font-family:'JetBrains Mono',monospace;color:#16a34a;">{{ store.movMeta.total }}</div><div style="font-size:.78rem;color:#6b7280;">Total mouvements</div></div>
     </div>
     <div class="card card-p" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
-      <div class="search-box" style="flex:1;min-width:200px;"><span class="search-icon">🔍</span><input v-model="search" class="inp" placeholder="Produit..." @input="debouncedFetch"/></div>
+      <div class="search-box" style="flex:1;min-width:200px;"><span class="search-icon"><Search size="1em" /></span><input v-model="search" class="inp" placeholder="Produit..." @input="debouncedFetch"/></div>
       <select v-model="filterType" class="inp" style="width:150px;" @change="fetchData"><option value="">Tous types</option><option value="ENTRY">Entrées</option><option value="SALE">Sorties</option><option value="INVENTORY">Inventaire</option></select>
       <select v-model="filterProd" class="inp" style="width:190px;" @change="fetchData"><option value="">Tous produits</option><option v-for="p in store.products" :key="p.id" :value="p.id">{{ p.name }}</option></select>
       <input v-model="dateFrom" type="date" class="inp" style="width:145px;" @change="fetchData"/>
@@ -42,6 +42,7 @@
   </div>
 </template>
 <script setup>
+import { Search } from 'lucide-vue-next'
 import { ref, onMounted } from 'vue'
 import { usePharmaStore } from '../stores/pharma.js'
 import { movementApi } from '../services/api.js'

@@ -3,7 +3,7 @@
     <aside class="sidebar" :class="{collapsed}">
       <!-- Logo -->
       <div class="nav-logo">
-        <div class="nav-logo-icon">💊</div>
+        <div class="nav-logo-icon"><Pill size="1em" /></div>
         <div v-show="!collapsed" class="nav-logo-text">
           <strong>Pharma<span style="color:var(--green)">Pulse</span></strong>
           <span>{{ auth.user?.pharmacy?.name || '' }}</span>
@@ -14,36 +14,36 @@
       <nav style="flex:1;overflow-y:auto;padding:8px 0;">
         <div v-show="!collapsed" class="nav-section">Principal</div>
         <RouterLink to="/app"             class="nav-link" :class="{active: route.path === '/app'}">
-          <span class="icon">🏠</span><span v-show="!collapsed">Dashboard</span>
+          <span class="icon"><House size="1em" /></span><span v-show="!collapsed">Dashboard</span>
         </RouterLink>
         <RouterLink to="/app/alertes"     class="nav-link" :class="{active: route.path === '/app/alertes'}">
-          <span class="icon">🔔</span>
+          <span class="icon"><Bell size="1em" /></span>
           <span v-show="!collapsed">Alertes</span>
           <span v-if="store.alertCount && !collapsed" class="nav-badge">{{ store.alertCount }}</span>
         </RouterLink>
 
         <div class="nav-divider"></div>
         <div v-show="!collapsed" class="nav-section">Gestion Stock</div>
-        <RouterLink to="/app/produits"    class="nav-link" :class="{active: route.path === '/app/produits'}"><span class="icon">📦</span><span v-show="!collapsed">Produits</span></RouterLink>
-        <RouterLink to="/app/categories"  class="nav-link" :class="{active: route.path === '/app/categories'}"><span class="icon">🏷️</span><span v-show="!collapsed">Catégories</span></RouterLink>
-        <RouterLink to="/app/reception"   class="nav-link" :class="{active: route.path === '/app/reception'}"><span class="icon">📥</span><span v-show="!collapsed">Réception</span></RouterLink>
-        <RouterLink to="/app/ventes"      class="nav-link" :class="{active: route.path === '/app/ventes'}"><span class="icon">💰</span><span v-show="!collapsed">Ventes</span></RouterLink>
-        <RouterLink to="/app/mouvements"  class="nav-link" :class="{active: route.path === '/app/mouvements'}"><span class="icon">🔄</span><span v-show="!collapsed">Mouvements</span></RouterLink>
-        <RouterLink to="/app/inventaire"  class="nav-link" :class="{active: route.path === '/app/inventaire'}"><span class="icon">📋</span><span v-show="!collapsed">Inventaire</span></RouterLink>
-        <RouterLink to="/app/lots"        class="nav-link" :class="{active: route.path === '/app/lots'}"><span class="icon">🗓️</span><span v-show="!collapsed">Lots & Dates</span></RouterLink>
+        <RouterLink to="/app/produits"    class="nav-link" :class="{active: route.path === '/app/produits'}"><span class="icon"><Package size="1em" /></span><span v-show="!collapsed">Produits</span></RouterLink>
+        <RouterLink to="/app/categories"  class="nav-link" :class="{active: route.path === '/app/categories'}"><span class="icon"><Tag size="1em" /></span><span v-show="!collapsed">Catégories</span></RouterLink>
+        <RouterLink to="/app/reception"   class="nav-link" :class="{active: route.path === '/app/reception'}"><span class="icon"><PackagePlus size="1em" /></span><span v-show="!collapsed">Réception</span></RouterLink>
+        <RouterLink to="/app/ventes"      class="nav-link" :class="{active: route.path === '/app/ventes'}"><span class="icon"><Banknote size="1em" /></span><span v-show="!collapsed">Ventes</span></RouterLink>
+        <RouterLink to="/app/mouvements"  class="nav-link" :class="{active: route.path === '/app/mouvements'}"><span class="icon"><RefreshCw size="1em" /></span><span v-show="!collapsed">Mouvements</span></RouterLink>
+        <RouterLink to="/app/inventaire"  class="nav-link" :class="{active: route.path === '/app/inventaire'}"><span class="icon"><ClipboardList size="1em" /></span><span v-show="!collapsed">Inventaire</span></RouterLink>
+        <RouterLink to="/app/lots"        class="nav-link" :class="{active: route.path === '/app/lots'}"><span class="icon"><CalendarClock size="1em" /></span><span v-show="!collapsed">Lots & Dates</span></RouterLink>
 
         <div class="nav-divider"></div>
         <div v-show="!collapsed" class="nav-section">Administration</div>
         <RouterLink to="/app/commandes"          class="nav-link" :class="{active: route.path === '/app/commandes'}">
-          <span class="icon">🛒</span><span v-show="!collapsed">Commandes</span>
+          <span class="icon"><ShoppingCart size="1em" /></span><span v-show="!collapsed">Commandes</span>
         </RouterLink>
         <RouterLink to="/app/commandes-en-ligne" class="nav-link" :class="{active: route.path === '/app/commandes-en-ligne'}">
-          <span class="icon">🌐</span>
+          <span class="icon"><Globe size="1em" /></span>
           <span v-show="!collapsed">Commandes en ligne</span>
           <span v-if="onlineCount && !collapsed" class="nav-badge" style="background:var(--green);">{{ onlineCount }}</span>
         </RouterLink>
-        <RouterLink to="/app/utilisateurs" class="nav-link" :class="{active: route.path === '/app/utilisateurs'}"><span class="icon">👥</span><span v-show="!collapsed">Utilisateurs</span></RouterLink>
-        <RouterLink to="/app/parametres"   class="nav-link" :class="{active: route.path === '/app/parametres'}"><span class="icon">⚙️</span><span v-show="!collapsed">Paramètres</span></RouterLink>
+        <RouterLink to="/app/utilisateurs" class="nav-link" :class="{active: route.path === '/app/utilisateurs'}"><span class="icon"><Users size="1em" /></span><span v-show="!collapsed">Utilisateurs</span></RouterLink>
+        <RouterLink to="/app/parametres"   class="nav-link" :class="{active: route.path === '/app/parametres'}"><span class="icon"><Settings size="1em" /></span><span v-show="!collapsed">Paramètres</span></RouterLink>
       </nav>
 
       <!-- Bottom user -->
@@ -53,7 +53,7 @@
           <div class="user-name">{{ auth.user?.name }}</div>
           <div class="user-role">{{ roleLabel }}</div>
         </div>
-        <button @click="doLogout" class="btn btn-icon" style="flex-shrink:0;" title="Déconnexion">🚪</button>
+        <button @click="doLogout" class="btn btn-icon" style="flex-shrink:0;" title="Déconnexion"><LogOut size="1em" /></button>
       </div>
 
       <button class="sidebar-toggle" @click="collapsed = !collapsed">{{ collapsed ? '›' : '‹' }}</button>
@@ -74,13 +74,13 @@
         <div style="display:flex;align-items:center;gap:8px;">
           <!-- Dark mode toggle -->
           <button class="btn btn-icon" @click="theme.toggle" :title="theme.mode === 'dark' ? 'Mode clair' : 'Mode sombre'">
-            {{ theme.mode === 'dark' ? '☀️' : '🌙' }}
+            <component :is="theme.mode === 'dark' ? Sun : Moon" size="1em" />
           </button>
 
           <!-- Notifications -->
           <div style="position:relative;">
             <button class="btn btn-icon" @click="showNotifs = !showNotifs">
-              🔔
+              <Bell size="1em" />
               <span v-if="store.unreadCount > 0" style="position:absolute;top:-4px;right:-4px;background:#dc2626;color:#fff;font-size:.6rem;font-weight:700;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;">{{ store.unreadCount }}</span>
             </button>
             <div v-if="showNotifs" style="position:absolute;top:calc(100% + 8px);right:0;background:var(--surface);border:1px solid var(--border);border-radius:12px;width:300px;box-shadow:0 8px 30px rgba(0,0,0,.1);z-index:50;overflow:hidden;">
@@ -99,7 +99,7 @@
           </div>
 
           <RouterLink v-if="store.alertCount > 0" to="/app/alertes" class="btn btn-sm btn-danger" style="text-decoration:none;">
-            ⚠️ {{ store.alertCount }} alerte(s)
+            <TriangleAlert size="1em" /> {{ store.alertCount }} alerte(s)
           </RouterLink>
           <RouterLink to="/app/ventes" class="btn btn-sm btn-primary" style="text-decoration:none;">
             + Vente
@@ -123,6 +123,7 @@
 </template>
 
 <script setup>
+import { Pill, House, Bell, Package, Tag, PackagePlus, Banknote, RefreshCw, ClipboardList, CalendarClock, ShoppingCart, Globe, Users, Settings, LogOut, TriangleAlert, Sun, Moon, Component } from 'lucide-vue-next'
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore }   from '../../stores/auth.js'

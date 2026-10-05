@@ -36,7 +36,7 @@ export const usePharmaStore = defineStore('pharma', () => {
 
   // ── Helpers ───────────────────────────────────────────────────
   const fmt      = d => new Date(d).toLocaleDateString('fr-FR')
-  const fmtPrice = v => Number(v || 0).toLocaleString('fr-FR') + ' F'
+  const fmtPrice = v => Number(v || 0).toLocaleString('fr-FR') + ' MRU'
 
   // ── Dashboard ─────────────────────────────────────────────────
   async function fetchDashboard() {

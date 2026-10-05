@@ -34,6 +34,7 @@ export const authApi = {
   updateMe:       d => api.put('/auth/me', d),
   logout:         () => api.post('/auth/logout'),
   changePassword: d => api.put('/auth/password', d),
+  updateDuty:     d => api.put('/auth/pharmacy/duty', d),
 }
 export const dashboardApi  = { get: () => api.get('/dashboard') }
 export const productApi    = {

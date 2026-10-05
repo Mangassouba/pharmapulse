@@ -4,7 +4,7 @@
     <section class="pub-hero">
       <div class="pub-container">
         <div class="pub-hero-content">
-          <div class="pub-hero-tag">🌿 Disponible 24h/24</div>
+          <div class="pub-hero-tag"><Leaf size="1em" /> Disponible 24h/24</div>
           <h1 class="pub-hero-title">
             Vos médicaments,<br/>
             <span class="pub-hero-accent">livrés ou prêts à récupérer</span>
@@ -16,7 +16,7 @@
           <!-- Search box -->
           <div class="pub-hero-search">
             <div class="pub-hero-search-wrap">
-              <span class="search-icon">🔍</span>
+              <span class="search-icon"><Search size="1em" /></span>
               <input
                 v-model="query"
                 class="pub-hero-inp"
@@ -29,7 +29,7 @@
               </button>
             </div>
             <p class="pub-hero-locate">
-              Ou <button @click="locateMe" class="pub-locate-btn">📍 utilisez votre position</button> pour voir les pharmacies proches
+              Ou <button @click="locateMe" class="pub-locate-btn"><MapPin size="1em" /> utilisez votre position</button> pour voir les pharmacies proches
             </p>
           </div>
 
@@ -41,15 +41,15 @@
 
         <div class="pub-hero-visual">
           <div class="pub-hero-card-float">
-            <div class="pub-float-icon">💊</div>
+            <div class="pub-float-icon"><Pill size="1em" /></div>
             <div class="pub-float-info">
               <div class="pub-float-title">Paracetamol 500mg</div>
-              <div class="pub-float-location">Pharmacie de la Paix · Dakar</div>
+              <div class="pub-float-location">Pharmacie Chifa · Nouakchott</div>
             </div>
             <span class="pub-float-stock">EN STOCK</span>
           </div>
           <div class="pub-hero-card-float pub-hero-card-offset1">
-            <div class="pub-float-icon">🩺</div>
+            <div class="pub-float-icon"><Stethoscope size="1em" /></div>
             <div class="pub-float-info">
               <div class="pub-float-title">Amoxicilline 500mg</div>
               <div class="pub-float-location">Pharmacie Centrale · Thiès</div>
@@ -57,7 +57,7 @@
             <span class="pub-float-stock">EN STOCK</span>
           </div>
           <div class="pub-hero-card-float pub-hero-card-offset2">
-            <div class="pub-float-icon">💉</div>
+            <div class="pub-float-icon"><Syringe size="1em" /></div>
             <div class="pub-float-info">
               <div class="pub-float-title">Ibuprofène 400mg</div>
               <div class="pub-float-location">Pharmacie du Progrès</div>
@@ -77,7 +77,7 @@
         </div>
         <div class="pub-steps-grid">
           <div v-for="step in steps" :key="step.num" class="pub-step-card">
-            <div class="pub-step-icon" :style="{background:step.bg}">{{ step.icon }}</div>
+            <div class="pub-step-icon" :style="{background:step.bg}"><component :is="step.icon" size="1em" /></div>
             <div class="pub-step-num">{{ step.num }}</div>
             <h3 class="pub-step-title">{{ step.title }}</h3>
             <p class="pub-step-desc">{{ step.desc }}</p>
@@ -96,7 +96,7 @@
           </div>
           <div class="pub-pharmacies-actions">
             <button @click="locateMe" class="pub-btn-outline">
-              📍 {{ cartStore.userLocation ? 'Les plus proches' : 'Me localiser' }}
+              <MapPin size="1em" /> {{ cartStore.userLocation ? 'Les plus proches' : 'Me localiser' }}
             </button>
             <RouterLink to="/pharmacies" class="pub-btn-green">Voir toutes →</RouterLink>
           </div>
@@ -107,7 +107,7 @@
           Chargement...
         </div>
         <div v-else-if="!cartStore.pharmacies.length" class="pub-empty">
-          <div class="pub-empty-icon">🏥</div>
+          <div class="pub-empty-icon"><Hospital size="1em" /></div>
           <p class="pub-empty-text">Aucune pharmacie disponible pour le moment.</p>
         </div>
         <div v-else class="pub-pharmacies-grid">
@@ -115,19 +115,23 @@
             <div class="pub-card-content">
               <div class="pub-card-header">
                 <div class="pub-card-pharmacy">
-                  <div class="pub-card-icon">🏥</div>
+                  <div class="pub-card-icon"><Hospital size="1em" /></div>
                   <div class="pub-card-info">
                     <div class="pub-card-name">{{ ph.name }}</div>
-                    <div class="pub-card-city">📍 {{ ph.city || 'Sénégal' }}</div>
+                    <div class="pub-card-city"><MapPin size="1em" /> {{ ph.city || 'Mauritanie' }}</div>
                   </div>
                 </div>
-                <span class="pub-badge-green">OUVERTE</span>
+                <DutyBadge v-if="dutyStatus(ph)" :pharmacy="ph"/>
+                <span v-else class="pub-badge-green">OUVERTE</span>
+              </div>
+              <div v-if="ph.duty_days?.length" style="font-size:.75rem;color:#4338ca;margin-top:6px;">
+                <Moon size="1em" /> Garde : {{ formatDutyDays(ph.duty_days, 'short') }} · {{ formatDutyHours(ph) }}
               </div>
               <div v-if="ph.distance" class="pub-card-distance">
-                🗺️ {{ ph.distance < 1 ? (ph.distance * 1000).toFixed(0) + ' m' : ph.distance.toFixed(1) + ' km' }}
+                <Navigation size="1em" /> {{ ph.distance < 1 ? (ph.distance * 1000).toFixed(0) + ' m' : ph.distance.toFixed(1) + ' km' }}
               </div>
               <div class="pub-card-contact">
-                📞 {{ ph.phone || 'Non renseigné' }}
+                <Phone size="1em" /> {{ ph.phone || 'Non renseigné' }}
                 <span v-if="ph.email"> · {{ ph.email }}</span>
               </div>
               <div class="pub-card-stats">
@@ -154,9 +158,12 @@
 </template>
 
 <script setup>
+import { Leaf, Search, MapPin, Pill, Stethoscope, Syringe, Hospital, Moon, Navigation, Phone, ShoppingCart } from 'lucide-vue-next'
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCartStore } from '../../stores/cart.js'
+import { dutyStatus, formatDutyDays, formatDutyHours } from '../../utils/duty.js'
+import DutyBadge from '../../components/DutyBadge.vue'
 
 const router    = useRouter()
 const cartStore = useCartStore()
@@ -164,9 +171,9 @@ const query     = ref('')
 
 const quickTags = ['Paracetamol', 'Amoxicilline', 'Ibuprofène', 'Vitamines', 'Antitussif', 'Antipaludéen']
 const steps = [
-  { num:1, icon:'🔍', bg:'#f0fdf4', title:'Recherchez votre médicament', desc:'Tapez le nom du médicament et trouvez instantanément les pharmacies qui l\'ont en stock près de chez vous.' },
-  { num:2, icon:'🛒', bg:'#eff6ff', title:'Ajoutez au panier', desc:'Sélectionnez le produit, la quantité et la pharmacie de votre choix. Votre panier est sauvegardé automatiquement.' },
-  { num:3, icon:'🏥', bg:'#f5f3ff', title:'Récupérez en pharmacie', desc:'Recevez un code de confirmation par SMS. Présentez-le à la pharmacie pour récupérer et payer votre commande.' },
+  { num:1, icon:Search, bg:'#f0fdf4', title:'Recherchez votre médicament', desc:'Tapez le nom du médicament et trouvez instantanément les pharmacies qui l\'ont en stock près de chez vous.' },
+  { num:2, icon:ShoppingCart, bg:'#eff6ff', title:'Ajoutez au panier', desc:'Sélectionnez le produit, la quantité et la pharmacie de votre choix. Votre panier est sauvegardé automatiquement.' },
+  { num:3, icon:Hospital, bg:'#f5f3ff', title:'Récupérez en pharmacie', desc:'Recevez un code de confirmation par SMS. Présentez-le à la pharmacie pour récupérer et payer votre commande.' },
 ]
 
 let dt
@@ -761,6 +768,19 @@ onMounted(() => {
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
+}
+
+@media (max-width: 480px) {
+  .pub-pharmacies-actions {
+    width: 100%;
+  }
+  .pub-pharmacies-actions > * {
+    flex: 1 1 0;
+    justify-content: center;
+  }
+  .pub-hero-search {
+    padding: 0.75rem;
+  }
 }
 
 .pub-btn-outline {

@@ -1,12 +1,12 @@
 <template>
   <div style="display:flex;flex-direction:column;gap:16px;">
-    <div class="alert alert-blue">📋 Saisissez le stock réel compté. L'écart est calculé automatiquement et un mouvement d'ajustement est créé pour la traçabilité.</div>
+    <div class="alert alert-blue"><ClipboardList size="1em" /> Saisissez le stock réel compté. L'écart est calculé automatiquement et un mouvement d'ajustement est créé pour la traçabilité.</div>
     <div class="card card-p" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;">
-      <div class="search-box" style="flex:1;max-width:280px;"><span class="search-icon">🔍</span><input v-model="search" class="inp" placeholder="Rechercher..."/></div>
+      <div class="search-box" style="flex:1;max-width:280px;"><span class="search-icon"><Search size="1em" /></span><input v-model="search" class="inp" placeholder="Rechercher..."/></div>
       <div style="display:flex;gap:8px;">
         <select v-model="filterStatus" class="inp" style="width:170px;"><option value="">Tous</option><option value="ok">Stock OK</option><option value="low">Stock faible</option><option value="out">Rupture</option></select>
         <button class="btn btn-outline btn-sm" @click="autoFill">Pré-remplir</button>
-        <button v-if="pendingCount>0" class="btn btn-primary" @click="applyAll" :disabled="applying">{{ applying?'...':'✅ Appliquer tout ('+pendingCount+')' }}</button>
+        <button v-if="pendingCount>0" class="btn btn-primary" @click="applyAll" :disabled="applying">{{ applying?'...':'Appliquer tout ('+pendingCount+')' }}</button>
       </div>
     </div>
     <div class="card">
@@ -25,8 +25,8 @@
               </td>
               <td><input v-if="rows[p.id]" v-model="rows[p.id].note" class="inp" style="width:150px;" placeholder="Raison..."/></td>
               <td>
-                <button v-if="rows[p.id]?.dirty&&rows[p.id]?.real!==p.stock" class="btn btn-primary btn-xs" @click="applyOne(p)">✓</button>
-                <span v-else-if="rows[p.id]?.dirty" style="color:#16a34a;font-size:.78rem;font-weight:600;">✅ OK</span>
+                <button v-if="rows[p.id]?.dirty&&rows[p.id]?.real!==p.stock" class="btn btn-primary btn-xs" @click="applyOne(p)"><Check size="1em" /></button>
+                <span v-else-if="rows[p.id]?.dirty" style="color:#16a34a;font-size:.78rem;font-weight:600;"><CircleCheck size="1em" /> OK</span>
               </td>
             </tr>
             <tr v-if="!filtered.length"><td colspan="6" style="text-align:center;padding:28px;color:#6b7280;">Aucun produit</td></tr>
@@ -57,6 +57,7 @@
   </div>
 </template>
 <script setup>
+import { ClipboardList, Search, Check, CircleCheck } from 'lucide-vue-next'
 import { ref, computed, onMounted, watch } from 'vue'
 import { usePharmaStore } from '../stores/pharma.js'
 import { useToastStore }  from '../stores/toast.js'

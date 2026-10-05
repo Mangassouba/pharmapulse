@@ -1,13 +1,13 @@
 <template>
   <div style="display:flex;flex-direction:column;gap:16px;">
     <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
-      <div class="search-box" style="flex:1;max-width:300px;"><span class="search-icon">🔍</span><input v-model="search" class="inp" placeholder="Nom ou email..." @input="debouncedFetch"/></div>
+      <div class="search-box" style="flex:1;max-width:300px;"><span class="search-icon"><Search size="1em" /></span><input v-model="search" class="inp" placeholder="Nom ou email..." @input="debouncedFetch"/></div>
       <div style="display:flex;gap:8px;">
         <select v-model="filterRole" class="inp" style="width:160px;" @change="fetchData"><option value="">Tous les rôles</option><option value="ADMIN">Admin</option><option value="MANAGER">Manager</option><option value="CAISSIER">Caissier</option><option value="STOCK_MANAGER">Stock Manager</option></select>
         <select v-model="filterStatus" class="inp" style="width:140px;" @change="fetchData"><option value="">Tous statuts</option><option value="ACTIVE">Actif</option><option value="INACTIVE">Inactif</option><option value="SUSPENDED">Suspendu</option></select>
       </div>
     </div>
-    <div style="font-size:.82rem;color:#6b7280;">👥 {{ meta.total }} utilisateur(s)</div>
+    <div style="font-size:.82rem;color:#6b7280;"><Users size="1em" /> {{ meta.total }} utilisateur(s)</div>
     <div class="scard">
       <div v-if="loading" class="loading-box"><div class="spinner" style="border-top-color:#7c3aed;"></div> Chargement...</div>
       <div v-else class="tbl-wrap">
@@ -35,6 +35,7 @@
   </div>
 </template>
 <script setup>
+import { Search, Users } from 'lucide-vue-next'
 import { ref, onMounted } from 'vue'
 import { superApi } from '../../services/api.js'
 import { useToastStore } from '../../stores/toast.js'

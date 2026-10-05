@@ -2,7 +2,7 @@
   <div style="display:flex;flex-direction:column;gap:16px;">
     <!-- Toolbar -->
     <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
-      <div class="search-box" style="flex:1;max-width:300px;"><span class="search-icon">🔍</span><input v-model="search" class="inp" placeholder="Rechercher une pharmacie..." @input="debouncedFetch" style="border-color:#ddd6fe;" onfocus="this.style.borderColor='#7c3aed'" onblur="this.style.borderColor='#ddd6fe'"/></div>
+      <div class="search-box" style="flex:1;max-width:300px;"><span class="search-icon"><Search size="1em" /></span><input v-model="search" class="inp" placeholder="Rechercher une pharmacie..." @input="debouncedFetch" style="border-color:#ddd6fe;" onfocus="this.style.borderColor='#7c3aed'" onblur="this.style.borderColor='#ddd6fe'"/></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
         <select v-model="filterStatus" class="inp" style="width:155px;border-color:#ddd6fe;" @change="fetchData">
           <option value="">Tous les statuts</option><option value="ACTIVE">Active</option><option value="SUSPENDED">Suspendue</option><option value="INACTIVE">Inactive</option><option value="PENDING">En attente</option>
@@ -13,9 +13,9 @@
 
     <!-- Stats -->
     <div style="display:flex;gap:8px;flex-wrap:wrap;">
-      <span style="padding:6px 12px;border-radius:99px;background:#f5f3ff;color:#7c3aed;font-size:.78rem;font-weight:700;">🏥 {{ meta.total }} pharmacies</span>
-      <span style="padding:6px 12px;border-radius:99px;background:#f0fdf4;color:#16a34a;font-size:.78rem;font-weight:700;">✅ {{ countBy('ACTIVE') }} actives</span>
-      <span style="padding:6px 12px;border-radius:99px;background:#fef2f2;color:#dc2626;font-size:.78rem;font-weight:700;">❌ {{ countBy('SUSPENDED') }} suspendues</span>
+      <span style="padding:6px 12px;border-radius:99px;background:#f5f3ff;color:#7c3aed;font-size:.78rem;font-weight:700;"><Hospital size="1em" /> {{ meta.total }} pharmacies</span>
+      <span style="padding:6px 12px;border-radius:99px;background:#f0fdf4;color:#16a34a;font-size:.78rem;font-weight:700;"><CircleCheck size="1em" /> {{ countBy('ACTIVE') }} actives</span>
+      <span style="padding:6px 12px;border-radius:99px;background:#fef2f2;color:#dc2626;font-size:.78rem;font-weight:700;"><CircleX size="1em" /> {{ countBy('SUSPENDED') }} suspendues</span>
     </div>
 
     <!-- Table -->
@@ -38,7 +38,7 @@
               </td>
               <td style="font-family:'JetBrains Mono',monospace;font-size:.8rem;" :style="{color:isExpired(p.subscription?.end_date)?'#dc2626':'#6b7280'}">
                 {{ p.subscription?.end_date ? fmtDate(p.subscription.end_date) : '—' }}
-                <span v-if="isExpired(p.subscription?.end_date)" style="font-size:.65rem;font-weight:700;"> ⚠️EXPIRÉ</span>
+                <span v-if="isExpired(p.subscription?.end_date)" style="font-size:.65rem;font-weight:700;"> <TriangleAlert size="1em" />EXPIRÉ</span>
               </td>
               <td style="font-family:'JetBrains Mono',monospace;font-weight:700;text-align:center;">{{ p._count?.users??0 }}</td>
               <td>
@@ -46,10 +46,10 @@
               </td>
               <td>
                 <div style="display:flex;gap:4px;flex-wrap:wrap;">
-                  <button class="btn btn-xs btn-outline" @click="openDetail(p)">👁 Détail</button>
-                  <button v-if="p.status!=='ACTIVE'" class="btn btn-xs" style="background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;" @click="setStatus(p,'ACTIVE')">✅ Activer</button>
-                  <button v-if="p.status==='ACTIVE'" class="btn btn-xs" style="background:#fef2f2;color:#dc2626;border:1px solid #fecaca;" @click="openSuspend(p)">⛔ Suspendre</button>
-                  <button class="btn btn-xs" style="background:#f5f3ff;color:#7c3aed;border:1px solid #ddd6fe;" @click="openRenew(p)">🔄 Renouveler</button>
+                  <button class="btn btn-xs btn-outline" @click="openDetail(p)"><Eye size="1em" /> Détail</button>
+                  <button v-if="p.status!=='ACTIVE'" class="btn btn-xs" style="background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;" @click="setStatus(p,'ACTIVE')"><CircleCheck size="1em" /> Activer</button>
+                  <button v-if="p.status==='ACTIVE'" class="btn btn-xs" style="background:#fef2f2;color:#dc2626;border:1px solid #fecaca;" @click="openSuspend(p)"><Ban size="1em" /> Suspendre</button>
+                  <button class="btn btn-xs" style="background:#f5f3ff;color:#7c3aed;border:1px solid #ddd6fe;" @click="openRenew(p)"><RefreshCw size="1em" /> Renouveler</button>
                 </div>
               </td>
             </tr>
@@ -68,7 +68,7 @@
     <Teleport to="body">
       <div v-if="detailPh" class="modal-bg" @click.self="detailPh=null">
         <div class="modal" style="max-width:680px;">
-          <div class="modal-hd"><h3>🏥 {{ detailPh.name }}</h3><button class="btn btn-icon" @click="detailPh=null">✕</button></div>
+          <div class="modal-hd"><h3><Hospital size="1em" /> {{ detailPh.name }}</h3><button class="btn btn-icon" @click="detailPh=null"><X size="1em" /></button></div>
           <div class="modal-bd">
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
               <div>
@@ -104,7 +104,7 @@
                 <tbody>
                   <tr v-for="pay in detailPh.subscription.payments" :key="pay.id">
                     <td style="font-family:'JetBrains Mono',monospace;font-size:.78rem;color:#6b7280;">{{ fmtDate(pay.paid_at) }}</td>
-                    <td style="font-family:'JetBrains Mono',monospace;font-weight:700;color:#7c3aed;">{{ Number(pay.amount).toLocaleString('fr-FR') }} F</td>
+                    <td style="font-family:'JetBrains Mono',monospace;font-weight:700;color:#7c3aed;">{{ Number(pay.amount).toLocaleString('fr-FR') }} {{ pay.currency || 'MRU' }}</td>
                     <td>{{ pay.method }}</td>
                     <td style="font-size:.75rem;color:#6b7280;">{{ fmtDate(pay.period_start) }} → {{ fmtDate(pay.period_end) }}</td>
                   </tr>
@@ -112,7 +112,7 @@
               </table>
             </div>
           </div>
-          <div class="modal-ft"><button class="btn btn-outline" @click="detailPh=null">Fermer</button><button class="btn btn-purple" @click="openRenew(detailPh);detailPh=null">🔄 Renouveler</button></div>
+          <div class="modal-ft"><button class="btn btn-outline" @click="detailPh=null">Fermer</button><button class="btn btn-purple" @click="openRenew(detailPh);detailPh=null"><RefreshCw size="1em" /> Renouveler</button></div>
         </div>
       </div>
     </Teleport>
@@ -121,7 +121,7 @@
     <Teleport to="body">
       <div v-if="showCreate" class="modal-bg" @click.self="showCreate=false">
         <div class="modal" style="max-width:580px;">
-          <div class="modal-hd"><h3>🏥 Nouvelle pharmacie</h3><button class="btn btn-icon" @click="showCreate=false">✕</button></div>
+          <div class="modal-hd"><h3><Hospital size="1em" /> Nouvelle pharmacie</h3><button class="btn btn-icon" @click="showCreate=false"><X size="1em" /></button></div>
           <div class="modal-bd">
             <h4 style="font-size:.875rem;font-weight:700;margin:0 0 10px;padding-bottom:6px;border-bottom:1px solid #f3f4f6;">Pharmacie</h4>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:14px;">
@@ -129,8 +129,8 @@
               <div><label class="lbl">Numéro de licence</label><input v-model="cForm.pharmacyLicense" class="inp" placeholder="LIC-2024-XXXXX"/></div>
               <div><label class="lbl">Email</label><input v-model="cForm.pharmacyEmail" class="inp" type="email"/></div>
               <div><label class="lbl">Téléphone</label><input v-model="cForm.pharmacyPhone" class="inp"/></div>
-              <div><label class="lbl">Ville</label><input v-model="cForm.pharmacyCity" class="inp" placeholder="Dakar"/></div>
-              <div><label class="lbl">Pays</label><input v-model="cForm.pharmacyCountry" class="inp" placeholder="Sénégal"/></div>
+              <div><label class="lbl">Ville</label><input v-model="cForm.pharmacyCity" class="inp" placeholder="Nouakchott"/></div>
+              <div><label class="lbl">Pays</label><input v-model="cForm.pharmacyCountry" class="inp" placeholder="Mauritanie"/></div>
             </div>
             <h4 style="font-size:.875rem;font-weight:700;margin:0 0 10px;padding-bottom:6px;border-bottom:1px solid #f3f4f6;">Administrateur</h4>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:14px;">
@@ -140,12 +140,11 @@
             </div>
             <h4 style="font-size:.875rem;font-weight:700;margin:0 0 10px;padding-bottom:6px;border-bottom:1px solid #f3f4f6;">Abonnement</h4>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px;">
-              <div><label class="lbl">Plan</label><select v-model="cForm.plan" class="inp"><option value="FREE">FREE — Gratuit</option><option value="STARTER">STARTER — 15 000 F/mois</option><option value="PRO">PRO — 35 000 F/mois</option><option value="ENTERPRISE">ENTERPRISE — 75 000 F/mois</option></select></div>
-              <div><label class="lbl">Période d'essai (jours)</label><input v-model.number="cForm.trialDays" type="number" min="0" max="90" class="inp"/></div>
+              <div style="grid-column:1/-1"><label class="lbl">Période d'essai gratuite (jours)</label><input v-model.number="cForm.trialDays" type="number" min="0" max="90" class="inp"/></div>
             </div>
-            <div v-if="cErr" class="alert alert-red" style="margin-top:12px;">❌ {{ cErr }}</div>
+            <div v-if="cErr" class="alert alert-red" style="margin-top:12px;"><CircleX size="1em" /> {{ cErr }}</div>
           </div>
-          <div class="modal-ft"><button class="btn btn-outline" @click="showCreate=false">Annuler</button><button class="btn btn-purple" @click="doCreate" :disabled="cSaving">{{ cSaving?'Création...':'✅ Créer la pharmacie' }}</button></div>
+          <div class="modal-ft"><button class="btn btn-outline" @click="showCreate=false">Annuler</button><button class="btn btn-purple" @click="doCreate" :disabled="cSaving">{{ cSaving?'Création...':'Créer la pharmacie' }}</button></div>
         </div>
       </div>
     </Teleport>
@@ -154,12 +153,12 @@
     <Teleport to="body">
       <div v-if="suspendTarget" class="modal-bg" @click.self="suspendTarget=null">
         <div class="modal" style="max-width:400px;">
-          <div class="modal-hd"><h3 style="color:#dc2626;">⛔ Suspendre</h3><button class="btn btn-icon" @click="suspendTarget=null">✕</button></div>
+          <div class="modal-hd"><h3 style="color:#dc2626;"><Ban size="1em" /> Suspendre</h3><button class="btn btn-icon" @click="suspendTarget=null"><X size="1em" /></button></div>
           <div class="modal-bd">
             <p style="color:#6b7280;margin-bottom:12px;font-size:.875rem;">Suspendre <strong>{{ suspendTarget.name }}</strong>. Les utilisateurs ne pourront plus se connecter.</p>
             <label class="lbl">Raison *</label><textarea v-model="suspendReason" class="inp" rows="3" placeholder="Ex: Abonnement non payé depuis 30 jours..."></textarea>
           </div>
-          <div class="modal-ft"><button class="btn btn-outline" @click="suspendTarget=null">Annuler</button><button class="btn btn-danger" @click="doSuspend" :disabled="!suspendReason.trim()||sSaving">{{ sSaving?'...':'⛔ Confirmer' }}</button></div>
+          <div class="modal-ft"><button class="btn btn-outline" @click="suspendTarget=null">Annuler</button><button class="btn btn-danger" @click="doSuspend" :disabled="!suspendReason.trim()||sSaving">{{ sSaving?'...':'Confirmer' }}</button></div>
         </div>
       </div>
     </Teleport>
@@ -168,22 +167,20 @@
     <Teleport to="body">
       <div v-if="renewTarget" class="modal-bg" @click.self="renewTarget=null">
         <div class="modal" style="max-width:440px;">
-          <div class="modal-hd"><h3 style="color:#7c3aed;">🔄 Renouveler l'abonnement</h3><button class="btn btn-icon" @click="renewTarget=null">✕</button></div>
+          <div class="modal-hd"><h3 style="color:#7c3aed;"><RefreshCw size="1em" /> Renouveler l'abonnement</h3><button class="btn btn-icon" @click="renewTarget=null"><X size="1em" /></button></div>
           <div class="modal-bd">
             <p style="color:#6b7280;margin-bottom:14px;font-size:.875rem;">Pharmacie : <strong>{{ renewTarget.name }}</strong></p>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px;">
-              <div><label class="lbl">Plan</label><select v-model="rForm.plan" class="inp"><option value="FREE">FREE — 0 F</option><option value="STARTER">STARTER — 15 000 F/mois</option><option value="PRO">PRO — 35 000 F/mois</option><option value="ENTERPRISE">ENTERPRISE — 75 000 F/mois</option></select></div>
-              <div><label class="lbl">Durée (mois)</label><input v-model.number="rForm.months" type="number" min="1" max="36" class="inp"/></div>
-              <div><label class="lbl">Montant perçu (FCFA)</label><input v-model.number="rForm.amount" type="number" min="0" class="inp"/></div>
+              <div><label class="lbl">Durée</label><select v-model.number="rForm.months" class="inp"><option v-for="m in DURATIONS" :key="m" :value="m">{{ m }} mois — {{ fmtMRU(m * MONTHLY_PRICE) }}</option></select></div>
               <div><label class="lbl">Mode de paiement</label><select v-model="rForm.method" class="inp"><option value="CASH">Espèces</option><option value="CARD">Carte</option><option value="TRANSFER">Virement</option><option value="MOBILE_MONEY">Mobile Money</option></select></div>
-              <div style="grid-column:1/-1"><label class="lbl">Référence paiement</label><input v-model="rForm.reference" class="inp" placeholder="WAVE-2024-XXXX"/></div>
+              <div style="grid-column:1/-1"><label class="lbl">Référence paiement</label><input v-model="rForm.reference" class="inp" placeholder="BANKILY-2024-XXXX"/></div>
             </div>
             <div style="margin-top:12px;padding:10px;background:#f5f3ff;border-radius:8px;font-size:.82rem;color:#7c3aed;">
-              <strong>Total :</strong> {{ Number(rForm.amount).toLocaleString('fr-FR') }} FCFA —
+              <strong>Total :</strong> {{ rForm.months }} mois × {{ fmtMRU(MONTHLY_PRICE) }} = <strong>{{ fmtMRU(renewTotal) }}</strong> —
               <strong>Nouvelle échéance :</strong> {{ renewExpiry }}
             </div>
           </div>
-          <div class="modal-ft"><button class="btn btn-outline" @click="renewTarget=null">Annuler</button><button class="btn btn-purple" @click="doRenew" :disabled="rSaving">{{ rSaving?'...':'✅ Valider le renouvellement' }}</button></div>
+          <div class="modal-ft"><button class="btn btn-outline" @click="renewTarget=null">Annuler</button><button class="btn btn-purple" @click="doRenew" :disabled="rSaving">{{ rSaving?'...':'Valider le renouvellement' }}</button></div>
         </div>
       </div>
     </Teleport>
@@ -191,10 +188,12 @@
 </template>
 
 <script setup>
+import { Search, Hospital, CircleCheck, CircleX, TriangleAlert, Eye, Ban, RefreshCw, X } from 'lucide-vue-next'
 import { ref, computed, onMounted } from 'vue'
 import { superApi }         from '../../services/api.js'
 import { useToastStore }    from '../../stores/toast.js'
 import { useSuperAdminStore } from '../../stores/superAdmin.js'
+import { formatDutyDays, formatDutyHours } from '../../utils/duty.js'
 
 const toast      = useToastStore()
 const superStore = useSuperAdminStore()
@@ -206,8 +205,14 @@ const showCreate = ref(false); const cSaving = ref(false); const cErr = ref('')
 const suspendTarget = ref(null); const suspendReason = ref(''); const sSaving = ref(false)
 const renewTarget = ref(null); const rSaving = ref(false)
 
-const cForm = ref({ pharmacyName:'',pharmacyLicense:'',pharmacyEmail:'',pharmacyPhone:'',pharmacyCity:'',pharmacyCountry:'Sénégal',adminName:'',adminEmail:'',adminPassword:'',plan:'STARTER',trialDays:30 })
-const rForm = ref({ plan:'STARTER', months:12, amount:15000, method:'CASH', reference:'' })
+const cForm = ref({ pharmacyName:'',pharmacyLicense:'',pharmacyEmail:'',pharmacyPhone:'',pharmacyCity:'',pharmacyCountry:'Mauritanie',adminName:'',adminEmail:'',adminPassword:'',trialDays:30 })
+const rForm = ref({ months:12, method:'CASH', reference:'' })
+
+// Subscription pricing — keep in sync with pharmapulse-api/src/utils/subscription.js
+const MONTHLY_PRICE = 1500
+const DURATIONS     = [1, 2, 5, 8, 12]
+const fmtMRU        = v => Number(v || 0).toLocaleString('fr-FR') + ' MRU'
+const renewTotal    = computed(() => rForm.value.months * MONTHLY_PRICE)
 
 const renewExpiry = computed(() => {
   const d = new Date(); d.setDate(d.getDate() + rForm.value.months * 30)
@@ -227,6 +232,7 @@ const phInfo = computed(() => detailPh.value ? [
   { l:'Ville',    v: detailPh.value.city||'—' },
   { l:'Pays',     v: detailPh.value.country||'—' },
   { l:'Licence',  v: detailPh.value.license_number||'—' },
+  { l:'Garde',    v: detailPh.value.duty_days?.length ? formatDutyDays(detailPh.value.duty_days) + ' · ' + formatDutyHours(detailPh.value) : '—' },
 ] : [])
 
 let dt; function debouncedFetch() { clearTimeout(dt); dt = setTimeout(fetchData, 380) }
@@ -244,7 +250,7 @@ async function openDetail(p) {
 }
 
 function openCreate() {
-  Object.assign(cForm.value, { pharmacyName:'',pharmacyLicense:'',pharmacyEmail:'',pharmacyPhone:'',pharmacyCity:'',pharmacyCountry:'Sénégal',adminName:'',adminEmail:'',adminPassword:'',plan:'STARTER',trialDays:30 })
+  Object.assign(cForm.value, { pharmacyName:'',pharmacyLicense:'',pharmacyEmail:'',pharmacyPhone:'',pharmacyCity:'',pharmacyCountry:'Mauritanie',adminName:'',adminEmail:'',adminPassword:'',trialDays:30 })
   cErr.value = ''; showCreate.value = true
 }
 
@@ -280,8 +286,7 @@ async function doSuspend() {
 
 function openRenew(p) {
   renewTarget.value = p
-  const planAmounts = { FREE:0, STARTER:15000, PRO:35000, ENTERPRISE:75000 }
-  rForm.value = { plan: p.subscription?.plan || 'STARTER', months: 12, amount: planAmounts[p.subscription?.plan || 'STARTER'], method: 'CASH', reference: '' }
+  rForm.value = { months: 12, method: 'CASH', reference: '' }
 }
 async function doRenew() {
   rSaving.value = true

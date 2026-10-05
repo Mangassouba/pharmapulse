@@ -4,7 +4,7 @@
     <header class="pub-header">
       <div class="pub-container">
         <RouterLink to="/pharmacies" class="pub-logo">
-          <div class="pub-logo-icon">💊</div>
+          <div class="pub-logo-icon"><Pill :size="20" color="white" /></div>
           <div>
             <div class="pub-logo-name">Pharma<span>Pulse</span></div>
             <div class="pub-logo-sub">Trouver votre médicament</div>
@@ -13,7 +13,7 @@
 
         <div class="pub-header-center">
           <div class="pub-search-bar" v-if="showSearch">
-            <span class="pub-search-icon">🔍</span>
+            <Search :size="16" class="pub-search-icon" />
             <input
               v-model="q"
               class="pub-search-inp"
@@ -21,18 +21,24 @@
               @keyup.enter="doSearch"
               @input="debouncedSearch"
             />
-            <button v-if="q" @click="q=''; cartStore.searchResults=[]" class="pub-search-clear">✕</button>
-            <button class="pub-search-btn" @click="doSearch">Rechercher</button>
+            <button v-if="q" @click="q=''; cartStore.searchResults=[]" class="pub-search-clear"><X :size="14" /></button>
+            <button class="pub-search-btn" @click="doSearch" aria-label="Rechercher">
+              <Search :size="14" class="pub-search-btn-icon" /><span class="pub-search-btn-text">Rechercher</span>
+            </button>
           </div>
         </div>
 
         <div class="pub-header-right">
-          <button class="pub-loc-btn" @click="requestLocation" :class="{active: cartStore.userLocation}">
-            📍 {{ cartStore.userLocation ? 'Localisé' : 'Me localiser' }}
+          <button class="pub-loc-btn" @click="requestLocation" :class="{active: cartStore.userLocation}" :aria-label="cartStore.userLocation ? 'Localisé' : 'Me localiser'">
+            <MapPin :size="14" /> <span class="pub-btn-label">{{ cartStore.userLocation ? 'Localisé' : 'Me localiser' }}</span>
           </button>
-          <RouterLink to="/panier" class="pub-cart-btn">
-            🛒 Panier
+          <RouterLink to="/panier" class="pub-cart-btn" aria-label="Panier">
+            <ShoppingCart :size="16" /> <span class="pub-btn-label">Panier</span>
             <span v-if="cartStore.totalItems > 0" class="pub-cart-badge">{{ cartStore.totalItems }}</span>
+          </RouterLink>
+          <RouterLink :to="authStore.isLoggedIn ? '/app' : '/login'" class="pub-login-btn" :aria-label="authStore.isLoggedIn ? 'Mon espace' : 'Connexion'">
+            <component :is="authStore.isLoggedIn ? LayoutDashboard : LogIn" :size="16" />
+            <span class="pub-btn-label">{{ authStore.isLoggedIn ? 'Mon espace' : 'Connexion' }}</span>
           </RouterLink>
         </div>
       </div>
@@ -62,10 +68,10 @@
           </div>
           <div>
             <div style="font-weight:700;margin-bottom:10px;">Contact</div>
-            <div style="color:#9ca3af;font-size:.85rem;line-height:1.8;">
-              📧 support@pharmapulse.sn<br/>
-              📞 +221 33 800 00 00<br/>
-              🕐 Lun–Sam : 8h–20h
+            <div class="pub-footer-contact">
+              <div><Mail :size="14" /> support@pharmapulse.mr</div>
+              <div><Phone :size="14" /> +222 45 00 00 00</div>
+              <div><Clock :size="14" /> Lun–Sam : 8h–20h</div>
             </div>
           </div>
         </div>
@@ -81,10 +87,13 @@
 import { ref, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useCartStore } from '../../stores/cart.js'
+import { useAuthStore } from '../../stores/auth.js'
+import { Pill, Search, X, MapPin, ShoppingCart, LogIn, LayoutDashboard, Mail, Phone, Clock } from 'lucide-vue-next'
 
 const router    = useRouter()
 const route     = useRoute()
 const cartStore = useCartStore()
+const authStore = useAuthStore()
 const q         = ref('')
 
 const showSearch = computed(() => route.path !== '/')
@@ -124,19 +133,59 @@ function requestLocation() {
 .pub-search-bar:focus-within { border-color: #16a34a; }
 .pub-search-icon { color: #9ca3af; flex-shrink: 0; }
 .pub-search-inp { flex: 1; border: none; outline: none; font-size: .875rem; font-family: 'Inter', sans-serif; background: transparent; }
-.pub-search-clear { background: none; border: none; cursor: pointer; color: #9ca3af; font-size: .85rem; padding: 0 4px; }
+.pub-search-clear { background: none; border: none; cursor: pointer; color: #9ca3af; font-size: .85rem; padding: 0 4px; display: flex; align-items: center; }
+.pub-footer-contact { color: #9ca3af; font-size: .85rem; line-height: 1.8; }
+.pub-footer-contact div { display: flex; align-items: center; gap: 8px; }
 .pub-search-btn { background: #16a34a; color: white; border: none; border-radius: 99px; padding: 7px 16px; font-size: .8rem; font-weight: 700; cursor: pointer; white-space: nowrap; transition: background .12s; }
 .pub-search-btn:hover { background: #15803d; }
 .pub-header-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-.pub-loc-btn { background: transparent; border: 1px solid #374151; color: #9ca3af; border-radius: 99px; padding: 7px 14px; font-size: .78rem; font-weight: 600; cursor: pointer; transition: all .15s; white-space: nowrap; }
+.pub-loc-btn { display: flex; align-items: center; gap: 6px; background: transparent; border: 1px solid #374151; color: #9ca3af; border-radius: 99px; padding: 7px 14px; font-size: .78rem; font-weight: 600; cursor: pointer; transition: all .15s; white-space: nowrap; }
 .pub-loc-btn:hover, .pub-loc-btn.active { border-color: #16a34a; color: #4ade80; }
 .pub-cart-btn { display: flex; align-items: center; gap: 8px; background: #16a34a; color: white; border-radius: 99px; padding: 8px 18px; font-size: .85rem; font-weight: 700; text-decoration: none; position: relative; transition: background .12s; }
 .pub-cart-btn:hover { background: #15803d; }
+.pub-login-btn { display: flex; align-items: center; gap: 6px; background: transparent; border: 1px solid #4ade80; color: #4ade80; border-radius: 99px; padding: 7px 16px; font-size: .85rem; font-weight: 700; text-decoration: none; white-space: nowrap; transition: all .15s; }
+.pub-login-btn:hover { background: #16a34a; border-color: #16a34a; color: white; }
 .pub-cart-badge { background: #ef4444; color: white; border-radius: 50%; width: 20px; height: 20px; font-size: .68rem; font-weight: 800; display: flex; align-items: center; justify-content: center; }
 .pub-main { flex: 1; }
 .pub-footer { background: #111827; padding: 40px 0 20px; margin-top: auto; }
 .pub-footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 32px; }
-@media(max-width: 768px) { .pub-footer-grid { grid-template-columns: 1fr; gap: 20px; } .pub-header .pub-container { flex-wrap: wrap; height: auto; padding: 12px 16px; } .pub-header-center { width: 100%; order: 3; } }
+/* ── Responsive ───────────────────────────────────── */
+.pub-shell, .pub-shell *, .pub-shell *::before, .pub-shell *::after { box-sizing: border-box; }
+.pub-shell { overflow-x: clip; }
+.pub-shell input, .pub-shell select, .pub-shell textarea { max-width: 100%; }
+.pub-search-btn { display: flex; align-items: center; justify-content: center; }
+.pub-search-btn-icon { display: none; }
+@media (max-width: 1024px) {
+  .pub-logo-sub { display: none; }
+  .pub-loc-btn .pub-btn-label { display: none; }
+  .pub-loc-btn { padding: 8px 10px; }
+}
+@media (max-width: 768px) {
+  .pub-container { padding: 0 16px; }
+  .pub-header .pub-container { flex-wrap: wrap; height: auto; padding: 10px 16px; gap: 10px; }
+  .pub-header-center { flex: 1 1 100%; max-width: none; order: 3; }
+  .pub-header-center:not(:has(.pub-search-bar)) { display: none; }
+  .pub-header-right { margin-left: auto; gap: 6px; }
+  .pub-footer { padding: 28px 0 16px; }
+  .pub-footer-grid { grid-template-columns: 1fr 1fr; gap: 20px; }
+  .pub-footer-grid > div:first-child { grid-column: 1 / -1; }
+}
+@media (max-width: 560px) {
+  .pub-btn-label { display: none; }
+  .pub-cart-btn, .pub-login-btn { padding: 8px 10px; gap: 4px; }
+  .pub-search-btn { padding: 8px 10px; }
+  .pub-search-btn-text { display: none; }
+  .pub-search-btn-icon { display: block; }
+  .pub-shell input, .pub-shell select, .pub-shell textarea { font-size: 16px !important; } /* évite le zoom auto iOS */
+  .pub-footer-grid { grid-template-columns: 1fr; }
+  .pub-section-title { font-size: 1.3rem; }
+}
+@media (max-width: 360px) {
+  .pub-container { padding: 0 12px; }
+  .pub-header .pub-container { padding: 8px 12px; }
+  .pub-logo-icon { width: 32px; height: 32px; }
+  .pub-logo-name { font-size: .85rem; }
+}
 /* Pub cards */
 .pub-card { background: white; border-radius: 14px; border: 1px solid #e5e7eb; overflow: hidden; transition: box-shadow .2s, transform .2s; }
 .pub-card:hover { box-shadow: 0 8px 30px rgba(0,0,0,.1); transform: translateY(-2px); }

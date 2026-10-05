@@ -558,3 +558,6 @@ table.tbl tbody tr:last-child td { border-bottom: none; }
 .pub-badge-green  { background: var(--green-l);  color: var(--green);  border: 1px solid var(--green-b);  padding: 3px 10px; border-radius: 99px; font-size: .72rem; font-weight: 700; }
 .pub-badge-red    { background: var(--red-l);    color: var(--red);    border: 1px solid var(--red-b);    padding: 3px 10px; border-radius: 99px; font-size: .72rem; font-weight: 700; }
 .pub-badge-yellow { background: var(--yellow-l); color: var(--yellow); border: 1px solid var(--yellow-b); padding: 3px 10px; border-radius: 99px; font-size: .72rem; font-weight: 700; }
+
+/* Lucide icons: align with surrounding text like the former emojis */
+.lucide { vertical-align: -0.125em; flex-shrink: 0; }

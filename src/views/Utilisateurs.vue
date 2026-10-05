@@ -1,7 +1,7 @@
 <template>
   <div style="display:flex;flex-direction:column;gap:16px;">
     <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
-      <div class="search-box" style="flex:1;max-width:280px;"><span class="search-icon">🔍</span><input v-model="search" class="inp" placeholder="Nom ou email..." @input="debouncedFetch"/></div>
+      <div class="search-box" style="flex:1;max-width:280px;"><span class="search-icon"><Search size="1em" /></span><input v-model="search" class="inp" placeholder="Nom ou email..." @input="debouncedFetch"/></div>
       <div style="display:flex;gap:8px;"><select v-model="filterRole" class="inp" style="width:155px;" @change="fetchData"><option value="">Tous les rôles</option><option value="ADMIN">Admin</option><option value="MANAGER">Manager</option><option value="CAISSIER">Caissier</option><option value="STOCK_MANAGER">Stock Manager</option></select><button class="btn btn-primary" @click="openAdd">+ Ajouter</button></div>
     </div>
     <div class="card">
@@ -16,7 +16,7 @@
               <td><span class="badge" :class="{ADMIN:'badge-red',MANAGER:'badge-blue',CAISSIER:'badge-green',STOCK_MANAGER:'badge-purple'}[u.role]||'badge-gray'">{{ u.role }}</span></td>
               <td><span class="badge" :class="u.status==='ACTIVE'?'badge-green':u.status==='SUSPENDED'?'badge-red':'badge-gray'">{{ u.status }}</span></td>
               <td style="font-size:.78rem;color:#6b7280;font-family:'JetBrains Mono',monospace;">{{ u.last_login?store.fmt(u.last_login):'Jamais' }}</td>
-              <td><div style="display:flex;gap:5px;justify-content:flex-end;"><button class="btn btn-icon btn-sm" @click="openEdit(u)">✏️</button><button class="btn btn-icon btn-sm" @click="confirmDel(u)" style="border-color:#fecaca;" :disabled="u.id===auth.user?.id">🗑️</button></div></td>
+              <td><div style="display:flex;gap:5px;justify-content:flex-end;"><button class="btn btn-icon btn-sm" @click="openEdit(u)"><Pencil size="1em" /></button><button class="btn btn-icon btn-sm" @click="confirmDel(u)" style="border-color:#fecaca;" :disabled="u.id===auth.user?.id"><Trash2 size="1em" /></button></div></td>
             </tr>
             <tr v-if="!users.length"><td colspan="6" style="text-align:center;padding:28px;color:#6b7280;">Aucun utilisateur</td></tr>
           </tbody>
@@ -26,7 +26,7 @@
     </div>
     <Teleport to="body">
       <div v-if="showModal" class="modal-bg" @click.self="showModal=false">
-        <div class="modal"><div class="modal-hd"><h3>{{ editId?'Modifier':'Nouvel utilisateur' }}</h3><button class="btn btn-icon" @click="showModal=false">✕</button></div>
+        <div class="modal"><div class="modal-hd"><h3>{{ editId?'Modifier':'Nouvel utilisateur' }}</h3><button class="btn btn-icon" @click="showModal=false"><X size="1em" /></button></div>
           <div class="modal-bd">
             <div class="form-grid form-2col" style="gap:12px;">
               <div style="grid-column:1/-1"><label class="lbl">Nom *</label><input v-model="form.name" class="inp"/></div>
@@ -36,18 +36,19 @@
               <div><label class="lbl">Rôle *</label><select v-model="form.role" class="inp"><option value="ADMIN">Administrateur</option><option value="MANAGER">Manager</option><option value="CAISSIER">Caissier</option><option value="STOCK_MANAGER">Stock Manager</option></select></div>
               <div v-if="editId"><label class="lbl">Statut</label><select v-model="form.status" class="inp"><option value="ACTIVE">Actif</option><option value="INACTIVE">Inactif</option><option value="SUSPENDED">Suspendu</option></select></div>
             </div>
-            <div v-if="formErr" class="alert alert-red" style="margin-top:12px;">❌ {{ formErr }}</div>
+            <div v-if="formErr" class="alert alert-red" style="margin-top:12px;"><CircleX size="1em" /> {{ formErr }}</div>
           </div>
           <div class="modal-ft"><button class="btn btn-outline" @click="showModal=false">Annuler</button><button class="btn btn-primary" @click="save" :disabled="saving">{{ saving?'...':editId?'Modifier':'Créer' }}</button></div>
         </div>
       </div>
     </Teleport>
     <Teleport to="body">
-      <div v-if="delTarget" class="modal-bg" @click.self="delTarget=null"><div class="modal" style="max-width:380px;"><div class="modal-hd"><h3 style="color:#dc2626;">Supprimer ?</h3><button class="btn btn-icon" @click="delTarget=null">✕</button></div><div class="modal-bd"><p style="color:#6b7280;">Supprimer <strong>{{ delTarget.name }}</strong> ?</p></div><div class="modal-ft"><button class="btn btn-outline" @click="delTarget=null">Annuler</button><button class="btn btn-danger" @click="doDel">Supprimer</button></div></div></div>
+      <div v-if="delTarget" class="modal-bg" @click.self="delTarget=null"><div class="modal" style="max-width:380px;"><div class="modal-hd"><h3 style="color:#dc2626;">Supprimer ?</h3><button class="btn btn-icon" @click="delTarget=null"><X size="1em" /></button></div><div class="modal-bd"><p style="color:#6b7280;">Supprimer <strong>{{ delTarget.name }}</strong> ?</p></div><div class="modal-ft"><button class="btn btn-outline" @click="delTarget=null">Annuler</button><button class="btn btn-danger" @click="doDel">Supprimer</button></div></div></div>
     </Teleport>
   </div>
 </template>
 <script setup>
+import { Search, Pencil, Trash2, X, CircleX } from 'lucide-vue-next'
 import { ref, onMounted } from 'vue'
 import { usePharmaStore } from '../stores/pharma.js'
 import { useAuthStore }   from '../stores/auth.js'

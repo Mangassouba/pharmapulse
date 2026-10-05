@@ -6,10 +6,10 @@
       <div class="card card-p" style="border-top:3px solid #16a34a;"><div style="font-size:1.6rem;font-weight:800;font-family:'JetBrains Mono',monospace;color:#16a34a;">{{ okProducts.length }}</div><div style="font-size:.78rem;color:#6b7280;">Produits OK</div></div>
       <div class="card card-p" style="border-top:3px solid #2563eb;"><div style="font-size:1.6rem;font-weight:800;font-family:'JetBrains Mono',monospace;color:#2563eb;">{{ expiringBatches.length }}</div><div style="font-size:.78rem;color:#6b7280;">Lots expirant (30j)</div></div>
     </div>
-    <div v-if="!store.alertCount&&!expiringBatches.length" class="card card-p" style="text-align:center;padding:40px;"><div style="font-size:3rem;margin-bottom:12px;">✅</div><h3 style="font-weight:700;color:#16a34a;">Tous les stocks sont en ordre !</h3><p style="color:#6b7280;margin-top:6px;">Aucune alerte active.</p></div>
+    <div v-if="!store.alertCount&&!expiringBatches.length" class="card card-p" style="text-align:center;padding:40px;"><div style="font-size:3rem;margin-bottom:12px;"><CircleCheck size="1em" /></div><h3 style="font-weight:700;color:#16a34a;">Tous les stocks sont en ordre !</h3><p style="color:#6b7280;margin-top:6px;">Aucune alerte active.</p></div>
     <!-- Ruptures -->
     <div v-if="outOfStock.length" class="card">
-      <div style="padding:14px 18px;border-bottom:1px solid #fecaca;background:#fef2f2;display:flex;align-items:center;justify-content:space-between;"><div><h3 style="font-weight:700;color:#dc2626;margin:0;">🚨 Ruptures de Stock ({{ outOfStock.length }})</h3><p style="font-size:.78rem;color:#6b7280;margin:2px 0 0;">Réapprovisionnement urgent requis</p></div><RouterLink to="/app/reception" class="btn btn-primary btn-sm" style="text-decoration:none;">📥 Réceptionner</RouterLink></div>
+      <div style="padding:14px 18px;border-bottom:1px solid #fecaca;background:#fef2f2;display:flex;align-items:center;justify-content:space-between;"><div><h3 style="font-weight:700;color:#dc2626;margin:0;"><Siren size="1em" /> Ruptures de Stock ({{ outOfStock.length }})</h3><p style="font-size:.78rem;color:#6b7280;margin:2px 0 0;">Réapprovisionnement urgent requis</p></div><RouterLink to="/app/reception" class="btn btn-primary btn-sm" style="text-decoration:none;"><PackagePlus size="1em" /> Réceptionner</RouterLink></div>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;padding:16px;">
         <div v-for="p in outOfStock" :key="p.id" style="border:1px solid #fecaca;border-radius:10px;padding:14px;background:#fffafa;">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;"><div><div style="font-weight:700;">{{ p.name }}</div><div style="font-size:.72rem;color:#6b7280;">{{ p.category?.name }}</div></div><span class="badge badge-red">RUPTURE</span></div>
@@ -22,7 +22,7 @@
     </div>
     <!-- Stock faible -->
     <div v-if="lowStock.length" class="card">
-      <div style="padding:14px 18px;border-bottom:1px solid #fef08a;background:#fefce8;"><h3 style="font-weight:700;color:#ca8a04;margin:0;">⚠️ Stocks Faibles ({{ lowStock.length }})</h3></div>
+      <div style="padding:14px 18px;border-bottom:1px solid #fef08a;background:#fefce8;"><h3 style="font-weight:700;color:#ca8a04;margin:0;"><TriangleAlert size="1em" /> Stocks Faibles ({{ lowStock.length }})</h3></div>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;padding:16px;">
         <div v-for="p in lowStock" :key="p.id" style="border:1px solid #fef08a;border-radius:10px;padding:14px;background:#fefce8;">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;"><div><div style="font-weight:700;">{{ p.name }}</div><div style="font-size:.72rem;color:#6b7280;">{{ p.category?.name }}</div></div><span class="badge badge-yellow">FAIBLE</span></div>
@@ -38,7 +38,7 @@
     </div>
     <!-- Lots -->
     <div v-if="expiringBatches.length" class="card">
-      <div style="padding:14px 18px;border-bottom:1px solid #bfdbfe;background:#eff6ff;display:flex;align-items:center;justify-content:space-between;"><div><h3 style="font-weight:700;color:#2563eb;margin:0;">🗓️ Lots expirant dans 30 jours</h3></div><RouterLink to="/app/lots" style="font-size:.8rem;color:#2563eb;font-weight:600;">Voir les lots →</RouterLink></div>
+      <div style="padding:14px 18px;border-bottom:1px solid #bfdbfe;background:#eff6ff;display:flex;align-items:center;justify-content:space-between;"><div><h3 style="font-weight:700;color:#2563eb;margin:0;"><CalendarClock size="1em" /> Lots expirant dans 30 jours</h3></div><RouterLink to="/app/lots" style="font-size:.8rem;color:#2563eb;font-weight:600;">Voir les lots →</RouterLink></div>
       <div class="tbl-wrap">
         <table class="tbl"><thead><tr><th>Produit</th><th>N° Lot</th><th>Quantité</th><th>Péremption</th><th>Jours restants</th></tr></thead>
           <tbody>
@@ -67,6 +67,7 @@
   </div>
 </template>
 <script setup>
+import { CircleCheck, Siren, PackagePlus, TriangleAlert, CalendarClock } from 'lucide-vue-next'
 import { ref, computed, onMounted } from 'vue'
 import { usePharmaStore } from '../stores/pharma.js'
 import { batchApi } from '../services/api.js'

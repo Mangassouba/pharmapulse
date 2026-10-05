@@ -1,20 +1,24 @@
 <template>
   <div style="padding:0;">
     <!-- Pharmacy header -->
-    <div style="background:white;border-bottom:1px solid #e5e7eb;padding:28px 0;">
+    <div class="pp-hero">
       <div class="pub-container">
         <div v-if="loading" style="text-align:center;padding:20px;color:#6b7280;">Chargement...</div>
-        <div v-else-if="pharmacy" style="display:flex;align-items:flex-start;gap:20px;flex-wrap:wrap;">
-          <div style="width:64px;height:64px;border-radius:16px;background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:2px solid #bbf7d0;display:flex;align-items:center;justify-content:center;font-size:2rem;flex-shrink:0;">🏥</div>
-          <div style="flex:1;min-width:200px;">
+        <div v-else-if="pharmacy" class="pp-hero-row">
+          <div class="pp-hero-icon"><Hospital size="1em" /></div>
+          <div style="flex:1;min-width:0;overflow-wrap:anywhere;">
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;flex-wrap:wrap;">
-              <h1 style="font-weight:800;font-size:1.4rem;margin:0;">{{ pharmacy.name }}</h1>
+              <h1 class="pp-title">{{ pharmacy.name }}</h1>
               <span class="pub-badge-green">PARTENAIRE</span>
+              <DutyBadge :pharmacy="pharmacy"/>
             </div>
-            <div style="color:#6b7280;font-size:.875rem;display:flex;gap:16px;flex-wrap:wrap;margin-top:6px;">
-              <span>📍 {{ pharmacy.address || pharmacy.city || 'Sénégal' }}</span>
-              <span v-if="pharmacy.phone">📞 {{ pharmacy.phone }}</span>
-              <span v-if="pharmacy.email">📧 {{ pharmacy.email }}</span>
+            <div style="color:#6b7280;font-size:.875rem;display:flex;gap:6px 16px;flex-wrap:wrap;margin-top:6px;">
+              <span><MapPin size="1em" /> {{ pharmacy.address || pharmacy.city || 'Mauritanie' }}</span>
+              <span v-if="pharmacy.phone"><Phone size="1em" /> {{ pharmacy.phone }}</span>
+              <span v-if="pharmacy.email"><Mail size="1em" /> {{ pharmacy.email }}</span>
+            </div>
+            <div v-if="pharmacy.duty_days?.length" style="font-size:.85rem;color:#4338ca;margin-top:6px;">
+              <Moon size="1em" /> De garde chaque : <strong>{{ formatDutyDays(pharmacy.duty_days) }}</strong> · <strong>{{ formatDutyHours(pharmacy) }}</strong>
             </div>
             <div v-if="pharmacy._count" style="display:flex;gap:16px;margin-top:12px;flex-wrap:wrap;">
               <div style="text-align:center;padding:8px 16px;background:#f9fafb;border-radius:8px;">
@@ -23,50 +27,50 @@
               </div>
             </div>
           </div>
-          <div style="display:flex;flex-direction:column;gap:8px;">
-            <button @click="locateMe" class="pub-btn-outline" style="font-size:.8rem;">📍 Calculer la distance</button>
+          <div class="pp-hero-actions">
+            <button @click="locateMe" class="pub-btn-outline" style="font-size:.8rem;"><MapPin size="1em" /> Calculer la distance</button>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="pub-container" style="padding-top:28px;padding-bottom:40px;">
-      <div style="display:grid;grid-template-columns:220px 1fr;gap:24px;align-items:start;">
+    <div class="pub-container pp-body">
+      <div class="pp-layout">
         <!-- Sidebar filters -->
-        <aside style="position:sticky;top:80px;">
-          <div style="background:white;border-radius:12px;border:1px solid #e5e7eb;padding:18px;">
+        <aside class="pp-aside">
+          <div class="pp-box">
             <h3 style="font-weight:700;font-size:.9rem;margin:0 0 14px;">Catégories</h3>
-            <div style="display:flex;flex-direction:column;gap:4px;">
-              <button @click="filterCat=''" :style="`text-align:left;padding:8px 12px;border-radius:8px;border:none;cursor:pointer;font-size:.85rem;font-weight:${!filterCat?700:500};background:${!filterCat?'#f0fdf4':'transparent'};color:${!filterCat?'#16a34a':'#374151'};`">Tous les produits</button>
-              <button v-for="cat in categories" :key="cat.id" @click="filterCat=cat.id;fetchProds()" :style="`text-align:left;padding:8px 12px;border-radius:8px;border:none;cursor:pointer;font-size:.85rem;font-weight:${filterCat===cat.id?700:500};background:${filterCat===cat.id?'#f0fdf4':'transparent'};color:${filterCat===cat.id?'#16a34a':'#374151'};`">
+            <div class="pp-cats">
+              <button @click="selectCat('')" :style="`text-align:left;padding:8px 12px;border-radius:8px;border:none;cursor:pointer;font-size:.85rem;font-weight:${!filterCat?700:500};background:${!filterCat?'#f0fdf4':'transparent'};color:${!filterCat?'#16a34a':'#374151'};`">Tous les produits</button>
+              <button v-for="cat in categories" :key="cat.id" @click="selectCat(cat.id)" :style="`text-align:left;padding:8px 12px;border-radius:8px;border:none;cursor:pointer;font-size:.85rem;font-weight:${filterCat===cat.id?700:500};background:${filterCat===cat.id?'#f0fdf4':'transparent'};color:${filterCat===cat.id?'#16a34a':'#374151'};`">
                 {{ cat.name }}
                 <span style="float:right;font-size:.75rem;color:#9ca3af;">{{ cat._count?.produit || '' }}</span>
               </button>
             </div>
           </div>
 
-          <div style="background:white;border-radius:12px;border:1px solid #e5e7eb;padding:18px;margin-top:12px;">
+          <div class="pp-box pp-filters">
             <h3 style="font-weight:700;font-size:.9rem;margin:0 0 12px;">Filtres</h3>
-            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.85rem;margin-bottom:10px;">
-              <input type="checkbox" v-model="inStockOnly" @change="fetchProds()"/>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.85rem;">
+              <input type="checkbox" v-model="inStockOnly" @change="page=1;fetchProds()"/>
               En stock uniquement
             </label>
             <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.85rem;">
-              <input type="checkbox" v-model="withoutPrescription" @change="fetchProds()"/>
+              <input type="checkbox" v-model="withoutPrescription" @change="page=1;fetchProds()"/>
               Sans ordonnance
             </label>
           </div>
         </aside>
 
         <!-- Products grid -->
-        <div>
+        <div style="min-width:0;">
           <!-- Search + sort -->
           <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
-            <div style="flex:1;min-width:200px;position:relative;">
-              <span style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:#9ca3af;">🔍</span>
+            <div style="flex:1 1 200px;min-width:0;position:relative;">
+              <span style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:#9ca3af;"><Search size="1em" /></span>
               <input v-model="searchP" class="pub-hero-inp" placeholder="Chercher dans cette pharmacie..." style="width:100%;padding:9px 12px 9px 36px;border:1px solid #e5e7eb;border-radius:9px;font-size:.875rem;outline:none;font-family:'Inter',sans-serif;" @input="debouncedFetch"/>
             </div>
-            <select v-model="sortBy" class="pub-filter-select" @change="fetchProds()">
+            <select v-model="sortBy" class="pub-filter-select" @change="page=1;fetchProds()">
               <option value="name">Nom A-Z</option>
               <option value="price_asc">Prix croissant</option>
               <option value="price_desc">Prix décroissant</option>
@@ -79,26 +83,26 @@
             <div style="width:28px;height:28px;border:3px solid #e5e7eb;border-top-color:#16a34a;border-radius:50%;animation:spin .6s linear infinite;margin:0 auto 12px;"></div>
           </div>
           <div v-else-if="!products.length" style="text-align:center;padding:40px;">
-            <div style="font-size:2.5rem;margin-bottom:12px;">📦</div>
+            <div style="font-size:2.5rem;margin-bottom:12px;"><Package size="1em" /></div>
             <p style="color:#6b7280;">Aucun produit trouvé.</p>
           </div>
-          <div v-else style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;">
+          <div v-else class="pp-grid">
             <div v-for="p in products" :key="p.id" class="pub-card">
               <div style="padding:16px;">
                 <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:6px;margin-bottom:10px;">
-                  <div>
+                  <div style="min-width:0;overflow-wrap:anywhere;">
                     <div style="font-weight:700;font-size:.9rem;line-height:1.3;">{{ p.name }}</div>
                     <div style="font-size:.72rem;color:#6b7280;margin-top:3px;">{{ p.category?.name }}</div>
-                    <div v-if="p.prescription_req" style="font-size:.68rem;color:#2563eb;font-weight:600;margin-top:3px;">🩺 Ordonnance</div>
+                    <div v-if="p.prescription_req" style="font-size:.68rem;color:#2563eb;font-weight:600;margin-top:3px;"><Stethoscope size="1em" /> Ordonnance</div>
                   </div>
                   <span :class="p.stock===0?'pub-badge-red':p.stock<p.threshold?'pub-badge-yellow':'pub-badge-green'" style="flex-shrink:0;font-size:.65rem;">
                     {{ p.stock===0?'RUPTURE':p.stock<p.threshold?'FAIBLE':p.stock+' en stock' }}
                   </span>
                 </div>
 
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap;margin-bottom:12px;">
                   <div style="font-family:'JetBrains Mono',monospace;font-size:1.15rem;font-weight:800;color:#16a34a;">
-                    {{ Number(p.sale_price).toLocaleString('fr-FR') }} F
+                    {{ Number(p.sale_price).toLocaleString('fr-FR') }} MRU
                   </div>
                   <div style="font-size:.72rem;color:#9ca3af;">{{ p.unit_type }}{{ p.unit_quantity ? ' ×'+p.unit_quantity : '' }}</div>
                 </div>
@@ -111,7 +115,7 @@
                     <button @click="incQty(p)" style="width:32px;height:32px;border:none;background:#f9fafb;cursor:pointer;font-weight:700;font-size:1rem;" :disabled="(qty[p.id]||1)>=p.stock">+</button>
                   </div>
                   <button @click="addToCart(p)" style="flex:1;background:#16a34a;color:white;border:none;border-radius:8px;padding:8px;font-size:.8rem;font-weight:700;cursor:pointer;transition:background .12s;" onmouseover="this.style.background='#15803d'" onmouseout="this.style.background='#16a34a'">
-                    🛒 Ajouter
+                    <ShoppingCart size="1em" /> Ajouter
                   </button>
                 </div>
                 <button v-else style="width:100%;background:#f3f4f6;color:#9ca3af;border:none;border-radius:8px;padding:9px;font-size:.8rem;font-weight:700;cursor:not-allowed;" disabled>
@@ -134,10 +138,13 @@
 </template>
 
 <script setup>
+import { Hospital, MapPin, Phone, Mail, Moon, Search, Package, Stethoscope, ShoppingCart } from 'lucide-vue-next'
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useCartStore } from '../../stores/cart.js'
 import { useToastStore } from '../../stores/toast.js'
+import { formatDutyDays, formatDutyHours } from '../../utils/duty.js'
+import DutyBadge from '../../components/DutyBadge.vue'
 
 const route     = useRoute()
 const cartStore = useCartStore()
@@ -161,7 +168,7 @@ function incQty(p) { qty.value[p.id] = Math.min((qty.value[p.id]||1)+1, p.stock)
 function decQty(p) { qty.value[p.id] = Math.max(1, (qty.value[p.id]||1)-1) }
 
 let dt
-function debouncedFetch() { clearTimeout(dt); dt = setTimeout(() => fetchProds(), 400) }
+function debouncedFetch() { clearTimeout(dt); dt = setTimeout(() => { page.value = 1; fetchProds() }, 400) }
 
 async function fetchProds() {
   loadingProds.value = true
@@ -174,11 +181,17 @@ async function fetchProds() {
     const res = await cartStore.fetchPharmacyProducts(route.params.id, params)
     products.value  = res.data || []
     meta.value      = res.meta || { total:0, totalPages:1 }
-    // Extract categories from products
-    const catMap = {}
+    // Extract categories from products — fusion pour ne pas perdre les catégories quand un filtre est actif
+    const catMap = Object.fromEntries(categories.value.map(c => [c.id, c]))
     products.value.forEach(p => { if (p.category) catMap[p.category.id] = p.category })
     categories.value = Object.values(catMap)
   } finally { loadingProds.value = false }
+}
+
+function selectCat(id) {
+  filterCat.value = id
+  page.value = 1
+  fetchProds()
 }
 
 function addToCart(p) {
@@ -212,4 +225,41 @@ onMounted(async () => {
 .pub-btn-outline { display: inline-flex; align-items: center; gap: 6px; background: white; color: #374151; border: 1px solid #d1d5db; border-radius: 8px; padding: 9px 18px; font-size: .875rem; font-weight: 600; cursor: pointer; text-decoration: none; transition: all .12s; font-family: 'Inter', sans-serif; }
 .pub-btn-outline:hover { border-color: #16a34a; color: #16a34a; }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+.pp-hero { background: white; border-bottom: 1px solid #e5e7eb; padding: 28px 0; }
+.pp-hero-row { display: flex; align-items: flex-start; gap: 20px; flex-wrap: wrap; }
+.pp-hero-icon { width: 64px; height: 64px; border-radius: 16px; background: linear-gradient(135deg,#f0fdf4,#dcfce7); border: 2px solid #bbf7d0; display: flex; align-items: center; justify-content: center; font-size: 2rem; flex-shrink: 0; }
+.pp-title { font-weight: 800; font-size: 1.4rem; margin: 0; }
+.pp-hero-actions { display: flex; flex-direction: column; gap: 8px; }
+.pp-body { padding-top: 28px; padding-bottom: 40px; }
+.pp-layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 24px; align-items: start; }
+.pp-aside { position: sticky; top: 80px; }
+.pp-box { background: white; border-radius: 12px; border: 1px solid #e5e7eb; padding: 18px; }
+.pp-cats { display: flex; flex-direction: column; gap: 4px; }
+.pp-filters { margin-top: 12px; }
+.pp-filters label + label { margin-top: 10px; }
+.pp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(220px, 100%), 1fr)); gap: 14px; }
+
+@media (max-width: 860px) {
+  .pp-layout { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .pp-aside { position: static; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  .pp-box { padding: 12px 14px; }
+  .pp-box h3 { display: none; }
+  .pp-filters { margin-top: 0; display: flex; flex-wrap: wrap; gap: 8px 18px; }
+  .pp-filters label + label { margin-top: 0; }
+  /* Catégories en barre de chips défilante */
+  .pp-cats { flex-direction: row; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; gap: 6px; }
+  .pp-cats::-webkit-scrollbar { display: none; }
+  .pp-cats > button { flex-shrink: 0; white-space: nowrap; border: 1px solid #e5e7eb !important; border-radius: 99px !important; }
+  .pp-cats > button span { float: none !important; margin-left: 6px; }
+}
+@media (max-width: 640px) {
+  .pp-hero { padding: 18px 0; }
+  .pp-hero-row { gap: 12px; }
+  .pp-hero-icon { width: 48px; height: 48px; font-size: 1.5rem; border-radius: 12px; }
+  .pp-title { font-size: 1.15rem; }
+  .pp-hero-actions { flex-basis: 100%; }
+  .pp-hero-actions .pub-btn-outline { justify-content: center; }
+  .pp-body { padding-top: 16px; padding-bottom: 28px; }
+}
 </style>

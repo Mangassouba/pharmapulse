@@ -8,7 +8,7 @@
       </div>
       <button class="btn btn-primary" @click="openAdd">+ Nouveau lot</button>
     </div>
-    <div v-if="expiringCount>0" class="alert alert-yellow">🗓️ <strong>{{ expiringCount }} lot(s)</strong> expirent dans les 30 prochains jours !</div>
+    <div v-if="expiringCount>0" class="alert alert-yellow"><CalendarClock size="1em" /> <strong>{{ expiringCount }} lot(s)</strong> expirent dans les 30 prochains jours !</div>
     <div class="card">
       <div v-if="loading" class="loading-box"><div class="spinner"></div></div>
       <div v-else class="tbl-wrap">
@@ -40,7 +40,7 @@
     <Teleport to="body">
       <div v-if="showModal" class="modal-bg" @click.self="showModal=false">
         <div class="modal">
-          <div class="modal-hd"><h3>Nouveau lot</h3><button class="btn btn-icon" @click="showModal=false">✕</button></div>
+          <div class="modal-hd"><h3>Nouveau lot</h3><button class="btn btn-icon" @click="showModal=false"><X size="1em" /></button></div>
           <div class="modal-bd">
             <div class="form-grid form-2col" style="gap:12px;">
               <div><label class="lbl">Produit *</label><select v-model="form.productId" class="inp"><option value="">— Choisir —</option><option v-for="p in store.products" :key="p.id" :value="p.id">{{ p.name }}</option></select></div>
@@ -49,7 +49,7 @@
               <div><label class="lbl">Date péremption *</label><input v-model="form.expiration_date" type="date" class="inp"/></div>
               <div><label class="lbl">Date fabrication</label><input v-model="form.manufacturing_date" type="date" class="inp"/></div>
             </div>
-            <div v-if="formErr" class="alert alert-red" style="margin-top:12px;">❌ {{ formErr }}</div>
+            <div v-if="formErr" class="alert alert-red" style="margin-top:12px;"><CircleX size="1em" /> {{ formErr }}</div>
           </div>
           <div class="modal-ft"><button class="btn btn-outline" @click="showModal=false">Annuler</button><button class="btn btn-primary" @click="save" :disabled="saving">{{ saving?'...':'Créer le lot' }}</button></div>
         </div>
@@ -58,6 +58,7 @@
   </div>
 </template>
 <script setup>
+import { CalendarClock, X, CircleX } from 'lucide-vue-next'
 import { ref, computed, onMounted } from 'vue'
 import { usePharmaStore } from '../stores/pharma.js'
 import { useToastStore }  from '../stores/toast.js'
