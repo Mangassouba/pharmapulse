@@ -30,6 +30,8 @@ export default api
 export const authApi = {
   register:       d => api.post('/auth/register', d),
   login:          d => api.post('/auth/login', d),
+  forgotPassword: d => api.post('/auth/forgot-password', d),
+  resetPassword:  d => api.post('/auth/reset-password', d),
   me:             () => api.get('/auth/me'),
   updateMe:       d => api.put('/auth/me', d),
   logout:         () => api.post('/auth/logout'),
@@ -98,6 +100,8 @@ export const notifApi      = {
 }
 export const superApi      = {
   login:          d => api.post('/super/auth/login', d),
+  forgotPassword: d => api.post('/super/auth/forgot-password', d),
+  resetPassword:  d => api.post('/super/auth/reset-password', d),
   stats:          () => api.get('/super/stats'),
   listPharmacies: p  => api.get('/super/pharmacies', { params: p }),
   getPharmacy:    id => api.get(`/super/pharmacies/${id}`),

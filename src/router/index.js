@@ -6,6 +6,10 @@ import { useSuperAdminStore } from '../stores/superAdmin.js'
 const Login      = () => import('../views/auth/Login.vue')
 const Register   = () => import('../views/auth/Register.vue')
 const SuperLogin = () => import('../views/superadmin/SuperLogin.vue')
+const ForgotPassword = () => import('../views/auth/ForgotPassword.vue')
+const ResetPassword  = () => import('../views/auth/ResetPassword.vue')
+const SuperForgotPassword = () => import('../views/superadmin/SuperForgotPassword.vue')
+const SuperResetPassword  = () => import('../views/superadmin/SuperResetPassword.vue')
 
 // Pharmacy app
 const AppLayout          = () => import('../components/layout/AppLayout.vue')
@@ -44,6 +48,10 @@ const routes = [
   { path:'/login',       component:Login,      meta:{ public:true } },
   { path:'/register',    component:Register,   meta:{ public:true } },
   { path:'/super/login', component:SuperLogin, meta:{ public:true } },
+  { path:'/forgot-password', component:ForgotPassword, meta:{ public:true } },
+  { path:'/reset-password',  component:ResetPassword,  meta:{ public:true } },
+  { path:'/super/forgot-password', component:SuperForgotPassword, meta:{ public:true } },
+  { path:'/super/reset-password',  component:SuperResetPassword,  meta:{ public:true } },
 
   // SuperAdmin
   { path:'/super', component:SuperLayout, meta:{ super:true },

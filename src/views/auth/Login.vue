@@ -11,6 +11,9 @@
         <div><label class="lbl">Email</label><input v-model="email" class="inp" type="email" placeholder="admin@pharma.com" @keyup.enter="submit"/></div>
         <div><label class="lbl">Mot de passe</label><input v-model="password" class="inp" type="password" placeholder="••••••••" @keyup.enter="submit"/></div>
       </div>
+      <p style="text-align:right;margin:8px 0 0;font-size:.8rem;">
+        <RouterLink to="/forgot-password" style="color:#16a34a;font-weight:600;">Mot de passe oublié ?</RouterLink>
+      </p>
       <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:16px;padding:10px;" @click="submit" :disabled="auth.loading">
         {{ auth.loading ? 'Connexion...' : 'Se connecter' }}
       </button>

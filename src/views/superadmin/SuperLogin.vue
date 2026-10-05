@@ -11,6 +11,9 @@
         <div><label class="lbl">Email</label><input v-model="email" class="inp" type="email" placeholder="superadmin@pharmapulse.com" @keyup.enter="submit" style="border-color:#ddd6fe;" onfocus="this.style.borderColor='#7c3aed'" onblur="this.style.borderColor='#ddd6fe'"/></div>
         <div><label class="lbl">Mot de passe</label><input v-model="password" class="inp" type="password" placeholder="••••••••" @keyup.enter="submit" style="border-color:#ddd6fe;" onfocus="this.style.borderColor='#7c3aed'" onblur="this.style.borderColor='#ddd6fe'"/></div>
       </div>
+      <p style="text-align:right;margin:8px 0 0;font-size:.8rem;">
+        <RouterLink to="/super/forgot-password" style="color:#7c3aed;font-weight:600;">Mot de passe oublié ?</RouterLink>
+      </p>
       <button @click="submit" :disabled="loading" style="width:100%;margin-top:16px;padding:11px;border:none;border-radius:9px;background:linear-gradient(135deg,#7c3aed,#4c1d95);color:#fff;font-size:.9rem;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;opacity:1;" :style="loading?'opacity:.6;cursor:not-allowed':''">
         {{ loading ? 'Connexion...' : 'Accéder au Panel' }}
       </button>
