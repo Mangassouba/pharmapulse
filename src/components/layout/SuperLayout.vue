@@ -33,7 +33,8 @@
           <div style="font-weight:700;font-size:1rem;color:#1e1b4b;">{{ pageTitle }}</div>
           <div style="font-size:.72rem;color:#7c3aed;">{{ todayStr }}</div>
         </div>
-        <div style="display:flex;align-items:center;gap:8px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <SuperNotifications />
           <div style="background:#f5f3ff;border:1px solid #ddd6fe;padding:5px 12px;border-radius:99px;font-size:.72rem;font-weight:700;color:#7c3aed;display:flex;align-items:center;gap:6px;">
             <span style="width:7px;height:7px;border-radius:50%;background:#7c3aed;display:inline-block;animation:pulse 2s infinite;"></span>
             PLATEFORME EN DIRECT
@@ -54,6 +55,7 @@
 import { Shield, ChartColumn, Hospital, Users, ClipboardList, LogOut, Component, Settings } from 'lucide-vue-next'
 import SiteLogo from '../SiteLogo.vue'
 import SiteName from '../SiteName.vue'
+import SuperNotifications from '../SuperNotifications.vue'
 import { computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useSuperAdminStore } from '../../stores/superAdmin.js'

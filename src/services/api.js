@@ -103,6 +103,9 @@ export const notifApi      = {
 }
 export const superApi      = {
   login:          d => api.post('/super/auth/login', d),
+  notifications:  p  => api.get('/super/notifications', { params: p }),
+  markNotifRead:  id => api.patch(`/super/notifications/${id}/read`),
+  markAllNotifRead: () => api.patch('/super/notifications/read-all'),
   updateSite:     d => api.put('/super/site', d),
   updateSiteLogo: d => api.put('/super/site/logo', d),
   deleteSiteLogo: () => api.delete('/super/site/logo'),
