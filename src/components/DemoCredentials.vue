@@ -15,7 +15,7 @@ const ACCOUNTS = {
     style: 'margin-top:12px;padding:10px 14px;background:#f0fdf4;border-radius:8px;font-size:.78rem;color:#166534;border:1px solid #bbf7d0;',
   },
   super: {
-    email: 'superadmin@pharmapulse.com', password: 'SuperAdmin2024!',
+    email: 'superAdmin@gmail.com', password: 'SuperAdmin2024!',
     style: 'margin-top:12px;padding:10px;background:#f5f3ff;border-radius:8px;font-size:.77rem;color:#7c3aed;text-align:center;',
   },
 }
