@@ -122,6 +122,9 @@
 
     <!-- Notif overlay -->
     <div v-if="showNotifs" @click="showNotifs = false" style="position:fixed;inset:0;z-index:39;"></div>
+
+    <!-- Subscription payment instructions, right after registration -->
+    <PaymentPrompt />
   </div>
 </template>
 
@@ -137,6 +140,7 @@ import { usePharmaStore } from '../../stores/pharma.js'
 import { useThemeStore }  from '../../stores/theme.js'
 import { orderApi }       from '../../services/api.js'
 import { pharmacyLogoUrl } from '../../utils/logo.js'
+import PaymentPrompt from '../PaymentPrompt.vue'
 
 const route  = useRoute()
 const router = useRouter()

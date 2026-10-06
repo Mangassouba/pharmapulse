@@ -6,6 +6,7 @@ export const useAuthStore = defineStore('auth', () => {
   const user  = ref(JSON.parse(localStorage.getItem('pharma_user') || 'null'))
   const token = ref(localStorage.getItem('pharma_token') || null)
   const loading = ref(false)
+  const justRegistered = ref(null) // { trialEnd } right after a successful registration
 
   const isLoggedIn = computed(() => !!token.value && !!user.value)
 
@@ -30,6 +31,8 @@ export const useAuthStore = defineStore('auth', () => {
       token.value = res.data.token
       localStorage.setItem('pharma_user',  JSON.stringify(res.data.user))
       localStorage.setItem('pharma_token', res.data.token)
+      // Opens the payment prompt once (PaymentPrompt.vue); not persisted, so it never comes back
+      justRegistered.value = { trialEnd: res.data.subscription?.trial_end_date ?? null }
       return { ok: true }
     } catch (e) { return { ok: false, msg: e.message } }
     finally { loading.value = false }
@@ -46,5 +49,5 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('pharma_token')
   }
 
-  return { user, token, isLoggedIn, loading, login, register, logout, setUser }
+  return { user, token, isLoggedIn, loading, justRegistered, login, register, logout, setUser }
 })

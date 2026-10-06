@@ -70,6 +70,28 @@
         </div>
       </div>
 
+      <!-- Notifications -->
+      <div class="scard scard-p">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:10px;flex-wrap:wrap;">
+          <h3 style="font-weight:700;font-size:.95rem;margin:0;display:flex;align-items:center;gap:8px;">
+            <Bell size="1em" style="color:#7c3aed;" /> Notifications
+            <span v-if="notifs.unread" style="background:#dc2626;color:#fff;font-size:.68rem;font-weight:700;padding:1px 8px;border-radius:99px;">{{ notifs.unread }} non lue{{ notifs.unread > 1 ? 's' : '' }}</span>
+          </h3>
+          <button v-if="notifs.unread" @click="notifs.markAllRead()" style="background:none;border:none;color:#7c3aed;font-size:.8rem;font-weight:600;cursor:pointer;padding:0;">Tout marquer comme lu</button>
+        </div>
+        <button v-for="n in notifs.items.slice(0, 6)" :key="n.id" @click="openNotif(n)" class="dash-notif" :class="{ unread: !n.is_read }">
+          <span style="width:8px;height:8px;border-radius:50%;margin-top:6px;flex-shrink:0;" :style="{ background: NOTIF_COLORS[n.type] || NOTIF_COLORS.INFO }"></span>
+          <span style="flex:1;min-width:0;text-align:left;">
+            <span style="display:block;font-weight:600;font-size:.85rem;color:#1e1b4b;">{{ n.title }}</span>
+            <span style="display:block;font-size:.78rem;color:#4b5563;margin-top:2px;">{{ n.message }}</span>
+          </span>
+          <span style="font-size:.72rem;color:#9ca3af;white-space:nowrap;margin-top:2px;">{{ timeAgo(n.createdAt) }}</span>
+        </button>
+        <div v-if="!notifs.items.length" style="text-align:center;padding:20px;color:#6b7280;font-size:.85rem;">
+          Aucune notification. Les nouvelles inscriptions et les fins d'essai apparaîtront ici.
+        </div>
+      </div>
+
       <!-- Actions rapides -->
       <div class="scard scard-p">
         <h3 style="font-weight:700;font-size:.95rem;margin:0 0 14px;">Actions rapides</h3>
@@ -92,10 +114,26 @@
   </div>
 </template>
 <script setup>
-import { Hospital, CircleCheck, CircleX, Users, TriangleAlert, ClipboardList } from 'lucide-vue-next'
-import { computed } from 'vue'
+import { Hospital, CircleCheck, CircleX, Users, TriangleAlert, ClipboardList, Bell } from 'lucide-vue-next'
+import { computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useSuperAdminStore } from '../../stores/superAdmin.js'
-const store = useSuperAdminStore()
+import { useSuperNotificationsStore, NOTIF_COLORS, timeAgo } from '../../stores/superNotifications.js'
+const store  = useSuperAdminStore()
+const notifs = useSuperNotificationsStore() // shared with the header bell: reading here updates its badge
+const router = useRouter()
 const s = computed(() => store.stats)
 function fmtPrice(v) { return Number(v||0).toLocaleString('fr-FR') + ' MRU' }
+
+function openNotif(n) {
+  notifs.markRead(n)
+  if (n.link) router.push(n.link)
+}
+onMounted(() => notifs.load())
 </script>
+
+<style scoped>
+.dash-notif { display:flex; gap:10px; width:100%; padding:10px; border:none; border-bottom:1px solid #f5f3ff; background:#fff; border-radius:8px; cursor:pointer; font:inherit; }
+.dash-notif:hover { background:#faf5ff; }
+.dash-notif.unread { background:#f5f3ff; }
+</style>
