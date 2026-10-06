@@ -17,9 +17,7 @@
       <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:16px;padding:10px;" @click="submit" :disabled="auth.loading">
         {{ auth.loading ? 'Connexion...' : 'Se connecter' }}
       </button>
-      <div style="margin-top:12px;padding:10px 14px;background:#f0fdf4;border-radius:8px;font-size:.78rem;color:#166534;border:1px solid #bbf7d0;">
-        <strong>Démo :</strong> admin@pharma.com / Admin1234!
-      </div>
+      <DemoCredentials v-if="DemoCredentials" space="pharmacy" />
       <p style="text-align:center;margin-top:14px;font-size:.85rem;color:#6b7280;">
         Pas de compte ? <RouterLink to="/register" style="color:#16a34a;font-weight:600;">Créer un compte</RouterLink>
       </p>
@@ -33,7 +31,9 @@
 import SiteName from '../../components/SiteName.vue'
 import SiteLogo from '../../components/SiteLogo.vue'
 import { CircleX, Shield } from 'lucide-vue-next'
-import { ref } from 'vue'
+import { ref, defineAsyncComponent } from 'vue'
+// Demo credentials (from the seed): imported in development only, absent from the production bundle
+const DemoCredentials = import.meta.env.DEV ? defineAsyncComponent(() => import('../../components/DemoCredentials.vue')) : null
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../../stores/auth.js'
 const auth = useAuthStore(); const router = useRouter()

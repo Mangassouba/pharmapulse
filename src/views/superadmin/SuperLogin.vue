@@ -17,9 +17,7 @@
       <button @click="submit" :disabled="loading" style="width:100%;margin-top:16px;padding:11px;border:none;border-radius:9px;background:linear-gradient(135deg,#7c3aed,#4c1d95);color:#fff;font-size:.9rem;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;opacity:1;" :style="loading?'opacity:.6;cursor:not-allowed':''">
         {{ loading ? 'Connexion...' : 'Accéder au Panel' }}
       </button>
-      <div style="margin-top:12px;padding:10px;background:#f5f3ff;border-radius:8px;font-size:.77rem;color:#7c3aed;text-align:center;">
-        <strong>Démo :</strong> superadmin@pharmapulse.com / SuperAdmin2024!
-      </div>
+      <DemoCredentials v-if="DemoCredentials" space="super" />
       <p style="text-align:center;margin-top:14px;font-size:.8rem;color:#6b7280;">
         ← <RouterLink to="/login" style="color:#7c3aed;font-weight:600;">Retour connexion pharmacie</RouterLink>
       </p>
@@ -30,7 +28,9 @@
 import SiteName from '../../components/SiteName.vue'
 import SiteLogo from '../../components/SiteLogo.vue'
 import { Shield, CircleX } from 'lucide-vue-next'
-import { ref } from 'vue'
+import { ref, defineAsyncComponent } from 'vue'
+// Demo credentials (from the seed): imported in development only, absent from the production bundle
+const DemoCredentials = import.meta.env.DEV ? defineAsyncComponent(() => import('../../components/DemoCredentials.vue')) : null
 import { useRouter } from 'vue-router'
 import { useSuperAdminStore } from '../../stores/superAdmin.js'
 const store = useSuperAdminStore(); const router = useRouter()
