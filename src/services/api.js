@@ -37,6 +37,7 @@ export const authApi = {
   logout:         () => api.post('/auth/logout'),
   changePassword: d => api.put('/auth/password', d),
   updateDuty:     d => api.put('/auth/pharmacy/duty', d),
+  updateLocation: d => api.put('/auth/pharmacy/location', d),
   updateLogo:     d => api.put('/auth/pharmacy/logo', d),
   deleteLogo:     () => api.delete('/auth/pharmacy/logo'),
 }

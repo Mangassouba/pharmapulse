@@ -75,6 +75,10 @@
             <MapPin size="1em" /> {{ orderData.pharmacy.address || orderData.pharmacy.city }}<br/>
             <span v-if="orderData.pharmacy.phone"><Phone size="1em" /> {{ orderData.pharmacy.phone }}</span>
           </div>
+          <a v-if="directionsUrl(orderData.pharmacy)" :href="directionsUrl(orderData.pharmacy)" target="_blank" rel="noopener"
+            style="display:inline-flex;align-items:center;gap:6px;margin-top:10px;background:#1e40af;color:white;border-radius:8px;padding:8px 14px;font-weight:700;font-size:.82rem;text-decoration:none;">
+            <Navigation size="1em" /> Itinéraire vers la pharmacie
+          </a>
         </div>
 
         <!-- Instructions -->
@@ -99,12 +103,13 @@
 </template>
 
 <script setup>
-import { CircleHelp, CircleCheck, Ticket, ClipboardList, MapPin, Hospital, Phone, Pin, FileText, RefreshCw } from 'lucide-vue-next'
+import { CircleHelp, CircleCheck, Ticket, ClipboardList, MapPin, Hospital, Phone, Pin, FileText, RefreshCw, Navigation } from 'lucide-vue-next'
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { jsPDF } from 'jspdf'
 import { useCartStore } from '../../stores/cart.js'
 import { useToastStore } from '../../stores/toast.js'
+import { directionsUrl } from '../../utils/geo.js'
 
 const route     = useRoute()
 const cartStore = useCartStore()

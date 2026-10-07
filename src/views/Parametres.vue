@@ -90,6 +90,25 @@
       <button v-if="isAdmin" class="btn btn-primary btn-sm" style="margin-top:14px;" @click="saveDuty" :disabled="savingDuty">{{ savingDuty?'...':'Enregistrer la garde' }}</button>
     </div>
 
+    <!-- Location -->
+    <div class="card card-p">
+      <h3 style="font-weight:700;margin:0 0 4px;"><MapPin size="1em" /> Localisation</h3>
+      <p style="font-size:.8rem;color:#6b7280;margin:0 0 14px;">Position GPS de la pharmacie. Elle permet aux clients de voir la distance, la carte et d'obtenir l'itinéraire. Cliquez sur « Utiliser ma position » depuis la pharmacie.</p>
+      <PharmacyMap v-if="hasLoc" :lat="locLat" :lng="locLng" style="margin-bottom:12px;"/>
+      <div v-else class="alert alert-yellow" style="margin-bottom:12px;">Aucune position enregistrée : les clients ne voient ni la distance ni l'itinéraire GPS.</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:380px;">
+        <div><label class="lbl">Latitude</label><input v-model.number="locLat" type="number" step="any" class="inp" :disabled="!isAdmin" placeholder="ex: 18.0858"/></div>
+        <div><label class="lbl">Longitude</label><input v-model.number="locLng" type="number" step="any" class="inp" :disabled="!isAdmin" placeholder="ex: -15.9785"/></div>
+      </div>
+      <p v-if="!isAdmin" style="font-size:.78rem;color:#9ca3af;margin:10px 0 0;">Seul l'administrateur de la pharmacie peut modifier la position.</p>
+      <div v-if="locMsg" class="alert" :class="locMsg.ok?'alert-green':'alert-red'" style="margin-top:12px;">{{ locMsg.text }}</div>
+      <div v-if="isAdmin" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;">
+        <button class="btn btn-outline btn-sm" @click="useMyPosition" :disabled="locating"><Crosshair size="1em" /> {{ locating ? 'Localisation...' : 'Utiliser ma position' }}</button>
+        <button class="btn btn-primary btn-sm" @click="saveLocation" :disabled="savingLoc">{{ savingLoc?'...':'Enregistrer la position' }}</button>
+        <button v-if="auth.user?.pharmacy?.latitude != null" class="btn btn-sm" @click="clearLocation" :disabled="savingLoc">Supprimer</button>
+      </div>
+    </div>
+
     <!-- System info -->
     <div class="card card-p">
       <h3 style="font-weight:700;margin:0 0 14px;">Informations Système</h3>
@@ -105,7 +124,7 @@
 </template>
 
 <script setup>
-import { Moon, LogOut, Pill, Image as ImageIcon } from 'lucide-vue-next'
+import { Moon, LogOut, Pill, MapPin, Crosshair, Image as ImageIcon } from 'lucide-vue-next'
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore }   from '../stores/auth.js'
@@ -113,6 +132,8 @@ import { usePharmaStore } from '../stores/pharma.js'
 import { authApi }        from '../services/api.js'
 import { WEEK_DAYS }      from '../utils/duty.js'
 import { pharmacyLogoUrl, resizeImage } from '../utils/logo.js'
+import { getCurrentPosition } from '../utils/geo.js'
+import PharmacyMap from '../components/PharmacyMap.vue'
 
 const auth   = useAuthStore()
 const store  = usePharmaStore()
@@ -146,6 +167,54 @@ function loadDuty(ph) {
 }
 loadDuty(auth.user?.pharmacy)
 
+const locLat    = ref(null)
+const locLng    = ref(null)
+const locating  = ref(false)
+const savingLoc = ref(false)
+const locMsg    = ref(null)
+const isCoord   = v => typeof v === 'number' && Number.isFinite(v)
+const hasLoc    = computed(() => isCoord(locLat.value) && isCoord(locLng.value))
+
+function loadLocation(ph) {
+  locLat.value = ph?.latitude ?? null
+  locLng.value = ph?.longitude ?? null
+}
+loadLocation(auth.user?.pharmacy)
+
+async function useMyPosition() {
+  locMsg.value = null
+  locating.value = true
+  try {
+    const { lat, lng, accuracy } = await getCurrentPosition()
+    locLat.value = +lat.toFixed(6)
+    locLng.value = +lng.toFixed(6)
+    locMsg.value = { ok: true, text: `Position trouvée (précision ~${Math.round(accuracy)} m). Vérifiez la carte puis enregistrez.` }
+  } catch (e) {
+    locMsg.value = { ok: false, text: e.message }
+  } finally { locating.value = false }
+}
+
+async function sendLocation(latitude, longitude, okText) {
+  locMsg.value = null
+  savingLoc.value = true
+  try {
+    const res = await authApi.updateLocation({ latitude, longitude })
+    auth.setUser({ pharmacy: { ...auth.user?.pharmacy, latitude: res.data.latitude, longitude: res.data.longitude } })
+    loadLocation(res.data)
+    locMsg.value = { ok: true, text: okText }
+  } catch (e) {
+    locMsg.value = { ok: false, text: '' + e.message }
+  } finally { savingLoc.value = false }
+}
+
+function saveLocation() {
+  if (!hasLoc.value) { locMsg.value = { ok: false, text: 'Renseignez la latitude et la longitude, ou utilisez votre position.' }; return }
+  if (Math.abs(locLat.value) > 90 || Math.abs(locLng.value) > 180) { locMsg.value = { ok: false, text: 'Coordonnées invalides.' }; return }
+  sendLocation(locLat.value, locLng.value, 'Position enregistrée.')
+}
+
+function clearLocation() { sendLocation(null, null, 'Position supprimée.') }
+
 onMounted(async () => {
   try {
     const res = await authApi.me()
@@ -156,6 +225,7 @@ onMounted(async () => {
       address: auth.user?.address || '',
     }
     loadDuty(auth.user?.pharmacy)
+    loadLocation(auth.user?.pharmacy)
   } catch (e) { /* keep cached values if refresh fails */ }
 })
 

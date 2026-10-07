@@ -28,9 +28,14 @@
             </div>
           </div>
           <div class="pp-hero-actions">
-            <button @click="locateMe" class="pub-btn-outline" style="font-size:.8rem;"><MapPin size="1em" /> Calculer la distance</button>
+            <a v-if="routeUrl" :href="routeUrl" target="_blank" rel="noopener" class="pub-btn-outline pp-btn-route" style="font-size:.8rem;"><Navigation size="1em" /> Itinéraire</a>
+            <template v-if="hasPosition(pharmacy)">
+              <div v-if="distance !== null" class="pp-distance"><MapPin size="1em" /> À {{ formatDistance(distance) }} de vous</div>
+              <button v-else @click="locateMe" class="pub-btn-outline" style="font-size:.8rem;" :disabled="locating"><MapPin size="1em" /> {{ locating ? 'Localisation...' : 'Calculer la distance' }}</button>
+            </template>
           </div>
         </div>
+        <PharmacyMap v-if="pharmacy && hasPosition(pharmacy)" :lat="pharmacy.latitude" :lng="pharmacy.longitude" :height="200" style="margin-top:16px;"/>
       </div>
     </div>
 
@@ -139,8 +144,8 @@
 </template>
 
 <script setup>
-import { Hospital, MapPin, Phone, Mail, Moon, Search, Package, Stethoscope, ShoppingCart } from 'lucide-vue-next'
-import { ref, onMounted } from 'vue'
+import { Hospital, MapPin, Phone, Mail, Moon, Search, Package, Stethoscope, ShoppingCart, Navigation } from 'lucide-vue-next'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useCartStore } from '../../stores/cart.js'
 import { useToastStore } from '../../stores/toast.js'
@@ -148,6 +153,8 @@ import { formatDutyDays, formatDutyHours } from '../../utils/duty.js'
 import DutyBadge from '../../components/DutyBadge.vue'
 import ProductImage from '../../components/ProductImage.vue'
 import { pharmacyLogoUrl } from '../../utils/logo.js'
+import { distanceKm, formatDistance, hasPosition, directionsUrl, getCurrentPosition } from '../../utils/geo.js'
+import PharmacyMap from '../../components/PharmacyMap.vue'
 
 const route     = useRoute()
 const cartStore = useCartStore()
@@ -207,11 +214,23 @@ function addToCart(p) {
   qty.value[p.id] = 1
 }
 
-function locateMe() {
-  if (!navigator.geolocation) return
-  navigator.geolocation.getCurrentPosition(pos => {
-    cartStore.userLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude }
-  })
+const locating = ref(false)
+const routeUrl = computed(() => pharmacy.value && directionsUrl(pharmacy.value))
+// Distance from the visitor, once their position is known (here or on another public page)
+const distance = computed(() => {
+  const u = cartStore.userLocation
+  if (!u || !hasPosition(pharmacy.value)) return null
+  return distanceKm(u.lat, u.lng, pharmacy.value.latitude, pharmacy.value.longitude)
+})
+
+async function locateMe() {
+  locating.value = true
+  try {
+    const { lat, lng } = await getCurrentPosition()
+    cartStore.userLocation = { lat, lng }
+  } catch (e) {
+    toast.error(e.message)
+  } finally { locating.value = false }
 }
 
 onMounted(async () => {
@@ -234,6 +253,9 @@ onMounted(async () => {
 .pp-hero-icon { width: 64px; height: 64px; border-radius: 16px; background: linear-gradient(135deg,#f0fdf4,#dcfce7); border: 2px solid #bbf7d0; display: flex; align-items: center; justify-content: center; font-size: 2rem; flex-shrink: 0; }
 .pp-title { font-weight: 800; font-size: 1.4rem; margin: 0; }
 .pp-hero-actions { display: flex; flex-direction: column; gap: 8px; }
+.pp-btn-route { background: #16a34a; color: white; border-color: #16a34a; justify-content: center; }
+.pp-btn-route:hover { background: #15803d; color: white; }
+.pp-distance { font-size: .85rem; font-weight: 700; color: #16a34a; text-align: center; padding: 6px 0; }
 .pp-body { padding-top: 28px; padding-bottom: 40px; }
 .pp-layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 24px; align-items: start; }
 .pp-aside { position: sticky; top: 80px; }
