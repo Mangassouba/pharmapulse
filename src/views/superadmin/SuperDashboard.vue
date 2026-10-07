@@ -28,6 +28,31 @@
         </div>
       </div>
 
+      <!-- Site visitors -->
+      <div class="scard scard-p">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px;">
+          <h3 style="font-weight:700;font-size:.95rem;margin:0;display:flex;align-items:center;gap:8px;"><Eye size="1em" style="color:#7c3aed;" /> Visiteurs du site</h3>
+          <span style="font-size:.75rem;color:#6b7280;">Visiteurs uniques du site public (1 par navigateur et par jour)</span>
+        </div>
+        <div class="visit-tiles">
+          <div v-for="t in visitTiles" :key="t.label" class="visit-tile">
+            <div class="visit-val">{{ t.value.toLocaleString('fr-FR') }}</div>
+            <div class="visit-lbl">{{ t.label }}</div>
+          </div>
+        </div>
+        <div class="visit-chart-hd">
+          <span>Visiteurs par jour — 30 derniers jours</span>
+          <span class="visit-readout">{{ hoverDay ? `${fmtDay(hoverDay.day)} : ${hoverDay.visitors} visiteur${hoverDay.visitors > 1 ? 's' : ''}` : '' }}</span>
+        </div>
+        <div class="visit-chart" @mouseleave="hoverDay = null" role="img" :aria-label="`Visiteurs par jour sur 30 jours, maximum ${visitMax}`">
+          <div v-for="d in visitDaily" :key="d.day" class="visit-col" :class="{ active: hoverDay?.day === d.day }"
+            @mouseenter="hoverDay = d" @click="hoverDay = d" :title="`${fmtDay(d.day)} : ${d.visitors}`">
+            <div class="visit-bar" :style="{ height: d.visitors ? Math.max(4, d.visitors / visitMax * 100) + '%' : '0' }"></div>
+          </div>
+        </div>
+        <div class="visit-axis"><span>{{ visitDaily.length ? fmtDay(visitDaily[0].day) : '' }}</span><span>Aujourd'hui</span></div>
+      </div>
+
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
         <!-- Recent pharmacies -->
         <div class="scard scard-p">
@@ -114,8 +139,8 @@
   </div>
 </template>
 <script setup>
-import { Hospital, CircleCheck, CircleX, Users, TriangleAlert, ClipboardList, Bell } from 'lucide-vue-next'
-import { computed, onMounted } from 'vue'
+import { Hospital, CircleCheck, CircleX, Users, TriangleAlert, ClipboardList, Bell, Eye } from 'lucide-vue-next'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSuperAdminStore } from '../../stores/superAdmin.js'
 import { useSuperNotificationsStore, NOTIF_COLORS, timeAgo } from '../../stores/superNotifications.js'
@@ -124,6 +149,19 @@ const notifs = useSuperNotificationsStore() // shared with the header bell: read
 const router = useRouter()
 const s = computed(() => store.stats)
 function fmtPrice(v) { return Number(v||0).toLocaleString('fr-FR') + ' MRU' }
+
+const v = computed(() => s.value?.visitors)
+const visitTiles = computed(() => [
+  { label: "Aujourd'hui",  value: v.value?.today ?? 0 },
+  { label: '7 derniers jours',  value: v.value?.last7 ?? 0 },
+  { label: '30 derniers jours', value: v.value?.last30 ?? 0 },
+  { label: 'Depuis le début',   value: v.value?.total ?? 0 },
+])
+const visitDaily = computed(() => v.value?.daily ?? [])
+const visitMax   = computed(() => Math.max(1, ...visitDaily.value.map(d => d.visitors)))
+const hoverDay   = ref(null)
+// 'YYYY-MM-DD' (UTC day) → '7 oct.'
+function fmtDay(day) { return new Date(day + 'T00:00:00Z').toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', timeZone: 'UTC' }) }
 
 function openNotif(n) {
   notifs.markRead(n)
@@ -136,4 +174,17 @@ onMounted(() => notifs.load())
 .dash-notif { display:flex; gap:10px; width:100%; padding:10px; border:none; border-bottom:1px solid #f5f3ff; background:#fff; border-radius:8px; cursor:pointer; font:inherit; }
 .dash-notif:hover { background:#faf5ff; }
 .dash-notif.unread { background:#f5f3ff; }
+
+.visit-tiles { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:18px; }
+.visit-tile { padding:12px; background:#f9fafb; border-radius:10px; }
+.visit-val { font-family:'JetBrains Mono',monospace; font-size:1.4rem; font-weight:800; color:#111827; }
+.visit-lbl { font-size:.75rem; color:#6b7280; margin-top:2px; }
+.visit-chart-hd { display:flex; justify-content:space-between; gap:10px; font-size:.75rem; color:#6b7280; margin-bottom:8px; min-height:1.2em; }
+.visit-readout { font-weight:700; color:#111827; }
+.visit-chart { display:flex; align-items:flex-end; gap:2px; height:120px; border-bottom:1px solid #e5e7eb; }
+.visit-col { flex:1; height:100%; display:flex; align-items:flex-end; cursor:default; }
+.visit-bar { width:100%; background:#7c3aed; border-radius:4px 4px 0 0; opacity:.85; transition:opacity .1s; }
+.visit-col.active .visit-bar, .visit-col:hover .visit-bar { opacity:1; background:#5b21b6; }
+.visit-axis { display:flex; justify-content:space-between; font-size:.7rem; color:#9ca3af; margin-top:6px; }
+@media (max-width: 640px) { .visit-tiles { grid-template-columns:repeat(2,1fr); } }
 </style>

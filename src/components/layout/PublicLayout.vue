@@ -88,7 +88,8 @@ import SiteLogo from '../SiteLogo.vue'
 import SiteName from '../SiteName.vue'
 import { useSiteStore } from '../../stores/site.js'
 const site = useSiteStore()
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { trackVisit } from '../../utils/visits.js'
 import { useRouter, useRoute } from 'vue-router'
 import { useCartStore } from '../../stores/cart.js'
 import { useAuthStore } from '../../stores/auth.js'
@@ -99,6 +100,9 @@ const route     = useRoute()
 const cartStore = useCartStore()
 const authStore = useAuthStore()
 const q         = ref('')
+
+// Count this browser once per day in the platform visitor stats
+onMounted(trackVisit)
 
 const showSearch = computed(() => route.path !== '/')
 
