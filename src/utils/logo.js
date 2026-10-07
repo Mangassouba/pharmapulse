@@ -6,6 +6,13 @@ export function pharmacyLogoUrl(ph) {
   return `${api.defaults.baseURL}/public/pharmacies/${ph.id}/logo?v=${new Date(ph.logo_updated_at).getTime()}`
 }
 
+// Public URL of a product image (search results expose the id as productId)
+export function productImageUrl(p) {
+  const id = p?.productId ?? p?.id
+  if (!id || !p.image_updated_at) return null
+  return `${api.defaults.baseURL}/public/products/${id}/image?v=${new Date(p.image_updated_at).getTime()}`
+}
+
 // Downscale an image file to fit in `max` px and return it as a data URL (keeps the upload small)
 export function resizeImage(file, max = 512) {
   return new Promise((resolve, reject) => {

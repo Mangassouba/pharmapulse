@@ -49,6 +49,8 @@ export const productApi    = {
   create: d  => api.post('/products', d),
   update: (id,d) => api.put(`/products/${id}`, d),
   delete: id => api.delete(`/products/${id}`),
+  updateImage: (id,d) => api.put(`/products/${id}/image`, d),
+  deleteImage: id => api.delete(`/products/${id}/image`),
 }
 export const categoryApi   = {
   list:   p => api.get('/categories', { params: p }),

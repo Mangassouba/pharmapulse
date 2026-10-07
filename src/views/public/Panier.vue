@@ -26,7 +26,7 @@
             </div>
             <div class="pn-items">
               <div v-for="item in group.items" :key="item.idx" class="pn-item">
-                <div class="pn-item-icon"><Pill size="1em" /></div>
+                <ProductImage class="pn-item-icon" :product="item.product" :size="44"/>
                 <div class="pn-item-info">
                   <div style="font-weight:600;font-size:.9rem;">{{ item.product.name }}</div>
                   <div style="font-size:.75rem;color:#6b7280;">{{ item.product.unit_type }}</div>
@@ -106,11 +106,12 @@
 </template>
 
 <script setup>
-import { ShoppingCart, Hospital, Pill, Trash2, CircleX } from 'lucide-vue-next'
+import { ShoppingCart, Hospital, Trash2, CircleX } from 'lucide-vue-next'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCartStore } from '../../stores/cart.js'
 import { useToastStore } from '../../stores/toast.js'
+import ProductImage from '../../components/ProductImage.vue'
 
 const cartStore = useCartStore()
 const toast     = useToastStore()

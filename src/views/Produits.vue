@@ -19,7 +19,7 @@
           <thead><tr><th>Produit</th><th>Catégorie</th><th>Prix vente</th><th>Stock</th><th>Seuil</th><th>Statut</th><th style="text-align:right;">Actions</th></tr></thead>
           <tbody>
             <tr v-for="p in store.products" :key="p.id">
-              <td><div style="font-weight:600;">{{ p.name }}</div><div style="font-size:.72rem;color:#6b7280;font-family:'JetBrains Mono',monospace;">{{ p.barcode }}</div></td>
+              <td><div style="display:flex;align-items:center;gap:10px;"><ProductImage :product="p" :size="40"/><div><div style="font-weight:600;">{{ p.name }}</div><div style="font-size:.72rem;color:#6b7280;font-family:'JetBrains Mono',monospace;">{{ p.barcode }}</div></div></div></td>
               <td><span class="badge badge-blue">{{ p.category?.name }}</span></td>
               <td style="font-family:'JetBrains Mono',monospace;font-weight:700;">{{ Number(p.sale_price).toLocaleString('fr-FR') }} MRU</td>
               <td>
@@ -49,6 +49,18 @@
           <div class="modal-hd"><h3>{{ editId?'Modifier le produit':'Nouveau produit' }}</h3><button class="btn btn-icon" @click="showModal=false"><X size="1em" /></button></div>
           <div class="modal-bd">
             <div class="form-grid form-2col" style="gap:12px;">
+              <div style="grid-column:1/-1;display:flex;align-items:center;gap:14px;">
+                <ProductImage :src="imagePreview" :size="72"/>
+                <div style="display:flex;flex-direction:column;gap:6px;">
+                  <label class="lbl" style="margin:0;">Image du produit</label>
+                  <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                    <button type="button" class="btn btn-outline btn-sm" @click="imageInput.click()"><ImagePlus size="1em" /> {{ imagePreview?'Changer':'Ajouter' }}</button>
+                    <button v-if="imagePreview" type="button" class="btn btn-outline btn-sm" style="border-color:#fecaca;color:#dc2626;" @click="clearImage"><Trash2 size="1em" /> Retirer</button>
+                  </div>
+                  <span style="font-size:.72rem;color:#6b7280;">PNG, JPEG ou WebP</span>
+                </div>
+                <input ref="imageInput" type="file" accept="image/png,image/jpeg,image/webp" style="display:none" @change="onImagePicked"/>
+              </div>
               <div style="grid-column:1/-1"><label class="lbl">Nom *</label><input v-model="form.name" class="inp"/></div>
               <div><label class="lbl">Catégorie *</label><select v-model="form.categoryId" class="inp"><option value="">—</option><option v-for="c in store.categories" :key="c.id" :value="c.id">{{ c.name }}</option></select></div>
               <div><label class="lbl">Code-barres *</label><input v-model="form.barcode" class="inp"/></div>
@@ -79,13 +91,32 @@
   </div>
 </template>
 <script setup>
-import { Search, Package, Pencil, Trash2, X, CircleX } from 'lucide-vue-next'
+import { Search, Package, Pencil, Trash2, X, CircleX, ImagePlus } from 'lucide-vue-next'
 import { ref, onMounted } from 'vue'
 import { usePharmaStore } from '../stores/pharma.js'
 import { useToastStore }  from '../stores/toast.js'
+import { productApi }     from '../services/api.js'
+import { productImageUrl, resizeImage } from '../utils/logo.js'
+import ProductImage from '../components/ProductImage.vue'
 const store = usePharmaStore(); const toast = useToastStore()
 const search=ref(''); const filterCat=ref(''); const filterStatus=ref(''); const filterLow=ref(false); const page=ref(1)
 const showModal=ref(false); const editId=ref(null); const saving=ref(false); const formErr=ref(''); const delTarget=ref(null)
+// Image is uploaded separately once the product exists: imageData = new data URL to send, imageRemoved = delete on save
+const imageInput=ref(null); const imagePreview=ref(null); const imageData=ref(null); const imageRemoved=ref(false)
+function resetImage(p) { imagePreview.value=productImageUrl(p); imageData.value=null; imageRemoved.value=false }
+async function onImagePicked(e) {
+  const file = e.target.files?.[0]
+  e.target.value = ''
+  if (!file) return
+  if (!['image/png','image/jpeg','image/webp'].includes(file.type)) { formErr.value='Format non supporté (PNG, JPEG ou WebP).'; return }
+  try { imageData.value = await resizeImage(file); imagePreview.value = imageData.value; imageRemoved.value=false; formErr.value='' }
+  catch(err) { formErr.value = err.message }
+}
+function clearImage() { imagePreview.value=null; imageData.value=null; imageRemoved.value=true }
+async function saveImage(id) {
+  if (imageData.value) await productApi.updateImage(id, { image: imageData.value })
+  else if (imageRemoved.value) await productApi.deleteImage(id)
+}
 const emptyForm = () => ({ name:'',categoryId:'',barcode:'',sale_price:0,purchase_price:0,stock:0,threshold:10,unit_type:'BOX',unit_quantity:null,prescription_req:false,is_divisible:false })
 const form = ref(emptyForm())
 let dt; function debouncedFetch() { clearTimeout(dt); dt=setTimeout(fetchData,380) }
@@ -97,15 +128,21 @@ async function fetchData() {
   if (filterLow.value) p.lowStock='true'
   await store.fetchProducts(p)
 }
-function openAdd() { editId.value=null; form.value=emptyForm(); formErr.value=''; showModal.value=true }
-function openEdit(p) { editId.value=p.id; form.value={name:p.name,categoryId:p.categoryId,barcode:p.barcode,sale_price:Number(p.sale_price),purchase_price:Number(p.purchase_price),stock:p.stock,threshold:p.threshold,unit_type:p.unit_type,unit_quantity:p.unit_quantity,prescription_req:p.prescription_req,is_divisible:p.is_divisible}; formErr.value=''; showModal.value=true }
+function openAdd() { editId.value=null; form.value=emptyForm(); resetImage(null); formErr.value=''; showModal.value=true }
+function openEdit(p) { editId.value=p.id; form.value={name:p.name,categoryId:p.categoryId,barcode:p.barcode,sale_price:Number(p.sale_price),purchase_price:Number(p.purchase_price),stock:p.stock,threshold:p.threshold,unit_type:p.unit_type,unit_quantity:p.unit_quantity,prescription_req:p.prescription_req,is_divisible:p.is_divisible}; resetImage(p); formErr.value=''; showModal.value=true }
 async function save() {
   formErr.value=''
   if (!form.value.name) { formErr.value='Nom obligatoire'; return }
   if (!form.value.categoryId) { formErr.value='Catégorie obligatoire'; return }
   if (!form.value.barcode) { formErr.value='Code-barres obligatoire'; return }
   saving.value=true
-  try { if (editId.value) { await store.updateProduct(editId.value,form.value); toast.success('Produit mis à jour.') } else { await store.createProduct(form.value); toast.success('Produit créé.') } showModal.value=false; fetchData() } catch(e) { formErr.value=e.message } finally { saving.value=false }
+  try {
+    let id = editId.value
+    if (id) { await store.updateProduct(id,form.value); toast.success('Produit mis à jour.') } else { id = (await store.createProduct(form.value)).data.id; toast.success('Produit créé.') }
+    // The product is saved at this point: an image failure is only reported, not blocking
+    try { await saveImage(id) } catch(e) { toast.error('Image non enregistrée : ' + e.message) }
+    showModal.value=false; fetchData()
+  } catch(e) { formErr.value=e.message } finally { saving.value=false }
 }
 function confirmDel(p) { delTarget.value=p }
 async function doDel() { try { await store.deleteProduct(delTarget.value.id); toast.success('Supprimé.'); fetchData() } catch(e) { toast.error(e.message) } delTarget.value=null }

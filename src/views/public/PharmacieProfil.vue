@@ -88,6 +88,7 @@
           </div>
           <div v-else class="pp-grid">
             <div v-for="p in products" :key="p.id" class="pub-card">
+              <div v-if="p.image_updated_at" class="pp-prod-img"><ProductImage :product="p" :size="120"/></div>
               <div style="padding:16px;">
                 <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:6px;margin-bottom:10px;">
                   <div style="min-width:0;overflow-wrap:anywhere;">
@@ -145,6 +146,7 @@ import { useCartStore } from '../../stores/cart.js'
 import { useToastStore } from '../../stores/toast.js'
 import { formatDutyDays, formatDutyHours } from '../../utils/duty.js'
 import DutyBadge from '../../components/DutyBadge.vue'
+import ProductImage from '../../components/ProductImage.vue'
 import { pharmacyLogoUrl } from '../../utils/logo.js'
 
 const route     = useRoute()
@@ -197,7 +199,7 @@ function selectCat(id) {
 
 function addToCart(p) {
   cartStore.addItem(
-    { id: p.id, name: p.name, sale_price: p.sale_price, stock: p.stock, unit_type: p.unit_type },
+    { id: p.id, name: p.name, sale_price: p.sale_price, stock: p.stock, unit_type: p.unit_type, image_updated_at: p.image_updated_at },
     parseInt(route.params.id),
     pharmacy.value?.name || 'Pharmacie'
   )
@@ -239,6 +241,7 @@ onMounted(async () => {
 .pp-cats { display: flex; flex-direction: column; gap: 4px; }
 .pp-filters { margin-top: 12px; }
 .pp-filters label + label { margin-top: 10px; }
+.pp-prod-img { display: flex; justify-content: center; padding: 14px 16px 0; }
 .pp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(220px, 100%), 1fr)); gap: 14px; }
 
 @media (max-width: 860px) {

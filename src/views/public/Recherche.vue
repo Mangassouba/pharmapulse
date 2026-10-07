@@ -46,9 +46,12 @@
       <div v-else-if="results.length">
         <div v-for="group in groupedResults" :key="group.name" style="margin-bottom:28px;">
           <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px;padding-bottom:10px;border-bottom:2px solid #f3f4f6;">
-            <div style="min-width:0;overflow-wrap:anywhere;">
-              <h3 style="font-weight:800;font-size:1.05rem;margin:0;">{{ group.name }}</h3>
-              <span style="font-size:.78rem;color:#6b7280;">{{ group.items.length }} pharmacie(s) disponible(s)</span>
+            <div style="display:flex;align-items:center;gap:12px;min-width:0;">
+              <ProductImage :product="group.image" :size="52"/>
+              <div style="min-width:0;overflow-wrap:anywhere;">
+                <h3 style="font-weight:800;font-size:1.05rem;margin:0;">{{ group.name }}</h3>
+                <span style="font-size:.78rem;color:#6b7280;">{{ group.items.length }} pharmacie(s) disponible(s)</span>
+              </div>
             </div>
             <span class="pub-badge-green" style="font-size:.72rem;">{{ group.category }}</span>
           </div>
@@ -116,6 +119,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useCartStore } from '../../stores/cart.js'
 import { useToastStore } from '../../stores/toast.js'
+import ProductImage from '../../components/ProductImage.vue'
 
 const route     = useRoute()
 const router    = useRouter()
@@ -137,7 +141,8 @@ const groupedResults = computed(() => {
   const groups = {}
   list.forEach(item => {
     const key = item.name
-    if (!groups[key]) groups[key] = { name: item.name, category: item.category?.name || '—', items: [] }
+    if (!groups[key]) groups[key] = { name: item.name, category: item.category?.name || '—', image: null, items: [] }
+    if (!groups[key].image && item.image_updated_at) groups[key].image = item
     groups[key].items.push(item)
   })
   return Object.values(groups).sort((a, b) => b.items.length - a.items.length)
@@ -156,7 +161,7 @@ async function doSearch() {
 
 function addToCart(item) {
   cartStore.addItem(
-    { id: item.productId || item.id, name: item.name, sale_price: item.sale_price, stock: item.stock, unit_type: item.unit_type },
+    { id: item.productId || item.id, name: item.name, sale_price: item.sale_price, stock: item.stock, unit_type: item.unit_type, image_updated_at: item.image_updated_at },
     item.pharmacyId,
     item.pharmacyName
   )
