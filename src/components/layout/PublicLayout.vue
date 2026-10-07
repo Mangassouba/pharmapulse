@@ -54,7 +54,7 @@
       <div class="pub-container">
         <div class="pub-footer-grid">
           <div>
-            <div style="font-weight:800;font-size:1.1rem;margin-bottom:8px;"><SiteName accent="#16a34a" /></div>
+            <div style="font-weight:800;font-size:1.1rem;margin-bottom:8px;color:#fff;"><SiteName accent="#4ade80" /></div>
             <p style="color:#9ca3af;font-size:.85rem;line-height:1.6;">Trouvez vos médicaments dans les pharmacies proches de chez vous, commandez en ligne et récupérez en pharmacie.</p>
           </div>
           <div>
