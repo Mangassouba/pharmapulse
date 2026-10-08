@@ -1,5 +1,13 @@
 // Textes partagés : [français, anglais, arabe]
 export default {
+  // Erreurs réseau / serveur affichées quand l'API ne fournit pas de message
+  httpErrors: {
+    offline:  ['Impossible de joindre le serveur. Vérifiez votre connexion internet puis réessayez.', 'Cannot reach the server. Check your internet connection and try again.', 'تعذّر الوصول إلى الخادم. تحقق من اتصالك بالإنترنت ثم أعد المحاولة.'],
+    timeout:  ['Le serveur met trop de temps à répondre. Réessayez dans un instant.', 'The server is taking too long to respond. Try again in a moment.', 'الخادم يستغرق وقتًا طويلًا للرد. أعد المحاولة بعد قليل.'],
+    server:   ['Une erreur inattendue est survenue. Réessayez dans un instant ; si le problème continue, contactez le support.', 'An unexpected error occurred. Try again in a moment; if it keeps happening, contact support.', 'حدث خطأ غير متوقع. أعد المحاولة بعد قليل، وإذا استمرت المشكلة تواصل مع الدعم.'],
+    forbidden: ["Vous n'avez pas les droits pour effectuer cette action.", 'You do not have permission to do this.', 'ليست لديك صلاحية للقيام بهذا الإجراء.'],
+    notFound: ["L'élément demandé est introuvable. Il a peut-être été supprimé.", 'The requested item could not be found. It may have been deleted.', 'العنصر المطلوب غير موجود. ربما تم حذفه.'],
+  },
   common: {
     language:          ['Langue', 'Language', 'اللغة'],
     search:            ['Rechercher', 'Search', 'بحث'],

@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { superApi } from '../services/api.js'
-import { t, fmtDate } from '../i18n/index.js'
+import { t, fmtDate, locale } from '../i18n/index.js'
 
 export const NOTIF_COLORS = { INFO: '#7c3aed', SUCCESS: '#16a34a', WARNING: '#d97706', ERROR: '#dc2626' }
 
@@ -26,6 +26,9 @@ export const useSuperNotificationsStore = defineStore('superNotifications', () =
       unread.value = res.data.unread
     } catch { /* keep the last list; retried on next load */ }
   }
+
+  // Notifications are translated by the API: reload them in the new language
+  watch(locale, () => { if (items.value.length) load() })
 
   function markRead(n) {
     if (n.is_read) return

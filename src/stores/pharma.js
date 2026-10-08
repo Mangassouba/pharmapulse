@@ -1,10 +1,10 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import {
   dashboardApi, productApi, categoryApi, saleApi,
   receptionApi, inventoryApi, movementApi, notifApi,
 } from '../services/api.js'
-import { fmtNum, fmtDate } from '../i18n/index.js'
+import { fmtNum, fmtDate, locale } from '../i18n/index.js'
 
 export const usePharmaStore = defineStore('pharma', () => {
   // ── State ──────────────────────────────────────────────────────
@@ -128,6 +128,9 @@ export const usePharmaStore = defineStore('pharma', () => {
       unreadCount.value   = b.data?.count ?? 0
     } catch (e) { console.error('notif error', e) }
   }
+  // Notifications are translated by the API: reload them in the new language
+  watch(locale, () => { if (notifications.value.length) fetchNotifications() })
+
   async function markAllRead() {
     await notifApi.markAllRead()
     notifications.value.forEach(n => n.is_read = true)

@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { locale } from '../i18n/index.js'
+import { locale, t } from '../i18n/index.js'
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000/api',
@@ -17,14 +17,25 @@ api.interceptors.request.use(cfg => {
 api.interceptors.response.use(
   r => r.data,
   err => {
-    if (err.response?.status === 401) {
+    // Session expired → back to login. Not for a failed login itself, so its message stays visible.
+    if (err.response?.status === 401 && err.config?.headers?.Authorization && !err.config.url?.startsWith('/auth/login')) {
       localStorage.removeItem('pharma_token')
       localStorage.removeItem('pharma_user')
       window.location.href = '/login'
     }
-    return Promise.reject({ status: err.response?.status, message: err.response?.data?.message || err.message })
+    const data = err.response?.data
+    return Promise.reject({ status: err.response?.status, message: data?.message || httpErrorText(err), errors: data?.errors })
   }
 )
+
+// Plain-language text when the API gave no message (no network, timeout, proxy page…)
+function httpErrorText(err) {
+  if (err.code === 'ECONNABORTED' || err.code === 'ETIMEDOUT') return t('httpErrors.timeout')
+  if (!err.response) return t('httpErrors.offline')
+  if (err.response.status === 403) return t('httpErrors.forbidden')
+  if (err.response.status === 404) return t('httpErrors.notFound')
+  return t('httpErrors.server')
+}
 
 export default api
 
