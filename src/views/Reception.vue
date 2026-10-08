@@ -77,6 +77,7 @@ async function save() {
   if (!form.value.supplier.trim()) { formErr.value=t('reception.supplierRequired'); return }
   const items=form.value.items.filter(i=>i.productId&&i.quantity>0)
   if (!items.length) { formErr.value=t('reception.addOneProduct'); return }
+  if (items.some(i=>i.batchNumber?.trim()&&!i.expirationDate)) { formErr.value=t('reception.expiryRequired'); return }
   saving.value=true
   try { await store.createReception({...form.value,items}); toast.success(t('reception.saved')); form.value={supplier:'',invoice_number:'',items:[emptyItem()]}; fetchData() } catch(e) { formErr.value=e.message } finally { saving.value=false }
 }

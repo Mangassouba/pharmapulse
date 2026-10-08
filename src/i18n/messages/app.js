@@ -178,6 +178,7 @@ export default {
     none:             ['Aucune réception', 'No deliveries', 'لا توجد عمليات استلام'],
     supplierRequired: ['Fournisseur obligatoire', 'Supplier is required', 'المورّد مطلوب'],
     addOneProduct:    ['Ajoutez au moins un produit', 'Add at least one product', 'أضف منتجًا واحدًا على الأقل'],
+    expiryRequired:   ["Date d'expiration obligatoire quand un numéro de lot est saisi", 'Expiry date is required when a batch number is entered', 'تاريخ الانتهاء مطلوب عند إدخال رقم الدفعة'],
     saved:            ['Réception enregistrée !', 'Delivery saved!', 'تم حفظ الاستلام!'],
     stocksUpdated:    ['Stocks mis à jour !', 'Stock updated!', 'تم تحديث المخزون!'],
     cancelledToast:   ['Annulée', 'Cancelled', 'تم الإلغاء'],
