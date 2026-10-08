@@ -133,6 +133,7 @@ export const superApi      = {
   updatePharmacy: (id,d) => api.put(`/super/pharmacies/${id}`, d),
   setStatus:      (id,d) => api.patch(`/super/pharmacies/${id}/status`, d),
   deletePharmacy: (id, confirmName) => api.delete(`/super/pharmacies/${id}`, { data: { confirmName } }),
+  restorePharmacy: id => api.post(`/super/pharmacies/${id}/restore`),
   renew:          (id,d) => api.post(`/super/pharmacies/${id}/renew`, d),
   getPayments:    id => api.get(`/super/pharmacies/${id}/payments`),
   listUsers:      p  => api.get('/super/users', { params: p }),

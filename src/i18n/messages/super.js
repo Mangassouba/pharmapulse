@@ -113,6 +113,12 @@ export default {
       deleteType:     ['Pour confirmer, tapez le nom exact de la pharmacie :', 'To confirm, type the exact pharmacy name:', 'للتأكيد، اكتب اسم الصيدلية بالضبط:'],
       deleteConfirm:  ['Supprimer définitivement', 'Delete permanently', 'حذف نهائيًا'],
       deleted:        ['Pharmacie supprimée.', 'Pharmacy deleted.', 'تم حذف الصيدلية.'],
+      deletedFilter:  ['Supprimées', 'Deleted', 'المحذوفة'],
+      deletedOn:      ['Supprimée le {date}', 'Deleted on {date}', 'حُذفت في {date}'],
+      restore:        ['Restaurer', 'Restore', 'استعادة'],
+      restoreTitle:   ['Restaurer la pharmacie', 'Restore pharmacy', 'استعادة الصيدلية'],
+      restoreHelp:    ['La pharmacie retrouvera son statut d’avant la suppression, avec toutes ses données. Seuls les comptes désactivés par la suppression seront réactivés ; ceux qui étaient déjà inactifs le restent.', 'The pharmacy gets back its status from before the deletion, with all its data. Only the accounts deactivated by the deletion are reactivated; those already inactive stay inactive.', 'ستستعيد الصيدلية حالتها السابقة للحذف مع جميع بياناتها. يُعاد تفعيل الحسابات التي عُطّلت بسبب الحذف فقط؛ وتبقى الحسابات المعطّلة سابقًا معطّلة.'],
+      restored:       ['Pharmacie restaurée.', 'Pharmacy restored.', 'تمت استعادة الصيدلية.'],
     },
     settings: {
       siteName:     ['Nom du site', 'Site name', 'اسم الموقع'],

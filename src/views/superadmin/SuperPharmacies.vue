@@ -6,6 +6,7 @@
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
         <select v-model="filterStatus" class="inp" style="width:155px;border-color:#ddd6fe;" @change="fetchData">
           <option value="">{{ $t('common.allStatuses') }}</option><option v-for="s in ['ACTIVE','SUSPENDED','INACTIVE','PENDING']" :key="s" :value="s">{{ $t('pharmacyStatus.' + s) }}</option>
+          <option value="DELETED">{{ $t('super.ph.deletedFilter') }}</option>
         </select>
         <button class="btn btn-purple" @click="openCreate">+ {{ $t('super.dash.qa.newPharmacy') }}</button>
       </div>
@@ -45,15 +46,19 @@
               </td>
               <td style="font-family:'JetBrains Mono',monospace;font-weight:700;text-align:center;">{{ p._count?.users??0 }}</td>
               <td>
-                <span class="badge" :class="p.status==='ACTIVE'?'badge-green':p.status==='SUSPENDED'?'badge-red':p.status==='PENDING'?'badge-yellow':'badge-gray'">{{ $te('pharmacyStatus', p.status) }}</span>
+                <span v-if="p.deletedAt" class="badge badge-gray" :title="fmtDate(p.deletedAt)"><Trash2 size="1em" /> {{ $t('super.ph.deletedOn', { date: fmtDate(p.deletedAt) }) }}</span>
+                <span v-else class="badge" :class="p.status==='ACTIVE'?'badge-green':p.status==='SUSPENDED'?'badge-red':p.status==='PENDING'?'badge-yellow':'badge-gray'">{{ $te('pharmacyStatus', p.status) }}</span>
               </td>
               <td>
                 <div style="display:flex;gap:4px;flex-wrap:wrap;">
                   <button class="btn btn-xs btn-outline" @click="openDetail(p)"><Eye size="1em" /> {{ $t('super.ph.detail') }}</button>
+                  <button v-if="p.deletedAt" class="btn btn-xs" style="background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;" @click="openRestore(p)"><RotateCcw size="1em" /> {{ $t('super.ph.restore') }}</button>
+                  <template v-else>
                   <button v-if="p.status!=='ACTIVE'" class="btn btn-xs" style="background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;" @click="setStatus(p,'ACTIVE')"><CircleCheck size="1em" /> {{ $t('super.ph.activate') }}</button>
                   <button v-if="p.status==='ACTIVE'" class="btn btn-xs" style="background:#fef2f2;color:#dc2626;border:1px solid #fecaca;" @click="openSuspend(p)"><Ban size="1em" /> {{ $t('super.ph.suspend') }}</button>
                   <button class="btn btn-xs" style="background:#f5f3ff;color:#7c3aed;border:1px solid #ddd6fe;" @click="openRenew(p)"><RefreshCw size="1em" /> {{ $t('super.ph.renew') }}</button>
                   <button class="btn btn-xs" style="background:#fff;color:#dc2626;border:1px solid #fecaca;" @click="openDelete(p)"><Trash2 size="1em" /> {{ $t('super.ph.delete') }}</button>
+                  </template>
                 </div>
               </td>
             </tr>
@@ -186,6 +191,21 @@
       </div>
     </Teleport>
 
+    <!-- ── RESTORE MODAL ── -->
+    <Teleport to="body">
+      <div v-if="restoreTarget" class="modal-bg" @click.self="restoreTarget=null">
+        <div class="modal" style="max-width:420px;">
+          <div class="modal-hd"><h3 style="color:#16a34a;"><RotateCcw size="1em" /> {{ $t('super.ph.restoreTitle') }}</h3><button class="btn btn-icon" @click="restoreTarget=null"><X size="1em" /></button></div>
+          <div class="modal-bd">
+            <p style="font-size:.875rem;margin-bottom:8px;"><strong>{{ restoreTarget.name }}</strong> — {{ $t('super.ph.deletedOn', { date: fmtDate(restoreTarget.deletedAt) }) }}</p>
+            <p style="color:#6b7280;font-size:.85rem;">{{ $t('super.ph.restoreHelp') }}</p>
+            <div v-if="rsErr" class="alert alert-red" style="margin-top:10px;">{{ rsErr }}</div>
+          </div>
+          <div class="modal-ft"><button class="btn btn-outline" @click="restoreTarget=null">{{ $t('common.cancel') }}</button><button class="btn" style="background:#16a34a;color:#fff;" @click="doRestore" :disabled="rsSaving">{{ rsSaving?'...':$t('super.ph.restore') }}</button></div>
+        </div>
+      </div>
+    </Teleport>
+
     <!-- ── RENEW MODAL ── -->
     <Teleport to="body">
       <div v-if="renewTarget" class="modal-bg" @click.self="renewTarget=null">
@@ -211,7 +231,7 @@
 </template>
 
 <script setup>
-import { Search, Hospital, CircleCheck, CircleX, TriangleAlert, Eye, Ban, RefreshCw, X, Trash2 } from 'lucide-vue-next'
+import { Search, Hospital, CircleCheck, CircleX, TriangleAlert, Eye, Ban, RefreshCw, X, Trash2, RotateCcw } from 'lucide-vue-next'
 import { ref, computed, onMounted } from 'vue'
 import { superApi }         from '../../services/api.js'
 import { useToastStore }    from '../../stores/toast.js'
@@ -265,7 +285,8 @@ let dt; function debouncedFetch() { clearTimeout(dt); dt = setTimeout(fetchData,
 async function fetchData() {
   loading.value = true
   try {
-    const r = await superApi.listPharmacies({ page: page.value, pageSize: 20, search: search.value || undefined, status: filterStatus.value || undefined })
+    const deleted = filterStatus.value === 'DELETED'
+    const r = await superApi.listPharmacies({ page: page.value, pageSize: 20, search: search.value || undefined, status: deleted ? undefined : filterStatus.value || undefined, deleted: deleted || undefined })
     pharmacies.value = r.data; meta.value = r.meta
   } catch(e) { toast.error(e.message) } finally { loading.value = false }
 }
@@ -320,6 +341,18 @@ async function doDelete() {
     toast.success(t('super.ph.deleted')); deleteTarget.value = null
     await Promise.all([fetchData(), superStore.fetchStats()])
   } catch(e) { dErr.value = e.message } finally { dSaving.value = false }
+}
+
+// Restore a deleted pharmacy (the API reactivates only the accounts the deletion deactivated)
+const restoreTarget = ref(null); const rsSaving = ref(false); const rsErr = ref('')
+function openRestore(p) { restoreTarget.value = p; rsErr.value = '' }
+async function doRestore() {
+  rsSaving.value = true; rsErr.value = ''
+  try {
+    const r = await superApi.restorePharmacy(restoreTarget.value.id)
+    toast.success(r.message || t('super.ph.restored')); restoreTarget.value = null
+    await Promise.all([fetchData(), superStore.fetchStats()])
+  } catch(e) { rsErr.value = e.message } finally { rsSaving.value = false }
 }
 
 function openRenew(p) {
