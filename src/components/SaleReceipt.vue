@@ -3,52 +3,52 @@
     <div v-if="sale" class="modal-bg" @click.self="$emit('close')">
       <div class="modal" style="max-width:420px;">
         <div class="modal-hd">
-          <h3><Receipt size="1em" /> {{ title }}</h3>
+          <h3><Receipt size="1em" /> {{ title || $t('receipt.title') }}</h3>
           <button class="btn btn-icon" @click="$emit('close')"><X size="1em" /></button>
         </div>
         <div class="modal-bd" style="background:#f3f4f6;display:flex;justify-content:center;">
           <div ref="ticket" class="ticket">
             <div class="t-center">
               <img v-if="logoUrl" :src="logoUrl" alt="" class="t-logo"/>
-              <div class="t-shop">{{ pharmacy?.name || 'Pharmacie' }}</div>
+              <div class="t-shop">{{ pharmacy?.name || $t('receipt.pharmacy') }}</div>
               <div v-if="pharmacyLine" class="t-muted">{{ pharmacyLine }}</div>
-              <div v-if="pharmacy?.phone" class="t-muted">Tél : {{ pharmacy.phone }}</div>
+              <div v-if="pharmacy?.phone" class="t-muted">{{ $t('receipt.phone') }} {{ pharmacy.phone }}</div>
             </div>
             <div class="t-sep"></div>
             <div v-if="subtitle" class="t-center" style="font-weight:700;margin-bottom:4px;">{{ subtitle }}</div>
-            <div class="t-row"><span>Reçu N°</span><span class="t-mono">{{ sale.invoice_number }}</span></div>
-            <div v-if="sale.pickup_code" class="t-row"><span>Code retrait</span><span class="t-mono">{{ sale.pickup_code }}</span></div>
-            <div v-if="sale.order_date" class="t-row"><span>Commandé le</span><span>{{ fmtDate(sale.order_date) }}</span></div>
-            <div class="t-row"><span>{{ sale.order_date ? 'Retiré le' : 'Date' }}</span><span>{{ fmtDate(sale.sale_date) }}</span></div>
-            <div class="t-row"><span>Client</span><span>{{ sale.customer || 'Client comptoir' }}</span></div>
-            <div v-if="sale.user?.name" class="t-row"><span>Vendeur</span><span>{{ sale.user.name }}</span></div>
+            <div class="t-row"><span>{{ $t('receipt.number') }}</span><span class="t-mono">{{ sale.invoice_number }}</span></div>
+            <div v-if="sale.pickup_code" class="t-row"><span>{{ $t('receipt.pickupCode') }}</span><span class="t-mono">{{ sale.pickup_code }}</span></div>
+            <div v-if="sale.order_date" class="t-row"><span>{{ $t('receipt.orderedOn') }}</span><span>{{ fmtDate(sale.order_date) }}</span></div>
+            <div class="t-row"><span>{{ sale.order_date ? $t('receipt.pickedUpOn') : $t('common.date') }}</span><span>{{ fmtDate(sale.sale_date) }}</span></div>
+            <div class="t-row"><span>{{ $t('common.customer') }}</span><span>{{ sale.customer || $t('receipt.walkIn') }}</span></div>
+            <div v-if="sale.user?.name" class="t-row"><span>{{ $t('receipt.seller') }}</span><span>{{ sale.user.name }}</span></div>
             <div class="t-sep"></div>
             <table class="t-items">
-              <thead><tr><th style="text-align:left;">Article</th><th>Qté</th><th style="text-align:right;">Total</th></tr></thead>
+              <thead><tr><th style="text-align:start;">{{ $t('receipt.item') }}</th><th>{{ $t('common.qtyShort') }}</th><th style="text-align:end;">{{ $t('common.total') }}</th></tr></thead>
               <tbody>
                 <template v-for="d in sale.details" :key="d.id">
-                  <tr><td colspan="3" class="t-item-name">{{ d.product?.name || 'Produit' }}</td></tr>
+                  <tr><td colspan="3" class="t-item-name">{{ d.product?.name || $t('common.product') }}</td></tr>
                   <tr class="t-item-line">
                     <td class="t-muted">{{ money(d.price) }} × {{ Number(d.quantity) }}</td>
                     <td></td>
-                    <td style="text-align:right;" class="t-mono">{{ money(d.total ?? d.price * d.quantity) }}</td>
+                    <td style="text-align:end;" class="t-mono">{{ money(d.total ?? d.price * d.quantity) }}</td>
                   </tr>
                 </template>
               </tbody>
             </table>
             <div class="t-sep"></div>
-            <div class="t-row"><span>Sous-total</span><span class="t-mono">{{ money(subtotal) }}</span></div>
-            <div v-if="Number(sale.discount) > 0" class="t-row"><span>Remise</span><span class="t-mono">−{{ money(sale.discount) }}</span></div>
-            <div v-if="Number(sale.tax) > 0" class="t-row"><span>Taxe</span><span class="t-mono">{{ money(sale.tax) }}</span></div>
-            <div class="t-row t-total"><span>TOTAL</span><span class="t-mono">{{ money(sale.total_amount) }}</span></div>
-            <div v-if="sale.payment_method" class="t-row"><span>Paiement</span><span>{{ PAYMENT[sale.payment_method] || sale.payment_method }}</span></div>
+            <div class="t-row"><span>{{ $t('receipt.subtotal') }}</span><span class="t-mono">{{ money(subtotal) }}</span></div>
+            <div v-if="Number(sale.discount) > 0" class="t-row"><span>{{ $t('receipt.discount') }}</span><span class="t-mono">−{{ money(sale.discount) }}</span></div>
+            <div v-if="Number(sale.tax) > 0" class="t-row"><span>{{ $t('receipt.tax') }}</span><span class="t-mono">{{ money(sale.tax) }}</span></div>
+            <div class="t-row t-total"><span>{{ $t('receipt.totalCaps') }}</span><span class="t-mono">{{ money(sale.total_amount) }}</span></div>
+            <div v-if="sale.payment_method" class="t-row"><span>{{ $t('receipt.payment') }}</span><span>{{ $te('paymentMethods', sale.payment_method) }}</span></div>
             <div class="t-sep"></div>
-            <div class="t-center t-muted">Merci de votre visite !<br/>Conservez ce reçu.</div>
+            <div class="t-center t-muted">{{ $t('receipt.thanks') }}<br/>{{ $t('receipt.keep') }}</div>
           </div>
         </div>
         <div class="modal-ft">
-          <button class="btn btn-outline" @click="$emit('close')">Fermer</button>
-          <button class="btn btn-primary" @click="print"><Printer size="1em" /> Imprimer</button>
+          <button class="btn btn-outline" @click="$emit('close')">{{ $t('common.close') }}</button>
+          <button class="btn btn-primary" @click="print"><Printer size="1em" /> {{ $t('common.print') }}</button>
         </div>
       </div>
     </div>
@@ -60,16 +60,15 @@ import { Receipt, Printer, X } from 'lucide-vue-next'
 import { ref, computed } from 'vue'
 import { useAuthStore } from '../stores/auth.js'
 import { pharmacyLogoUrl } from '../utils/logo.js'
+import { t, fmtNum, fmtDateTime, locale, isRtl } from '../i18n/index.js'
 
 // `sale` : une vente, ou une commande en ligne ramenée au même format (voir CommandesEnLigne.vue)
 const props = defineProps({
   sale:     { type: Object, default: null },
-  title:    { type: String, default: 'Reçu de vente' },
+  title:    { type: String, default: '' }, // défaut : t('receipt.title')
   subtitle: { type: String, default: '' },
 })
 defineEmits(['close'])
-
-const PAYMENT = { CASH: 'Espèces', CARD: 'Carte', TRANSFER: 'Virement', INSURANCE: 'Assurance' }
 
 const auth     = useAuthStore()
 const ticket   = ref(null)
@@ -78,8 +77,8 @@ const logoUrl  = computed(() => pharmacyLogoUrl(pharmacy.value))
 const pharmacyLine = computed(() => [pharmacy.value?.address, pharmacy.value?.city].filter(Boolean).join(', '))
 const subtotal = computed(() => (props.sale?.details || []).reduce((s, d) => s + Number(d.total ?? d.price * d.quantity), 0))
 
-const money   = v => `${Number(v || 0).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} MRU`
-const fmtDate = d => (d ? new Date(d) : new Date()).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' })
+const money   = v => `${fmtNum(v, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} MRU`
+const fmtDate = d => fmtDateTime(d || new Date(), { dateStyle: 'short', timeStyle: 'short' })
 
 // Imprime uniquement le ticket, dans une iframe isolée des styles de l'application
 function print() {
@@ -88,7 +87,7 @@ function print() {
   document.body.appendChild(frame)
   const doc = frame.contentDocument
   doc.open()
-  doc.write(`<!doctype html><html><head><meta charset="utf-8"><title>Reçu ${props.sale.invoice_number}</title>
+  doc.write(`<!doctype html><html lang="${locale.value}" dir="${isRtl() ? 'rtl' : 'ltr'}"><head><meta charset="utf-8"><title>${t('receipt.short')} ${props.sale.invoice_number}</title>
     <style>@page{size:80mm auto;margin:4mm}body{margin:0}${TICKET_CSS}</style></head>
     <body>${ticket.value.outerHTML}</body></html>`)
   doc.close()
@@ -110,7 +109,7 @@ const TICKET_CSS = `
 .t-mono{font-family:'Courier New',monospace;white-space:nowrap}
 .t-sep{border-top:1px dashed #999;margin:8px 0}
 .t-row{display:flex;justify-content:space-between;gap:8px}
-.t-row span:last-child{text-align:right}
+.t-row span:last-child{text-align:end}
 .t-total{font-size:15px;font-weight:700;margin:4px 0}
 .t-items{width:100%;border-collapse:collapse;font-size:12px}
 .t-items th{font-size:11px;font-weight:700;border-bottom:1px solid #ccc;padding-bottom:3px}
@@ -127,7 +126,7 @@ const TICKET_CSS = `
 .ticket .t-mono{font-family:'Courier New',monospace;white-space:nowrap}
 .ticket .t-sep{border-top:1px dashed #999;margin:8px 0}
 .ticket .t-row{display:flex;justify-content:space-between;gap:8px}
-.ticket .t-row span:last-child{text-align:right}
+.ticket .t-row span:last-child{text-align:end}
 .ticket .t-total{font-size:15px;font-weight:700;margin:4px 0}
 .ticket .t-items{width:100%;border-collapse:collapse;font-size:12px}
 .ticket .t-items th{font-size:11px;font-weight:700;border-bottom:1px solid #ccc;padding-bottom:3px}

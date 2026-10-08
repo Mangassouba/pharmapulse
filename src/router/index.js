@@ -69,19 +69,19 @@ const routes = [
   // Pharmacy app (requires auth)
   { path:'/app', component:AppLayout,
     children:[
-      { path:'',                   component:Dashboard,        meta:{ title:'Dashboard' } },
-      { path:'produits',           component:Produits,         meta:{ title:'Produits' } },
-      { path:'categories',         component:Categories,       meta:{ title:'Catégories' } },
-      { path:'reception',          component:Reception,        meta:{ title:'Réception' } },
-      { path:'ventes',             component:Ventes,           meta:{ title:'Ventes' } },
-      { path:'mouvements',         component:Mouvements,       meta:{ title:'Mouvements' } },
-      { path:'inventaire',         component:Inventaire,       meta:{ title:'Inventaire' } },
-      { path:'alertes',            component:Alertes,          meta:{ title:'Alertes' } },
-      { path:'lots',               component:Lots,             meta:{ title:'Lots' } },
-      { path:'commandes',          component:Commandes,        meta:{ title:'Commandes' } },
-      { path:'commandes-en-ligne', component:CommandesEnLigne, meta:{ title:'Commandes en ligne' } },
-      { path:'utilisateurs',       component:Utilisateurs,     meta:{ title:'Utilisateurs' } },
-      { path:'parametres',         component:Parametres,       meta:{ title:'Paramètres' } },
+      { path:'',                   component:Dashboard,        meta:{ title:'nav.dashboard' } },
+      { path:'produits',           component:Produits,         meta:{ title:'nav.products' } },
+      { path:'categories',         component:Categories,       meta:{ title:'nav.categories' } },
+      { path:'reception',          component:Reception,        meta:{ title:'nav.reception' } },
+      { path:'ventes',             component:Ventes,           meta:{ title:'nav.sales' } },
+      { path:'mouvements',         component:Mouvements,       meta:{ title:'nav.movements' } },
+      { path:'inventaire',         component:Inventaire,       meta:{ title:'nav.inventory' } },
+      { path:'alertes',            component:Alertes,          meta:{ title:'nav.alerts' } },
+      { path:'lots',               component:Lots,             meta:{ title:'nav.batchesShort' } },
+      { path:'commandes',          component:Commandes,        meta:{ title:'nav.orders' } },
+      { path:'commandes-en-ligne', component:CommandesEnLigne, meta:{ title:'nav.onlineOrders' } },
+      { path:'utilisateurs',       component:Utilisateurs,     meta:{ title:'nav.users' } },
+      { path:'parametres',         component:Parametres,       meta:{ title:'nav.settings' } },
     ]
   },
 
@@ -112,7 +112,7 @@ router.beforeEach(to => {
 })
 
 router.afterEach(to => {
-  useSiteStore().pageTitle = to.meta.title || ''
+  useSiteStore().pageTitle = to.meta.title || '' // clé i18n, traduite par le store
 })
 
 export default router

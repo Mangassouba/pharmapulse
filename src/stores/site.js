@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
 import api, { siteApi } from '../services/api.js'
+import { t, locale } from '../i18n/index.js'
 
 export const DEFAULT_SITE_NAME = 'PharmaPulse'
 
@@ -8,7 +9,7 @@ export const DEFAULT_SITE_NAME = 'PharmaPulse'
 export const useSiteStore = defineStore('site', () => {
   const name          = ref(DEFAULT_SITE_NAME)
   const logoUpdatedAt = ref(null)
-  const pageTitle     = ref('') // set by the router, combined with the name in the browser tab
+  const pageTitle     = ref('') // i18n key set by the router, combined with the name in the browser tab
   let loaded = false
 
   const logoUrl = computed(() => logoUpdatedAt.value
@@ -28,8 +29,8 @@ export const useSiteStore = defineStore('site', () => {
   function setName(v)        { name.value = v || DEFAULT_SITE_NAME }
   function setLogoVersion(v) { logoUpdatedAt.value = v }
 
-  watch([name, pageTitle], () => {
-    document.title = pageTitle.value ? `${pageTitle.value} — ${name.value}` : name.value
+  watch([name, pageTitle, locale], () => {
+    document.title = pageTitle.value ? `${t(pageTitle.value)} — ${name.value}` : name.value
   }, { immediate: true })
 
   // Use the site logo as favicon when there is one

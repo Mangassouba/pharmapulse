@@ -7,7 +7,7 @@
           <div class="pub-logo-icon"><SiteLogo :size="20" color="white" /></div>
           <div>
             <div class="pub-logo-name"><SiteName /></div>
-            <div class="pub-logo-sub">Trouver votre médicament</div>
+            <div class="pub-logo-sub">{{ $t('pub.tagline') }}</div>
           </div>
         </RouterLink>
 
@@ -17,28 +17,29 @@
             <input
               v-model="q"
               class="pub-search-inp"
-              placeholder="Rechercher un médicament..."
+              :placeholder="$t('pub.searchPlaceholder')"
               @keyup.enter="doSearch"
               @input="debouncedSearch"
             />
             <button v-if="q" @click="q=''; cartStore.searchResults=[]" class="pub-search-clear"><X :size="14" /></button>
-            <button class="pub-search-btn" @click="doSearch" aria-label="Rechercher">
-              <Search :size="14" class="pub-search-btn-icon" /><span class="pub-search-btn-text">Rechercher</span>
+            <button class="pub-search-btn" @click="doSearch" :aria-label="$t('common.search')">
+              <Search :size="14" class="pub-search-btn-icon" /><span class="pub-search-btn-text">{{ $t('common.search') }}</span>
             </button>
           </div>
         </div>
 
         <div class="pub-header-right">
-          <button class="pub-loc-btn" @click="requestLocation" :class="{active: cartStore.userLocation}" :aria-label="cartStore.userLocation ? 'Localisé' : 'Me localiser'">
-            <MapPin :size="14" /> <span class="pub-btn-label">{{ cartStore.userLocation ? 'Localisé' : 'Me localiser' }}</span>
+          <LangSwitcher variant="dark" />
+          <button class="pub-loc-btn" @click="requestLocation" :class="{active: cartStore.userLocation}" :aria-label="cartStore.userLocation ? $t('pub.located') : $t('pub.locateMe')">
+            <MapPin :size="14" /> <span class="pub-btn-label">{{ cartStore.userLocation ? $t('pub.located') : $t('pub.locateMe') }}</span>
           </button>
-          <RouterLink to="/panier" class="pub-cart-btn" aria-label="Panier">
-            <ShoppingCart :size="16" /> <span class="pub-btn-label">Panier</span>
+          <RouterLink to="/panier" class="pub-cart-btn" :aria-label="$t('pub.cart')">
+            <ShoppingCart :size="16" /> <span class="pub-btn-label">{{ $t('pub.cart') }}</span>
             <span v-if="cartStore.totalItems > 0" class="pub-cart-badge">{{ cartStore.totalItems }}</span>
           </RouterLink>
-          <RouterLink :to="authStore.isLoggedIn ? '/app' : '/login'" class="pub-login-btn" :aria-label="authStore.isLoggedIn ? 'Mon espace' : 'Connexion'">
+          <RouterLink :to="authStore.isLoggedIn ? '/app' : '/login'" class="pub-login-btn" :aria-label="authStore.isLoggedIn ? $t('pub.mySpace') : $t('pub.login')">
             <component :is="authStore.isLoggedIn ? LayoutDashboard : LogIn" :size="16" />
-            <span class="pub-btn-label">{{ authStore.isLoggedIn ? 'Mon espace' : 'Connexion' }}</span>
+            <span class="pub-btn-label">{{ authStore.isLoggedIn ? $t('pub.mySpace') : $t('pub.login') }}</span>
           </RouterLink>
         </div>
       </div>
@@ -55,28 +56,28 @@
         <div class="pub-footer-grid">
           <div>
             <div style="font-weight:800;font-size:1.1rem;margin-bottom:8px;color:#fff;"><SiteName accent="#4ade80" /></div>
-            <p style="color:#9ca3af;font-size:.85rem;line-height:1.6;">Trouvez vos médicaments dans les pharmacies proches de chez vous, commandez en ligne et récupérez en pharmacie.</p>
+            <p style="color:#9ca3af;font-size:.85rem;line-height:1.6;">{{ $t('pub.footer.about') }}</p>
           </div>
           <div>
-            <div style="font-weight:700;margin-bottom:10px;">Navigation</div>
+            <div style="font-weight:700;margin-bottom:10px;">{{ $t('pub.footer.navigation') }}</div>
             <div style="display:flex;flex-direction:column;gap:6px;">
-              <RouterLink to="/pharmacies" style="color:#9ca3af;font-size:.85rem;text-decoration:none;">Toutes les pharmacies</RouterLink>
-              <RouterLink to="/recherche" style="color:#9ca3af;font-size:.85rem;text-decoration:none;">Rechercher un produit</RouterLink>
-              <RouterLink to="/panier" style="color:#9ca3af;font-size:.85rem;text-decoration:none;">Mon panier</RouterLink>
-              <RouterLink to="/commandes-client" style="color:#9ca3af;font-size:.85rem;text-decoration:none;">Suivre ma commande</RouterLink>
+              <RouterLink to="/pharmacies" style="color:#9ca3af;font-size:.85rem;text-decoration:none;">{{ $t('pub.footer.allPharmacies') }}</RouterLink>
+              <RouterLink to="/recherche" style="color:#9ca3af;font-size:.85rem;text-decoration:none;">{{ $t('pub.footer.searchProduct') }}</RouterLink>
+              <RouterLink to="/panier" style="color:#9ca3af;font-size:.85rem;text-decoration:none;">{{ $t('pub.footer.myCart') }}</RouterLink>
+              <RouterLink to="/commandes-client" style="color:#9ca3af;font-size:.85rem;text-decoration:none;">{{ $t('pub.footer.trackOrder') }}</RouterLink>
             </div>
           </div>
           <div>
-            <div style="font-weight:700;margin-bottom:10px;">Contact</div>
+            <div style="font-weight:700;margin-bottom:10px;">{{ $t('pub.footer.contact') }}</div>
             <div class="pub-footer-contact">
               <div><Mail :size="14" /> support@pharmapulse.mr</div>
-              <div><Phone :size="14" /> +222 45 00 00 00</div>
-              <div><Clock :size="14" /> Lun–Sam : 8h–20h</div>
+              <div><Phone :size="14" /> <span class="mono-ltr">+222 45 00 00 00</span></div>
+              <div><Clock :size="14" /> {{ $t('pub.footer.hours') }}</div>
             </div>
           </div>
         </div>
         <div style="border-top:1px solid #1f2937;margin-top:24px;padding-top:16px;text-align:center;color:#4b5563;font-size:.78rem;">
-          © {{ new Date().getFullYear() }} {{ site.name }} — Plateforme SaaS de gestion de pharmacie
+          © {{ new Date().getFullYear() }} {{ site.name }} — {{ $t('pub.footer.copyright') }}
         </div>
       </div>
     </footer>
@@ -94,6 +95,8 @@ import { useRouter, useRoute } from 'vue-router'
 import { useCartStore } from '../../stores/cart.js'
 import { useAuthStore } from '../../stores/auth.js'
 import { Search, X, MapPin, ShoppingCart, LogIn, LayoutDashboard, Mail, Phone, Clock } from 'lucide-vue-next'
+import LangSwitcher from '../LangSwitcher.vue'
+import { t } from '../../i18n/index.js'
 
 const router    = useRouter()
 const route     = useRoute()
@@ -120,7 +123,7 @@ function requestLocation() {
     pos => {
       cartStore.userLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude }
     },
-    () => alert('Impossible d\'accéder à votre position.')
+    () => alert(t('pub.locationError'))
   )
 }
 </script>
@@ -137,7 +140,7 @@ function requestLocation() {
 .pub-logo-name span { color: #4ade80; }
 .pub-logo-sub { font-size: .65rem; color: #6b7280; font-weight: 500; }
 .pub-header-center { flex: 1; max-width: 560px; }
-.pub-search-bar { display: flex; align-items: center; background: white; border-radius: 99px; padding: 6px 6px 6px 14px; gap: 8px; border: 2px solid transparent; transition: border-color .15s; }
+.pub-search-bar { display: flex; align-items: center; background: white; border-radius: 99px; padding: 6px; padding-inline-start: 14px; gap: 8px; border: 2px solid transparent; transition: border-color .15s; }
 .pub-search-bar:focus-within { border-color: #16a34a; }
 .pub-search-icon { color: #9ca3af; flex-shrink: 0; }
 .pub-search-inp { flex: 1; border: none; outline: none; font-size: .875rem; font-family: 'Inter', sans-serif; background: transparent; }
@@ -173,7 +176,7 @@ function requestLocation() {
   .pub-header .pub-container { flex-wrap: wrap; height: auto; padding: 10px 16px; gap: 10px; }
   .pub-header-center { flex: 1 1 100%; max-width: none; order: 3; }
   .pub-header-center:not(:has(.pub-search-bar)) { display: none; }
-  .pub-header-right { margin-left: auto; gap: 6px; }
+  .pub-header-right { margin-inline-start: auto; gap: 6px; }
   .pub-footer { padding: 28px 0 16px; }
   .pub-footer-grid { grid-template-columns: 1fr 1fr; gap: 20px; }
   .pub-footer-grid > div:first-child { grid-column: 1 / -1; }

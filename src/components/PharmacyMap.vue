@@ -3,7 +3,7 @@
     :src="mapEmbedUrl(lat, lng)"
     :style="{ height: height + 'px' }"
     class="ph-map"
-    title="Carte de la pharmacie"
+    :title="$t('pub.pharmacyMap')"
     loading="lazy"
     referrerpolicy="no-referrer"
   ></iframe>

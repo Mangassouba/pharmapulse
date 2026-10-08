@@ -1,16 +1,17 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { superApi } from '../services/api.js'
+import { t, fmtDate } from '../i18n/index.js'
 
 export const NOTIF_COLORS = { INFO: '#7c3aed', SUCCESS: '#16a34a', WARNING: '#d97706', ERROR: '#dc2626' }
 
 export function timeAgo(d) {
   const s = Math.round((Date.now() - new Date(d)) / 1000)
-  if (s < 60) return "à l'instant"
-  if (s < 3600) return `il y a ${Math.floor(s / 60)} min`
-  if (s < 86400) return `il y a ${Math.floor(s / 3600)} h`
-  if (s < 7 * 86400) return `il y a ${Math.floor(s / 86400)} j`
-  return new Date(d).toLocaleDateString('fr-FR')
+  if (s < 60) return t('time.justNow')
+  if (s < 3600) return t('time.minutesAgo', { n: Math.floor(s / 60) })
+  if (s < 86400) return t('time.hoursAgo', { n: Math.floor(s / 3600) })
+  if (s < 7 * 86400) return t('time.daysAgo', { n: Math.floor(s / 86400) })
+  return fmtDate(d)
 }
 
 // SuperAdmin notifications, shared by the header bell and the dashboard card

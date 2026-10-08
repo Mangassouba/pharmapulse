@@ -1,4 +1,5 @@
 import api from '../services/api.js'
+import { t } from '../i18n/index.js'
 
 // Public URL of a pharmacy logo, versioned with logo_updated_at so browsers can cache it forever
 export function pharmacyLogoUrl(ph) {
@@ -30,7 +31,7 @@ export function resizeImage(file, max = 512) {
       if (data.length > 600_000) data = canvas.toDataURL('image/jpeg', 0.85)
       resolve(data)
     }
-    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Image illisible.')) }
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error(t('common.unreadableImage'))) }
     img.src = url
   })
 }

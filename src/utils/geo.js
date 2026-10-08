@@ -1,3 +1,5 @@
+import { t } from '../i18n/index.js'
+
 // Straight-line distance in km between two GPS points (same formula as the API)
 export function distanceKm(lat1, lng1, lat2, lng2) {
   const R    = 6371
@@ -32,15 +34,15 @@ export function mapEmbedUrl(lat, lng, delta = 0.006) {
   return `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${lat},${lng}`
 }
 
-// Browser geolocation as a promise, with French error messages
+// Browser geolocation as a promise, with translated error messages
 export function getCurrentPosition() {
   return new Promise((resolve, reject) => {
-    if (!navigator.geolocation) return reject(new Error('La géolocalisation n\'est pas disponible sur cet appareil.'))
+    if (!navigator.geolocation) return reject(new Error(t('geo.unavailable')))
     navigator.geolocation.getCurrentPosition(
       pos => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy }),
       err => reject(new Error(err.code === 1
-        ? 'Accès à la position refusé. Autorisez-le dans les réglages du navigateur.'
-        : 'Impossible d\'obtenir votre position.')),
+        ? t('geo.denied')
+        : t('geo.failed'))),
       { enableHighAccuracy: true, timeout: 15000 },
     )
   })

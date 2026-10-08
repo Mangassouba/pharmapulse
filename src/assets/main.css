@@ -7,7 +7,7 @@
 
 /* ── Reset ───────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #f8fafc; color: #111827; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+body { font-family: 'Inter', 'Noto Sans Arabic', -apple-system, BlinkMacSystemFont, sans-serif; background: #f8fafc; color: #111827; line-height: 1.5; -webkit-font-smoothing: antialiased; }
 a { text-decoration: none; color: inherit; }
 button, input, select, textarea { font-family: inherit; }
 
@@ -561,3 +561,24 @@ table.tbl tbody tr:last-child td { border-bottom: none; }
 
 /* Lucide icons: align with surrounding text like the former emojis */
 .lucide { vertical-align: -0.125em; flex-shrink: 0; }
+
+/* ═══════════════════════════════════════════════════════════════
+   RTL (arabe) — <html dir="rtl"> posé par src/i18n
+   ═══════════════════════════════════════════════════════════════ */
+[dir="rtl"] body { font-family: 'Noto Sans Arabic', 'Inter', -apple-system, sans-serif; }
+[dir="rtl"] .sidebar { left: auto; right: 0; border-right: none; border-left: 1px solid var(--border); }
+[dir="rtl"] .sidebar-toggle { right: auto; left: -12px; }
+[dir="rtl"] .nav-badge { margin-left: 0; margin-right: auto; }
+[dir="rtl"] .main-area { margin-left: 0; margin-right: var(--sidebar-w); transition: margin-right .2s ease; }
+[dir="rtl"] .main-area.expanded { margin-left: 0; margin-right: 64px; }
+[dir="rtl"] table.tbl th { text-align: right; }
+[dir="rtl"] .toast-wrap { right: auto; left: 18px; }
+[dir="rtl"] .toast { border-left: none; border-right: 4px solid var(--green); }
+[dir="rtl"] .toast.err  { border-right-color: var(--red); }
+[dir="rtl"] .toast.warn { border-right-color: var(--yellow); }
+[dir="rtl"] .super-sidebar { left: auto; right: 0; }
+[dir="rtl"] .super-main { margin-left: 0; margin-right: 240px; }
+/* Les chiffres, codes et montants restent lisibles de gauche à droite */
+[dir="rtl"] .mono-ltr { direction: ltr; unicode-bidi: isolate; }
+/* Sélecteur de langue sur les pages de connexion */
+.auth-lang { position: fixed; top: 16px; inset-inline-end: 16px; z-index: 10; }

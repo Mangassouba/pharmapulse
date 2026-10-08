@@ -3,35 +3,35 @@
     <!-- Pharmacy header -->
     <div class="pp-hero">
       <div class="pub-container">
-        <div v-if="loading" style="text-align:center;padding:20px;color:#6b7280;">Chargement...</div>
+        <div v-if="loading" style="text-align:center;padding:20px;color:#6b7280;">{{ $t('common.loading') }}</div>
         <div v-else-if="pharmacy" class="pp-hero-row">
           <div class="pp-hero-icon" :style="pharmacyLogoUrl(pharmacy) ? 'background:#fff;overflow:hidden;' : ''"><img v-if="pharmacyLogoUrl(pharmacy)" :src="pharmacyLogoUrl(pharmacy)" :alt="pharmacy.name" style="width:100%;height:100%;object-fit:contain;"/><Hospital v-else size="1em" /></div>
           <div style="flex:1;min-width:0;overflow-wrap:anywhere;">
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;flex-wrap:wrap;">
               <h1 class="pp-title">{{ pharmacy.name }}</h1>
-              <span class="pub-badge-green">PARTENAIRE</span>
+              <span class="pub-badge-green">{{ $t('profile.partner') }}</span>
               <DutyBadge :pharmacy="pharmacy"/>
             </div>
             <div style="color:#6b7280;font-size:.875rem;display:flex;gap:6px 16px;flex-wrap:wrap;margin-top:6px;">
-              <span><MapPin size="1em" /> {{ pharmacy.address || pharmacy.city || 'Mauritanie' }}</span>
-              <span v-if="pharmacy.phone"><Phone size="1em" /> {{ pharmacy.phone }}</span>
+              <span><MapPin size="1em" /> {{ pharmacy.address || pharmacy.city || $t('pub.defaultCountry') }}</span>
+              <span v-if="pharmacy.phone"><Phone size="1em" /> <span class="mono-ltr">{{ pharmacy.phone }}</span></span>
               <span v-if="pharmacy.email"><Mail size="1em" /> {{ pharmacy.email }}</span>
             </div>
             <div v-if="pharmacy.duty_days?.length" style="font-size:.85rem;color:#4338ca;margin-top:6px;">
-              <Moon size="1em" /> De garde chaque : <strong>{{ formatDutyDays(pharmacy.duty_days) }}</strong> · <strong>{{ formatDutyHours(pharmacy) }}</strong>
+              <Moon size="1em" /> {{ $t('profile.onDutyEvery') }} <strong>{{ formatDutyDays(pharmacy.duty_days) }}</strong> · <strong>{{ formatDutyHours(pharmacy) }}</strong>
             </div>
             <div v-if="pharmacy._count" style="display:flex;gap:16px;margin-top:12px;flex-wrap:wrap;">
               <div style="text-align:center;padding:8px 16px;background:#f9fafb;border-radius:8px;">
                 <div style="font-weight:800;font-family:'JetBrains Mono',monospace;color:#16a34a;">{{ pharmacy._count.products }}</div>
-                <div style="font-size:.7rem;color:#6b7280;">Produits</div>
+                <div style="font-size:.7rem;color:#6b7280;">{{ $t('nav.products') }}</div>
               </div>
             </div>
           </div>
           <div class="pp-hero-actions">
-            <a v-if="routeUrl" :href="routeUrl" target="_blank" rel="noopener" class="pub-btn-outline pp-btn-route" style="font-size:.8rem;"><Navigation size="1em" /> Itinéraire</a>
+            <a v-if="routeUrl" :href="routeUrl" target="_blank" rel="noopener" class="pub-btn-outline pp-btn-route" style="font-size:.8rem;"><Navigation size="1em" /> {{ $t('profile.directions') }}</a>
             <template v-if="hasPosition(pharmacy)">
-              <div v-if="distance !== null" class="pp-distance"><MapPin size="1em" /> À {{ formatDistance(distance) }} de vous</div>
-              <button v-else @click="locateMe" class="pub-btn-outline" style="font-size:.8rem;" :disabled="locating"><MapPin size="1em" /> {{ locating ? 'Localisation...' : 'Calculer la distance' }}</button>
+              <div v-if="distance !== null" class="pp-distance"><MapPin size="1em" /> {{ $t('profile.distanceFromYou', { d: formatDistance(distance) }) }}</div>
+              <button v-else @click="locateMe" class="pub-btn-outline" style="font-size:.8rem;" :disabled="locating"><MapPin size="1em" /> {{ locating ? $t('settings.locating') : $t('profile.computeDistance') }}</button>
             </template>
           </div>
         </div>
@@ -44,25 +44,25 @@
         <!-- Sidebar filters -->
         <aside class="pp-aside">
           <div class="pp-box">
-            <h3 style="font-weight:700;font-size:.9rem;margin:0 0 14px;">Catégories</h3>
+            <h3 style="font-weight:700;font-size:.9rem;margin:0 0 14px;">{{ $t('nav.categories') }}</h3>
             <div class="pp-cats">
-              <button @click="selectCat('')" :style="`text-align:left;padding:8px 12px;border-radius:8px;border:none;cursor:pointer;font-size:.85rem;font-weight:${!filterCat?700:500};background:${!filterCat?'#f0fdf4':'transparent'};color:${!filterCat?'#16a34a':'#374151'};`">Tous les produits</button>
-              <button v-for="cat in categories" :key="cat.id" @click="selectCat(cat.id)" :style="`text-align:left;padding:8px 12px;border-radius:8px;border:none;cursor:pointer;font-size:.85rem;font-weight:${filterCat===cat.id?700:500};background:${filterCat===cat.id?'#f0fdf4':'transparent'};color:${filterCat===cat.id?'#16a34a':'#374151'};`">
+              <button @click="selectCat('')" :style="`text-align:start;padding:8px 12px;border-radius:8px;border:none;cursor:pointer;font-size:.85rem;font-weight:${!filterCat?700:500};background:${!filterCat?'#f0fdf4':'transparent'};color:${!filterCat?'#16a34a':'#374151'};`">{{ $t('profile.allProducts') }}</button>
+              <button v-for="cat in categories" :key="cat.id" @click="selectCat(cat.id)" :style="`text-align:start;padding:8px 12px;border-radius:8px;border:none;cursor:pointer;font-size:.85rem;font-weight:${filterCat===cat.id?700:500};background:${filterCat===cat.id?'#f0fdf4':'transparent'};color:${filterCat===cat.id?'#16a34a':'#374151'};`">
                 {{ cat.name }}
-                <span style="float:right;font-size:.75rem;color:#9ca3af;">{{ cat._count?.produit || '' }}</span>
+                <span style="float:inline-end;font-size:.75rem;color:#9ca3af;">{{ cat._count?.produit || '' }}</span>
               </button>
             </div>
           </div>
 
           <div class="pp-box pp-filters">
-            <h3 style="font-weight:700;font-size:.9rem;margin:0 0 12px;">Filtres</h3>
+            <h3 style="font-weight:700;font-size:.9rem;margin:0 0 12px;">{{ $t('profile.filters') }}</h3>
             <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.85rem;">
               <input type="checkbox" v-model="inStockOnly" @change="page=1;fetchProds()"/>
-              En stock uniquement
+              {{ $t('profile.inStockOnly') }}
             </label>
             <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.85rem;">
               <input type="checkbox" v-model="withoutPrescription" @change="page=1;fetchProds()"/>
-              Sans ordonnance
+              {{ $t('profile.noPrescription') }}
             </label>
           </div>
         </aside>
@@ -72,16 +72,16 @@
           <!-- Search + sort -->
           <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
             <div style="flex:1 1 200px;min-width:0;position:relative;">
-              <span style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:#9ca3af;"><Search size="1em" /></span>
-              <input v-model="searchP" class="pub-hero-inp" placeholder="Chercher dans cette pharmacie..." style="width:100%;padding:9px 12px 9px 36px;border:1px solid #e5e7eb;border-radius:9px;font-size:.875rem;outline:none;font-family:'Inter',sans-serif;" @input="debouncedFetch"/>
+              <span style="position:absolute;inset-inline-start:11px;top:50%;transform:translateY(-50%);color:#9ca3af;"><Search size="1em" /></span>
+              <input v-model="searchP" class="pub-hero-inp" :placeholder="$t('profile.searchPh')" style="width:100%;padding:9px 12px;padding-inline-start:36px;border:1px solid #e5e7eb;border-radius:9px;font-size:.875rem;outline:none;font-family:'Inter',sans-serif;" @input="debouncedFetch"/>
             </div>
             <select v-model="sortBy" class="pub-filter-select" @change="page=1;fetchProds()">
-              <option value="name">Nom A-Z</option>
-              <option value="price_asc">Prix croissant</option>
-              <option value="price_desc">Prix décroissant</option>
-              <option value="stock">Stock dispo</option>
+              <option value="name">{{ $t('profile.sort.name') }}</option>
+              <option value="price_asc">{{ $t('profile.sort.priceAsc') }}</option>
+              <option value="price_desc">{{ $t('profile.sort.priceDesc') }}</option>
+              <option value="stock">{{ $t('profile.sort.stock') }}</option>
             </select>
-            <span style="display:flex;align-items:center;font-size:.82rem;color:#6b7280;">{{ meta.total || 0 }} produit(s)</span>
+            <span style="display:flex;align-items:center;font-size:.82rem;color:#6b7280;">{{ $t('categories.productCount', { n: meta.total || 0 }) }}</span>
           </div>
 
           <div v-if="loadingProds" style="text-align:center;padding:40px;color:#6b7280;">
@@ -89,7 +89,7 @@
           </div>
           <div v-else-if="!products.length" style="text-align:center;padding:40px;">
             <div style="font-size:2.5rem;margin-bottom:12px;"><Package size="1em" /></div>
-            <p style="color:#6b7280;">Aucun produit trouvé.</p>
+            <p style="color:#6b7280;">{{ $t('profile.noProduct') }}</p>
           </div>
           <div v-else class="pp-grid">
             <div v-for="p in products" :key="p.id" class="pub-card">
@@ -99,18 +99,18 @@
                   <div style="min-width:0;overflow-wrap:anywhere;">
                     <div style="font-weight:700;font-size:.9rem;line-height:1.3;">{{ p.name }}</div>
                     <div style="font-size:.72rem;color:#6b7280;margin-top:3px;">{{ p.category?.name }}</div>
-                    <div v-if="p.prescription_req" style="font-size:.68rem;color:#2563eb;font-weight:600;margin-top:3px;"><Stethoscope size="1em" /> Ordonnance</div>
+                    <div v-if="p.prescription_req" style="font-size:.68rem;color:#2563eb;font-weight:600;margin-top:3px;"><Stethoscope size="1em" /> {{ $t('profile.prescription') }}</div>
                   </div>
                   <span :class="p.stock===0?'pub-badge-red':p.stock<p.threshold?'pub-badge-yellow':'pub-badge-green'" style="flex-shrink:0;font-size:.65rem;">
-                    {{ p.stock===0?'RUPTURE':p.stock<p.threshold?'FAIBLE':p.stock+' en stock' }}
+                    {{ p.stock===0?$t('stock.out'):p.stock<p.threshold?$t('stock.low'):$t('profile.nInStock', { n: p.stock }) }}
                   </span>
                 </div>
 
                 <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap;margin-bottom:12px;">
                   <div style="font-family:'JetBrains Mono',monospace;font-size:1.15rem;font-weight:800;color:#16a34a;">
-                    {{ Number(p.sale_price).toLocaleString('fr-FR') }} MRU
+                    {{ fmtNum(p.sale_price) }} MRU
                   </div>
-                  <div style="font-size:.72rem;color:#9ca3af;">{{ p.unit_type }}{{ p.unit_quantity ? ' ×'+p.unit_quantity : '' }}</div>
+                  <div style="font-size:.72rem;color:#9ca3af;">{{ $te('unitTypes', p.unit_type) }}{{ p.unit_quantity ? ' ×'+p.unit_quantity : '' }}</div>
                 </div>
 
                 <!-- Qty selector -->
@@ -121,11 +121,11 @@
                     <button @click="incQty(p)" style="width:32px;height:32px;border:none;background:#f9fafb;cursor:pointer;font-weight:700;font-size:1rem;" :disabled="(qty[p.id]||1)>=p.stock">+</button>
                   </div>
                   <button @click="addToCart(p)" style="flex:1;background:#16a34a;color:white;border:none;border-radius:8px;padding:8px;font-size:.8rem;font-weight:700;cursor:pointer;transition:background .12s;" onmouseover="this.style.background='#15803d'" onmouseout="this.style.background='#16a34a'">
-                    <ShoppingCart size="1em" /> Ajouter
+                    <ShoppingCart size="1em" /> {{ $t('common.add') }}
                   </button>
                 </div>
                 <button v-else style="width:100%;background:#f3f4f6;color:#9ca3af;border:none;border-radius:8px;padding:9px;font-size:.8rem;font-weight:700;cursor:not-allowed;" disabled>
-                  Indisponible
+                  {{ $t('profile.unavailable') }}
                 </button>
               </div>
             </div>
@@ -134,7 +134,7 @@
           <!-- Pagination -->
           <div v-if="meta.totalPages > 1" style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:24px;">
             <button :disabled="page===1" @click="page--;fetchProds()" style="width:36px;height:36px;border-radius:8px;border:1px solid #e5e7eb;background:white;cursor:pointer;font-weight:700;" :style="page===1?'opacity:.4;cursor:not-allowed':''">‹</button>
-            <span style="font-size:.85rem;color:#6b7280;">Page {{ page }} / {{ meta.totalPages }}</span>
+            <span style="font-size:.85rem;color:#6b7280;">{{ $t('common.page') }} {{ page }} / {{ meta.totalPages }}</span>
             <button :disabled="page>=meta.totalPages" @click="page++;fetchProds()" style="width:36px;height:36px;border-radius:8px;border:1px solid #e5e7eb;background:white;cursor:pointer;font-weight:700;" :style="page>=meta.totalPages?'opacity:.4;cursor:not-allowed':''">›</button>
           </div>
         </div>
@@ -155,6 +155,7 @@ import ProductImage from '../../components/ProductImage.vue'
 import { pharmacyLogoUrl } from '../../utils/logo.js'
 import { distanceKm, formatDistance, hasPosition, directionsUrl, getCurrentPosition } from '../../utils/geo.js'
 import PharmacyMap from '../../components/PharmacyMap.vue'
+import { t, fmtNum } from '../../i18n/index.js'
 
 const route     = useRoute()
 const cartStore = useCartStore()
@@ -208,9 +209,9 @@ function addToCart(p) {
   cartStore.addItem(
     { id: p.id, name: p.name, sale_price: p.sale_price, stock: p.stock, unit_type: p.unit_type, image_updated_at: p.image_updated_at },
     parseInt(route.params.id),
-    pharmacy.value?.name || 'Pharmacie'
+    pharmacy.value?.name || t('receipt.pharmacy')
   )
-  toast.success(`"${p.name}" ajouté au panier`)
+  toast.success(t('profile.addedToCart', { name: p.name }))
   qty.value[p.id] = 1
 }
 
@@ -277,7 +278,7 @@ onMounted(async () => {
   .pp-cats { flex-direction: row; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; gap: 6px; }
   .pp-cats::-webkit-scrollbar { display: none; }
   .pp-cats > button { flex-shrink: 0; white-space: nowrap; border: 1px solid #e5e7eb !important; border-radius: 99px !important; }
-  .pp-cats > button span { float: none !important; margin-left: 6px; }
+  .pp-cats > button span { float: none !important; margin-inline-start: 6px; }
 }
 @media (max-width: 640px) {
   .pp-hero { padding: 18px 0; }

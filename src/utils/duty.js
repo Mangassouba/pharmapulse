@@ -1,13 +1,13 @@
+import { t } from '../i18n/index.js'
+
 // Jours de garde : même numérotation que Date.getDay() (0 = dimanche … 6 = samedi)
-export const WEEK_DAYS = [
-  { value: 1, label: 'Lundi',    short: 'Lun' },
-  { value: 2, label: 'Mardi',    short: 'Mar' },
-  { value: 3, label: 'Mercredi', short: 'Mer' },
-  { value: 4, label: 'Jeudi',    short: 'Jeu' },
-  { value: 5, label: 'Vendredi', short: 'Ven' },
-  { value: 6, label: 'Samedi',   short: 'Sam' },
-  { value: 0, label: 'Dimanche', short: 'Dim' },
-]
+// label / short sont des getters : ils suivent la langue courante
+const day = value => ({
+  value,
+  get label() { return t(`days.long.${value}`) },
+  get short() { return t(`days.short.${value}`) },
+})
+export const WEEK_DAYS = [1, 2, 3, 4, 5, 6, 0].map(day)
 
 const toMinutes = hhmm => { const [h, m] = hhmm.split(':').map(Number); return h * 60 + m }
 
@@ -18,9 +18,9 @@ export const formatDutyDays = (days, key = 'label') => WEEK_DAYS
 
 /** "20:00 – 08:00 (lendemain)" ou "24h/24" quand aucun horaire n'est défini */
 export function formatDutyHours(ph) {
-  if (!ph?.duty_start || !ph?.duty_end) return '24h/24'
+  if (!ph?.duty_start || !ph?.duty_end) return t('duty.allDay')
   const overnight = toMinutes(ph.duty_end) < toMinutes(ph.duty_start)
-  return `${ph.duty_start} – ${ph.duty_end}${overnight ? ' (lendemain)' : ''}`
+  return `${ph.duty_start} – ${ph.duty_end}${overnight ? ` (${t('duty.nextDay')})` : ''}`
 }
 
 /**

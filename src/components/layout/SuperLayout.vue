@@ -5,25 +5,25 @@
         <div style="width:34px;height:34px;border-radius:8px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:1.1rem;"><SiteLogo :fallback="Shield" /></div>
         <div>
           <div style="font-weight:800;font-size:.9rem;color:#fff;"><SiteName accent="#a78bfa" /></div>
-          <div style="font-size:.65rem;color:#a78bfa;font-weight:700;letter-spacing:.08em;">SUPER ADMIN</div>
+          <div style="font-size:.65rem;color:#a78bfa;font-weight:700;letter-spacing:.08em;">{{ $t('super.badge') }}</div>
         </div>
       </div>
 
       <nav style="flex:1;padding:10px 0;">
-        <RouterLink to="/super"              class="snav-link" :class="{active:route.path==='/super'}"><span><ChartColumn size="1em" /></span> Dashboard</RouterLink>
-        <RouterLink to="/super/pharmacies"   class="snav-link" :class="{active:route.path.startsWith('/super/pharmacies')}"><span><Hospital size="1em" /></span> Pharmacies</RouterLink>
-        <RouterLink to="/super/utilisateurs" class="snav-link" :class="{active:route.path==='/super/utilisateurs'}"><span><Users size="1em" /></span> Utilisateurs</RouterLink>
-        <RouterLink to="/super/logs"         class="snav-link" :class="{active:route.path==='/super/logs'}"><span><ClipboardList size="1em" /></span> Journaux</RouterLink>
-        <RouterLink to="/super/parametres"   class="snav-link" :class="{active:route.path==='/super/parametres'}"><span><Settings size="1em" /></span> Paramètres</RouterLink>
+        <RouterLink to="/super"              class="snav-link" :class="{active:route.path==='/super'}"><span><ChartColumn size="1em" /></span> {{ $t('nav.dashboard') }}</RouterLink>
+        <RouterLink to="/super/pharmacies"   class="snav-link" :class="{active:route.path.startsWith('/super/pharmacies')}"><span><Hospital size="1em" /></span> {{ $t('super.nav.pharmacies') }}</RouterLink>
+        <RouterLink to="/super/utilisateurs" class="snav-link" :class="{active:route.path==='/super/utilisateurs'}"><span><Users size="1em" /></span> {{ $t('nav.users') }}</RouterLink>
+        <RouterLink to="/super/logs"         class="snav-link" :class="{active:route.path==='/super/logs'}"><span><ClipboardList size="1em" /></span> {{ $t('super.nav.logs') }}</RouterLink>
+        <RouterLink to="/super/parametres"   class="snav-link" :class="{active:route.path==='/super/parametres'}"><span><Settings size="1em" /></span> {{ $t('nav.settings') }}</RouterLink>
       </nav>
 
       <div style="padding:12px 14px;border-top:1px solid rgba(255,255,255,.1);display:flex;align-items:center;gap:8px;">
         <div style="width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,.15);color:#c4b5fd;font-weight:800;font-size:.8rem;display:flex;align-items:center;justify-content:center;">{{ initials }}</div>
         <div style="flex:1;min-width:0;">
           <div style="font-size:.8rem;font-weight:700;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ superStore.admin?.name }}</div>
-          <div style="font-size:.68rem;color:#a78bfa;">Super Admin</div>
+          <div style="font-size:.68rem;color:#a78bfa;">{{ $t('super.role') }}</div>
         </div>
-        <button @click="doLogout" style="background:transparent;border:1px solid rgba(255,255,255,.2);width:28px;height:28px;border-radius:6px;cursor:pointer;color:#fff;font-size:.85rem;display:flex;align-items:center;justify-content:center;"><LogOut size="1em" /></button>
+        <button @click="doLogout" :title="$t('nav.logout')" style="background:transparent;border:1px solid rgba(255,255,255,.2);width:28px;height:28px;border-radius:6px;cursor:pointer;color:#fff;font-size:.85rem;display:flex;align-items:center;justify-content:center;"><LogOut size="1em" /></button>
       </div>
     </aside>
 
@@ -34,10 +34,11 @@
           <div style="font-size:.72rem;color:#7c3aed;">{{ todayStr }}</div>
         </div>
         <div style="display:flex;align-items:center;gap:10px;">
+          <LangSwitcher variant="purple" />
           <SuperNotifications />
           <div style="background:#f5f3ff;border:1px solid #ddd6fe;padding:5px 12px;border-radius:99px;font-size:.72rem;font-weight:700;color:#7c3aed;display:flex;align-items:center;gap:6px;">
             <span style="width:7px;height:7px;border-radius:50%;background:#7c3aed;display:inline-block;animation:pulse 2s infinite;"></span>
-            PLATEFORME EN DIRECT
+            {{ $t('super.live') }}
           </div>
         </div>
       </header>
@@ -59,14 +60,16 @@ import SuperNotifications from '../SuperNotifications.vue'
 import { computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useSuperAdminStore } from '../../stores/superAdmin.js'
+import LangSwitcher from '../LangSwitcher.vue'
+import { t, intlLocale } from '../../i18n/index.js'
 
 const route       = useRoute()
 const router      = useRouter()
 const superStore  = useSuperAdminStore()
 const initials    = computed(() => (superStore.admin?.name||'SA').slice(0,2).toUpperCase())
-const todayStr    = computed(() => new Date().toLocaleDateString('fr-FR',{weekday:'long',year:'numeric',month:'long',day:'numeric'}))
-const titles      = { '/super':'Dashboard Plateforme', '/super/pharmacies':'Gestion Pharmacies', '/super/utilisateurs':'Tous les Utilisateurs', '/super/logs':'Journaux d\'activité', '/super/parametres':'Paramètres du site' }
-const pageTitle   = computed(() => titles[route.path] || 'Super Admin')
+const todayStr    = computed(() => new Date().toLocaleDateString(intlLocale(),{weekday:'long',year:'numeric',month:'long',day:'numeric'}))
+const titles      = { '/super':'super.titles.dashboard', '/super/pharmacies':'super.titles.pharmacies', '/super/utilisateurs':'super.titles.users', '/super/logs':'super.titles.logs', '/super/parametres':'super.titles.settings' }
+const pageTitle   = computed(() => t(titles[route.path] || 'super.role'))
 function doLogout() { superStore.logout(); router.push('/super/login') }
 onMounted(() => superStore.fetchStats())
 </script>

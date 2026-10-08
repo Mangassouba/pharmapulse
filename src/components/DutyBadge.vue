@@ -1,6 +1,6 @@
 <template>
   <span v-if="status" class="duty-badge" :class="{ 'duty-badge--now': status === 'now' }">
-    <Moon size="1em" /> {{ status === 'now' ? 'DE GARDE MAINTENANT' : `DE GARDE DÈS ${pharmacy.duty_start}` }}
+    <Moon size="1em" /> {{ status === 'now' ? $t('duty.now') : $t('duty.from', { time: pharmacy.duty_start }) }}
   </span>
 </template>
 

@@ -1,12 +1,14 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import axios from 'axios'
+import { locale } from '../i18n/index.js'
 
 const pub = axios.create({
   baseURL: (import.meta.env.VITE_API_URL || 'http://localhost:3000/api'),
   timeout: 15000,
   headers: { 'Content-Type': 'application/json' },
 })
+pub.interceptors.request.use(cfg => { cfg.headers['Accept-Language'] = locale.value; return cfg })
 
 export const useCartStore = defineStore('cart', () => {
   const items         = ref(JSON.parse(localStorage.getItem('pub_cart') || '[]'))

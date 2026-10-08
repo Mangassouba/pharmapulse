@@ -4,13 +4,13 @@
     <section class="pub-hero">
       <div class="pub-container">
         <div class="pub-hero-content">
-          <div class="pub-hero-tag"><Leaf size="1em" /> Disponible 24h/24</div>
+          <div class="pub-hero-tag"><Leaf size="1em" /> {{ $t('home.available') }}</div>
           <h1 class="pub-hero-title">
-            Vos médicaments,<br/>
-            <span class="pub-hero-accent">livrés ou prêts à récupérer</span>
+            {{ $t('home.heroTitle1') }}<br/>
+            <span class="pub-hero-accent">{{ $t('home.heroTitle2') }}</span>
           </h1>
           <p class="pub-hero-desc">
-            Recherchez votre médicament, trouvez la pharmacie la plus proche qui l'a en stock et passez commande en ligne. Récupérez-le à la pharmacie.
+            {{ $t('home.heroDesc') }}
           </p>
 
           <!-- Search box -->
@@ -20,16 +20,16 @@
               <input
                 v-model="query"
                 class="pub-hero-inp"
-                placeholder="Ex: Paracetamol, Amoxicilline, Vitamines..."
+                :placeholder="$t('home.searchPh')"
                 @keyup.enter="doSearch"
                 @input="debouncedSearch"
               />
               <button class="pub-hero-btn" @click="doSearch">
-                Rechercher
+                {{ $t('common.search') }}
               </button>
             </div>
             <p class="pub-hero-locate">
-              Ou <button @click="locateMe" class="pub-locate-btn"><MapPin size="1em" /> utilisez votre position</button> pour voir les pharmacies proches
+              {{ $t('home.or') }} <button @click="locateMe" class="pub-locate-btn"><MapPin size="1em" /> {{ $t('home.useLocation') }}</button> {{ $t('home.toSeeNearby') }}
             </p>
           </div>
 
@@ -44,25 +44,25 @@
             <div class="pub-float-icon"><Pill size="1em" /></div>
             <div class="pub-float-info">
               <div class="pub-float-title">Paracetamol 500mg</div>
-              <div class="pub-float-location">Pharmacie Chifa · Nouakchott</div>
+              <div class="pub-float-location">{{ $t('home.demo1') }}</div>
             </div>
-            <span class="pub-float-stock">EN STOCK</span>
+            <span class="pub-float-stock">{{ $t('pub.inStockCaps') }}</span>
           </div>
           <div class="pub-hero-card-float pub-hero-card-offset1">
             <div class="pub-float-icon"><Stethoscope size="1em" /></div>
             <div class="pub-float-info">
               <div class="pub-float-title">Amoxicilline 500mg</div>
-              <div class="pub-float-location">Pharmacie Centrale · Thiès</div>
+              <div class="pub-float-location">{{ $t('home.demo2') }}</div>
             </div>
-            <span class="pub-float-stock">EN STOCK</span>
+            <span class="pub-float-stock">{{ $t('pub.inStockCaps') }}</span>
           </div>
           <div class="pub-hero-card-float pub-hero-card-offset2">
             <div class="pub-float-icon"><Syringe size="1em" /></div>
             <div class="pub-float-info">
               <div class="pub-float-title">Ibuprofène 400mg</div>
-              <div class="pub-float-location">Pharmacie du Progrès</div>
+              <div class="pub-float-location">{{ $t('home.demo3') }}</div>
             </div>
-            <span class="pub-float-stock">3 disponibles</span>
+            <span class="pub-float-stock">{{ $t('pub.availableN', { n: 3 }) }}</span>
           </div>
         </div>
       </div>
@@ -72,15 +72,15 @@
     <section class="pub-how-section">
       <div class="pub-container">
         <div class="pub-section-header">
-          <h2 class="pub-section-title">Comment ça marche ?</h2>
-          <p class="pub-section-sub">Commander votre médicament en 3 étapes simples</p>
+          <h2 class="pub-section-title">{{ $t('home.howTitle') }}</h2>
+          <p class="pub-section-sub">{{ $t('home.howSub') }}</p>
         </div>
         <div class="pub-steps-grid">
           <div v-for="step in steps" :key="step.num" class="pub-step-card">
             <div class="pub-step-icon" :style="{background:step.bg}"><component :is="step.icon" size="1em" /></div>
             <div class="pub-step-num">{{ step.num }}</div>
-            <h3 class="pub-step-title">{{ step.title }}</h3>
-            <p class="pub-step-desc">{{ step.desc }}</p>
+            <h3 class="pub-step-title">{{ $t(step.title) }}</h3>
+            <p class="pub-step-desc">{{ $t(step.desc) }}</p>
           </div>
         </div>
       </div>
@@ -91,24 +91,24 @@
       <div class="pub-container">
         <div class="pub-pharmacies-header">
           <div class="pub-pharmacies-title-wrap">
-            <h2 class="pub-section-title">Pharmacies disponibles</h2>
-            <p class="pub-pharmacies-count">{{ cartStore.pharmacies.length }} pharmacie(s) partenaire(s)</p>
+            <h2 class="pub-section-title">{{ $t('home.availablePharmacies') }}</h2>
+            <p class="pub-pharmacies-count">{{ $t('home.partnerCount', { n: cartStore.pharmacies.length }) }}</p>
           </div>
           <div class="pub-pharmacies-actions">
             <button @click="locateMe" class="pub-btn-outline">
-              <MapPin size="1em" /> {{ cartStore.userLocation ? 'Les plus proches' : 'Me localiser' }}
+              <MapPin size="1em" /> {{ cartStore.userLocation ? $t('home.nearest') : $t('pub.locateMe') }}
             </button>
-            <RouterLink to="/pharmacies" class="pub-btn-green">Voir toutes →</RouterLink>
+            <RouterLink to="/pharmacies" class="pub-btn-green">{{ $t('home.seeAll') }}</RouterLink>
           </div>
         </div>
 
         <div v-if="cartStore.loading" class="pub-loading">
           <div class="pub-spinner"></div>
-          Chargement...
+          {{ $t('common.loading') }}
         </div>
         <div v-else-if="!cartStore.pharmacies.length" class="pub-empty">
           <div class="pub-empty-icon"><Hospital size="1em" /></div>
-          <p class="pub-empty-text">Aucune pharmacie disponible pour le moment.</p>
+          <p class="pub-empty-text">{{ $t('home.noPharmacy') }}</p>
         </div>
         <div v-else class="pub-pharmacies-grid">
           <div v-for="ph in cartStore.pharmacies.slice(0,6)" :key="ph.id" class="pub-card" @click="$router.push('/pharmacie/'+ph.id)">
@@ -121,36 +121,36 @@
                   </div>
                   <div class="pub-card-info">
                     <div class="pub-card-name">{{ ph.name }}</div>
-                    <div class="pub-card-city"><MapPin size="1em" /> {{ ph.city || 'Mauritanie' }}</div>
+                    <div class="pub-card-city"><MapPin size="1em" /> {{ ph.city || $t('pub.defaultCountry') }}</div>
                   </div>
                 </div>
                 <DutyBadge v-if="dutyStatus(ph)" :pharmacy="ph"/>
-                <span v-else class="pub-badge-green">OUVERTE</span>
+                <span v-else class="pub-badge-green">{{ $t('pub.open') }}</span>
               </div>
               <div v-if="ph.duty_days?.length" style="font-size:.75rem;color:#4338ca;margin-top:6px;">
-                <Moon size="1em" /> Garde : {{ formatDutyDays(ph.duty_days, 'short') }} · {{ formatDutyHours(ph) }}
+                <Moon size="1em" /> {{ $t('pub.dutyLabel') }} {{ formatDutyDays(ph.duty_days, 'short') }} · {{ formatDutyHours(ph) }}
               </div>
               <div v-if="ph.distance" class="pub-card-distance">
-                <Navigation size="1em" /> {{ ph.distance < 1 ? (ph.distance * 1000).toFixed(0) + ' m' : ph.distance.toFixed(1) + ' km' }}
+                <Navigation size="1em" /> {{ formatDistance(ph.distance) }}
               </div>
               <div class="pub-card-contact">
-                <Phone size="1em" /> {{ ph.phone || 'Non renseigné' }}
+                <Phone size="1em" /> <span v-if="ph.phone" class="mono-ltr">{{ ph.phone }}</span><template v-else>{{ $t('pub.notProvided') }}</template>
                 <span v-if="ph.email"> · {{ ph.email }}</span>
               </div>
               <div class="pub-card-stats">
                 <div class="pub-stat">
                   <div class="pub-stat-value">{{ ph._count?.products ?? '—' }}</div>
-                  <div class="pub-stat-label">Produits</div>
+                  <div class="pub-stat-label">{{ $t('nav.products') }}</div>
                 </div>
                 <div class="pub-stat pub-stat-blue">
                   <div class="pub-stat-value">{{ ph.subscription?.plan || 'FREE' }}</div>
-                  <div class="pub-stat-label">Plan</div>
+                  <div class="pub-stat-label">{{ $t('super.ph.plan') }}</div>
                 </div>
               </div>
             </div>
             <div class="pub-card-footer">
               <button class="pub-btn-green pub-btn-sm" @click.stop="$router.push('/pharmacie/'+ph.id)">
-                Voir les produits →
+                {{ $t('pub.seeProducts') }}
               </button>
             </div>
           </div>
@@ -168,6 +168,7 @@ import { useCartStore } from '../../stores/cart.js'
 import { dutyStatus, formatDutyDays, formatDutyHours } from '../../utils/duty.js'
 import DutyBadge from '../../components/DutyBadge.vue'
 import { pharmacyLogoUrl } from '../../utils/logo.js'
+import { formatDistance } from '../../utils/geo.js'
 
 const router    = useRouter()
 const cartStore = useCartStore()
@@ -175,9 +176,10 @@ const query     = ref('')
 
 const quickTags = ['Paracetamol', 'Amoxicilline', 'Ibuprofène', 'Vitamines', 'Antitussif', 'Antipaludéen']
 const steps = [
-  { num:1, icon:Search, bg:'#f0fdf4', title:'Recherchez votre médicament', desc:'Tapez le nom du médicament et trouvez instantanément les pharmacies qui l\'ont en stock près de chez vous.' },
-  { num:2, icon:ShoppingCart, bg:'#eff6ff', title:'Ajoutez au panier', desc:'Sélectionnez le produit, la quantité et la pharmacie de votre choix. Votre panier est sauvegardé automatiquement.' },
-  { num:3, icon:Hospital, bg:'#f5f3ff', title:'Récupérez en pharmacie', desc:'Recevez un code de confirmation par SMS. Présentez-le à la pharmacie pour récupérer et payer votre commande.' },
+  // title / desc : clés i18n
+  { num:1, icon:Search, bg:'#f0fdf4', title:'home.step1Title', desc:'home.step1Desc' },
+  { num:2, icon:ShoppingCart, bg:'#eff6ff', title:'home.step2Title', desc:'home.step2Desc' },
+  { num:3, icon:Hospital, bg:'#f5f3ff', title:'home.step3Title', desc:'home.step3Desc' },
 ]
 
 let dt
@@ -357,7 +359,8 @@ onMounted(() => {
 
 @media (min-width: 640px) {
   .pub-hero-search-wrap {
-    padding: 0.5rem 0.5rem 0.5rem 1rem;
+    padding: 0.5rem;
+    padding-inline-start: 1rem;
   }
 }
 
