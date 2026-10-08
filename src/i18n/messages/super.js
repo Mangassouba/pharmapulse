@@ -106,6 +106,13 @@ export default {
       modified:       ['Pharmacie modifiée.', 'Pharmacy updated.', 'تم تعديل الصيدلية.'],
       suspended:      ['Pharmacie suspendue.', 'Pharmacy suspended.', 'تم إيقاف الصيدلية.'],
       renewed:        ['Abonnement renouvelé !', 'Subscription renewed!', 'تم تجديد الاشتراك!'],
+      delete:         ['Supprimer', 'Delete', 'حذف'],
+      deleteTitle:    ['Supprimer la pharmacie', 'Delete pharmacy', 'حذف الصيدلية'],
+      deleteWarn:     ['La pharmacie {name} va disparaître de la plateforme et ses {n} compte(s) seront désactivés : plus personne ne pourra s’y connecter.', 'The pharmacy {name} will be removed from the platform and its {n} account(s) deactivated: nobody will be able to sign in any more.', 'ستُزال الصيدلية {name} من المنصة وسيتم تعطيل حساباتها ({n}): لن يتمكن أحد من تسجيل الدخول بعد الآن.'],
+      deleteKept:     ['Ses données (ventes, stock, historique) sont conservées pour la comptabilité, mais ne seront plus accessibles depuis l’interface.', 'Its data (sales, stock, history) is kept for accounting but will no longer be reachable from the interface.', 'تُحفظ بياناتها (المبيعات، المخزون، السجل) لأغراض المحاسبة، لكن لن يمكن الوصول إليها من الواجهة.'],
+      deleteType:     ['Pour confirmer, tapez le nom exact de la pharmacie :', 'To confirm, type the exact pharmacy name:', 'للتأكيد، اكتب اسم الصيدلية بالضبط:'],
+      deleteConfirm:  ['Supprimer définitivement', 'Delete permanently', 'حذف نهائيًا'],
+      deleted:        ['Pharmacie supprimée.', 'Pharmacy deleted.', 'تم حذف الصيدلية.'],
     },
     settings: {
       siteName:     ['Nom du site', 'Site name', 'اسم الموقع'],

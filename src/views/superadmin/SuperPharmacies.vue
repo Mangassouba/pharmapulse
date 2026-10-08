@@ -53,6 +53,7 @@
                   <button v-if="p.status!=='ACTIVE'" class="btn btn-xs" style="background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;" @click="setStatus(p,'ACTIVE')"><CircleCheck size="1em" /> {{ $t('super.ph.activate') }}</button>
                   <button v-if="p.status==='ACTIVE'" class="btn btn-xs" style="background:#fef2f2;color:#dc2626;border:1px solid #fecaca;" @click="openSuspend(p)"><Ban size="1em" /> {{ $t('super.ph.suspend') }}</button>
                   <button class="btn btn-xs" style="background:#f5f3ff;color:#7c3aed;border:1px solid #ddd6fe;" @click="openRenew(p)"><RefreshCw size="1em" /> {{ $t('super.ph.renew') }}</button>
+                  <button class="btn btn-xs" style="background:#fff;color:#dc2626;border:1px solid #fecaca;" @click="openDelete(p)"><Trash2 size="1em" /> {{ $t('super.ph.delete') }}</button>
                 </div>
               </td>
             </tr>
@@ -166,6 +167,25 @@
       </div>
     </Teleport>
 
+    <!-- ── DELETE MODAL ── -->
+    <Teleport to="body">
+      <div v-if="deleteTarget" class="modal-bg" @click.self="deleteTarget=null">
+        <div class="modal" style="max-width:440px;">
+          <div class="modal-hd"><h3 style="color:#dc2626;"><Trash2 size="1em" /> {{ $t('super.ph.deleteTitle') }}</h3><button class="btn btn-icon" @click="deleteTarget=null"><X size="1em" /></button></div>
+          <div class="modal-bd">
+            <div style="padding:10px 12px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;color:#991b1b;font-size:.85rem;margin-bottom:10px;">
+              <TriangleAlert size="1em" /> {{ $t('super.ph.deleteWarn', { name: '« ' + deleteTarget.name + ' »', n: deleteTarget._count?.users ?? 0 }) }}
+            </div>
+            <p style="color:#6b7280;font-size:.82rem;margin-bottom:14px;">{{ $t('super.ph.deleteKept') }}</p>
+            <label class="lbl">{{ $t('super.ph.deleteType') }} <strong style="color:#111827;">{{ deleteTarget.name }}</strong></label>
+            <input v-model="deleteName" class="inp" autocomplete="off" @keyup.enter="deleteNameOk && doDelete()"/>
+            <div v-if="dErr" class="alert alert-red" style="margin-top:10px;">{{ dErr }}</div>
+          </div>
+          <div class="modal-ft"><button class="btn btn-outline" @click="deleteTarget=null">{{ $t('common.cancel') }}</button><button class="btn btn-danger" @click="doDelete" :disabled="!deleteNameOk||dSaving">{{ dSaving?'...':$t('super.ph.deleteConfirm') }}</button></div>
+        </div>
+      </div>
+    </Teleport>
+
     <!-- ── RENEW MODAL ── -->
     <Teleport to="body">
       <div v-if="renewTarget" class="modal-bg" @click.self="renewTarget=null">
@@ -191,7 +211,7 @@
 </template>
 
 <script setup>
-import { Search, Hospital, CircleCheck, CircleX, TriangleAlert, Eye, Ban, RefreshCw, X } from 'lucide-vue-next'
+import { Search, Hospital, CircleCheck, CircleX, TriangleAlert, Eye, Ban, RefreshCw, X, Trash2 } from 'lucide-vue-next'
 import { ref, computed, onMounted } from 'vue'
 import { superApi }         from '../../services/api.js'
 import { useToastStore }    from '../../stores/toast.js'
@@ -287,6 +307,19 @@ async function doSuspend() {
     toast.success(t('super.ph.suspended')); suspendTarget.value = null
     await Promise.all([fetchData(), superStore.fetchStats()])
   } catch(e) { toast.error(e.message) } finally { sSaving.value = false }
+}
+
+// Deletion: the exact name must be typed again (same check on the API)
+const deleteTarget = ref(null); const deleteName = ref(''); const dSaving = ref(false); const dErr = ref('')
+const deleteNameOk = computed(() => !!deleteTarget.value && deleteName.value.trim() === deleteTarget.value.name.trim())
+function openDelete(p) { deleteTarget.value = p; deleteName.value = ''; dErr.value = '' }
+async function doDelete() {
+  dSaving.value = true; dErr.value = ''
+  try {
+    await superApi.deletePharmacy(deleteTarget.value.id, deleteName.value.trim())
+    toast.success(t('super.ph.deleted')); deleteTarget.value = null
+    await Promise.all([fetchData(), superStore.fetchStats()])
+  } catch(e) { dErr.value = e.message } finally { dSaving.value = false }
 }
 
 function openRenew(p) {
