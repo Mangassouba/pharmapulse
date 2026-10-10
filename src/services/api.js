@@ -64,6 +64,8 @@ export const productApi    = {
   delete: id => api.delete(`/products/${id}`),
   updateImage: (id,d) => api.put(`/products/${id}/image`, d),
   deleteImage: id => api.delete(`/products/${id}/image`),
+  exportAll:   () => api.get('/products/export', { timeout: 60000 }),
+  import:      rows => api.post('/products/import', { rows }, { timeout: 120000 }),
 }
 export const categoryApi   = {
   list:   p => api.get('/categories', { params: p }),

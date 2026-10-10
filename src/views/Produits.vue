@@ -6,6 +6,8 @@
         <select v-model="filterCat" class="inp" style="width:160px;" @change="fetchData"><option value="">{{ $t('products.allCategories') }}</option><option v-for="c in store.categories" :key="c.id" :value="c.id">{{ c.name }}</option></select>
         <select v-model="filterStatus" class="inp" style="width:140px;" @change="fetchData"><option value="">{{ $t('common.allStatuses') }}</option><option value="AVAILABLE">{{ $t('products.inStock') }}</option><option value="OUT_OF_STOCK">{{ $t('inventory.filterOut') }}</option></select>
         <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.85rem;font-weight:500;color:#374151;"><input type="checkbox" v-model="filterLow" @change="fetchData"/> {{ $t('inventory.filterLow') }}</label>
+        <button class="btn btn-outline" @click="doExport" :disabled="exporting"><Download size="1em" /> {{ exporting?'...':$t('products.export') }}</button>
+        <button v-if="canImport" class="btn btn-outline" @click="openImport"><Upload size="1em" /> {{ $t('products.import') }}</button>
         <button class="btn btn-primary" @click="openAdd">+ {{ $t('products.new') }}</button>
       </div>
     </div>
@@ -78,6 +80,30 @@
         </div>
       </div>
     </Teleport>
+    <!-- Import -->
+    <Teleport to="body">
+      <div v-if="showImport" class="modal-bg" @click.self="closeImport">
+        <div class="modal" style="max-width:560px;">
+          <div class="modal-hd"><h3>{{ $t('products.importTitle') }}</h3><button class="btn btn-icon" @click="closeImport"><X size="1em" /></button></div>
+          <div class="modal-bd" style="display:flex;flex-direction:column;gap:12px;">
+            <p style="color:#374151;font-size:.875rem;margin:0;">{{ $t('products.importHelp') }}</p>
+            <p style="color:#6b7280;font-size:.8rem;margin:0;">{{ $t('products.importRules') }}</p>
+            <div><button type="button" class="btn btn-outline btn-sm" @click="importInput.click()" :disabled="importing"><FileSpreadsheet size="1em" /> {{ $t('products.importChoose') }}</button></div>
+            <input ref="importInput" type="file" accept=".xlsx,.xls,.csv" style="display:none" @change="onImportPicked"/>
+            <div v-if="importRows.length" class="alert alert-green"><Check size="1em" /> {{ $t('products.importReady', { n: importRows.length, file: importFile }) }}</div>
+            <div v-if="importErr" class="alert alert-red"><CircleX size="1em" /> {{ importErr }}</div>
+            <div v-if="importErrors.length">
+              <div style="font-weight:600;font-size:.85rem;margin-bottom:6px;">{{ $t('products.importErrors') }}</div>
+              <ul style="max-height:220px;overflow:auto;margin:0;padding-inline-start:18px;font-size:.8rem;color:#b91c1c;display:flex;flex-direction:column;gap:3px;">
+                <li v-for="e in importErrors.slice(0, 100)" :key="e.line + e.message">{{ e.message }}</li>
+              </ul>
+              <div v-if="importErrors.length>100" style="font-size:.78rem;color:#6b7280;margin-top:4px;">{{ $t('products.importMoreErrors', { n: importErrors.length - 100 }) }}</div>
+            </div>
+          </div>
+          <div class="modal-ft"><button class="btn btn-outline" @click="closeImport">{{ $t('common.cancel') }}</button><button class="btn btn-primary" @click="doImport" :disabled="importing || !importRows.length">{{ importing?'...':$t('products.import') }}</button></div>
+        </div>
+      </div>
+    </Teleport>
     <!-- Confirm delete -->
     <Teleport to="body">
       <div v-if="delTarget" class="modal-bg" @click.self="delTarget=null">
@@ -91,15 +117,17 @@
   </div>
 </template>
 <script setup>
-import { Search, Package, Pencil, Trash2, X, CircleX, ImagePlus } from 'lucide-vue-next'
-import { ref, onMounted } from 'vue'
+import { Search, Package, Pencil, Trash2, X, CircleX, ImagePlus, Download, Upload, FileSpreadsheet, Check } from 'lucide-vue-next'
+import { ref, computed, onMounted } from 'vue'
 import { usePharmaStore } from '../stores/pharma.js'
 import { useToastStore }  from '../stores/toast.js'
+import { useAuthStore }   from '../stores/auth.js'
 import { productApi }     from '../services/api.js'
 import { productImageUrl, resizeImage } from '../utils/logo.js'
+import { downloadProductSheet, readProductSheet } from '../utils/productSheet.js'
 import ProductImage from '../components/ProductImage.vue'
 import { t, fmtNum } from '../i18n/index.js'
-const store = usePharmaStore(); const toast = useToastStore()
+const store = usePharmaStore(); const toast = useToastStore(); const auth = useAuthStore()
 const search=ref(''); const filterCat=ref(''); const filterStatus=ref(''); const filterLow=ref(false); const page=ref(1)
 const showModal=ref(false); const editId=ref(null); const saving=ref(false); const formErr=ref(''); const delTarget=ref(null)
 // Image is uploaded separately once the product exists: imageData = new data URL to send, imageRemoved = delete on save
@@ -147,5 +175,40 @@ async function save() {
 }
 function confirmDel(p) { delTarget.value=p }
 async function doDel() { try { await store.deleteProduct(delTarget.value.id); toast.success(t('common.deleted')); fetchData() } catch(e) { toast.error(e.message) } delTarget.value=null }
+// Export: every product of the pharmacy, not just the current page or filters
+const exporting=ref(false)
+async function doExport() {
+  exporting.value=true
+  try {
+    const { data } = await productApi.exportAll()
+    if (!data.length) toast.error(t('products.exportEmpty'))
+    else await downloadProductSheet(data)
+  } catch(e) { toast.error(e.message) } finally { exporting.value=false }
+}
+// Import: the file is read here, the server checks every row and saves all or nothing (same roles as POST /products/import)
+const canImport = computed(() => ['ADMIN','MANAGER','STOCK_MANAGER'].includes(auth.user?.role))
+const showImport=ref(false); const importInput=ref(null); const importing=ref(false)
+const importRows=ref([]); const importFile=ref(''); const importErr=ref(''); const importErrors=ref([])
+function openImport() { importRows.value=[]; importFile.value=''; importErr.value=''; importErrors.value=[]; showImport.value=true }
+function closeImport() { if (!importing.value) showImport.value=false }
+async function onImportPicked(e) {
+  const file = e.target.files?.[0]
+  e.target.value = ''
+  if (!file) return
+  importRows.value=[]; importErr.value=''; importErrors.value=[]
+  try { importRows.value = await readProductSheet(file); importFile.value = file.name }
+  catch(err) { importErr.value = err.message }
+}
+async function doImport() {
+  importing.value=true; importErr.value=''; importErrors.value=[]
+  try {
+    const r = await productApi.import(importRows.value)
+    toast.success(r.message)
+    showImport.value=false; page.value=1; fetchData()
+  } catch(e) {
+    importErr.value = e.message
+    importErrors.value = (e.errors || []).filter(x => x.line) // row errors from the import service
+  } finally { importing.value=false }
+}
 onMounted(async () => { await store.fetchCategories(); fetchData() })
 </script>
