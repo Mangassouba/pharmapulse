@@ -86,7 +86,6 @@ export default {
       license:        ['Numéro de licence', 'License number', 'رقم الترخيص'],
       licenseShort:   ['Licence', 'License', 'الترخيص'],
       cityPh:         ['Nouakchott', 'Nouakchott', 'نواكشوط'],
-      countryPh:      ['Mauritanie', 'Mauritania', 'موريتانيا'],
       adminName:      ['Nom admin *', 'Admin name *', 'اسم المدير *'],
       adminEmail:     ['Email admin *', 'Admin email *', 'بريد المدير *'],
       trialDays:      ["Période d'essai gratuite (jours)", 'Free trial period (days)', 'فترة التجربة المجانية (أيام)'],

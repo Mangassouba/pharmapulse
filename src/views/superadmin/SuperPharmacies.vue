@@ -36,7 +36,7 @@
                   <div><div style="font-weight:600;">{{ p.name }}</div><div style="font-size:.72rem;color:#6b7280;">{{ p.email||'—' }}</div></div>
                 </div>
               </td>
-              <td style="font-size:.85rem;">{{ [p.city,p.country].filter(Boolean).join(', ')||'—' }}</td>
+              <td style="font-size:.85rem;">{{ [p.city,countryName(p.country)].filter(Boolean).join(', ')||'—' }}</td>
               <td>
                 <span style="padding:2px 8px;border-radius:99px;font-size:.7rem;font-weight:700;font-family:'JetBrains Mono',monospace;" :style="planStyle(p.subscription?.plan)">{{ p.subscription?.plan||$t('super.ph.noPlan') }}</span>
               </td>
@@ -113,7 +113,7 @@
                 <tbody>
                   <tr v-for="pay in detailPh.subscription.payments" :key="pay.id">
                     <td style="font-family:'JetBrains Mono',monospace;font-size:.78rem;color:#6b7280;">{{ fmtDate(pay.paid_at) }}</td>
-                    <td style="font-family:'JetBrains Mono',monospace;font-weight:700;color:#7c3aed;">{{ fmtNum(pay.amount) }} {{ pay.currency || 'MRU' }}</td>
+                    <td style="font-family:'JetBrains Mono',monospace;font-weight:700;color:#7c3aed;">{{ fmtMoney(pay.amount, { currency: pay.currency || CURRENCY }) }}</td>
                     <td>{{ $te('paymentMethods', pay.method) }}</td>
                     <td style="font-size:.75rem;color:#6b7280;">{{ fmtDate(pay.period_start) }} → {{ fmtDate(pay.period_end) }}</td>
                   </tr>
@@ -139,7 +139,7 @@
               <div><label class="lbl">{{ $t('common.email') }}</label><input v-model="cForm.pharmacyEmail" class="inp" type="email"/></div>
               <div><label class="lbl">{{ $t('common.phone') }}</label><input v-model="cForm.pharmacyPhone" class="inp"/></div>
               <div><label class="lbl">{{ $t('common.city') }}</label><input v-model="cForm.pharmacyCity" class="inp" :placeholder="$t('super.ph.cityPh')"/></div>
-              <div><label class="lbl">{{ $t('common.country') }}</label><input v-model="cForm.pharmacyCountry" class="inp" :placeholder="$t('super.ph.countryPh')"/></div>
+              <div><label class="lbl">{{ $t('common.country') }}</label><select v-model="cForm.pharmacyCountry" class="inp"><option v-for="c in COUNTRY_CODES" :key="c" :value="c">{{ countryName(c) }} ({{ COUNTRIES[c].currency }})</option></select></div>
             </div>
             <h4 style="font-size:.875rem;font-weight:700;margin:0 0 10px;padding-bottom:6px;border-bottom:1px solid #f3f4f6;">{{ $t('roles.ADMIN') }}</h4>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:14px;">
@@ -214,12 +214,12 @@
           <div class="modal-bd">
             <p style="color:#6b7280;margin-bottom:14px;font-size:.875rem;">{{ $t('receipt.pharmacy') }} : <strong>{{ renewTarget.name }}</strong></p>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px;">
-              <div><label class="lbl">{{ $t('super.ph.duration') }}</label><select v-model.number="rForm.months" class="inp"><option v-for="m in DURATIONS" :key="m" :value="m">{{ $t('super.ph.months', { n: m }) }} — {{ fmtMRU(m * MONTHLY_PRICE) }}</option></select></div>
+              <div><label class="lbl">{{ $t('super.ph.duration') }}</label><select v-model.number="rForm.months" class="inp"><option v-for="m in DURATIONS" :key="m" :value="m">{{ $t('super.ph.months', { n: m }) }} — {{ fmtSubPrice(m * MONTHLY_PRICE) }}</option></select></div>
               <div><label class="lbl">{{ $t('online.paymentMethod') }}</label><select v-model="rForm.method" class="inp"><option v-for="m in ['CASH','CARD','TRANSFER','MOBILE_MONEY']" :key="m" :value="m">{{ $t('paymentMethods.' + m) }}</option></select></div>
               <div style="grid-column:1/-1"><label class="lbl">{{ $t('super.ph.paymentRef') }}</label><input v-model="rForm.reference" class="inp" placeholder="BANKILY-2024-XXXX"/></div>
             </div>
             <div style="margin-top:12px;padding:10px;background:#f5f3ff;border-radius:8px;font-size:.82rem;color:#7c3aed;">
-              <strong>{{ $t('common.total') }} :</strong> {{ $t('super.ph.months', { n: rForm.months }) }} × {{ fmtMRU(MONTHLY_PRICE) }} = <strong>{{ fmtMRU(renewTotal) }}</strong> —
+              <strong>{{ $t('common.total') }} :</strong> {{ $t('super.ph.months', { n: rForm.months }) }} × {{ fmtSubPrice(MONTHLY_PRICE) }} = <strong>{{ fmtSubPrice(renewTotal) }}</strong> —
               <strong>{{ $t('super.ph.newExpiry') }}</strong> {{ renewExpiry }}
             </div>
           </div>
@@ -238,7 +238,11 @@ import { useToastStore }    from '../../stores/toast.js'
 import { useSuperAdminStore } from '../../stores/superAdmin.js'
 import { formatDutyDays, formatDutyHours } from '../../utils/duty.js'
 import { pharmacyLogoUrl } from '../../utils/logo.js'
-import { t, fmtNum, intlLocale } from '../../i18n/index.js'
+import { t, intlLocale } from '../../i18n/index.js'
+import { fmtMoney } from '../../utils/money.js'
+import { countryName } from '../../utils/geo.js'
+import { COUNTRIES, COUNTRY_CODES, DEFAULT_COUNTRY } from '../../config/countries.js'
+import { MONTHLY_PRICE, CURRENCY, DURATIONS } from '../../config/payment.js'
 
 const toast      = useToastStore()
 const superStore = useSuperAdminStore()
@@ -250,13 +254,11 @@ const showCreate = ref(false); const cSaving = ref(false); const cErr = ref('')
 const suspendTarget = ref(null); const suspendReason = ref(''); const sSaving = ref(false)
 const renewTarget = ref(null); const rSaving = ref(false)
 
-const cForm = ref({ pharmacyName:'',pharmacyLicense:'',pharmacyEmail:'',pharmacyPhone:'',pharmacyCity:'',pharmacyCountry:'Mauritanie',adminName:'',adminEmail:'',adminPassword:'',trialDays:30 })
+const cForm = ref({ pharmacyName:'',pharmacyLicense:'',pharmacyEmail:'',pharmacyPhone:'',pharmacyCity:'',pharmacyCountry:DEFAULT_COUNTRY,adminName:'',adminEmail:'',adminPassword:'',trialDays:30 })
 const rForm = ref({ months:12, method:'CASH', reference:'' })
 
 // Subscription pricing — keep in sync with pharmapulse-api/src/utils/subscription.js
-const MONTHLY_PRICE = 1500
-const DURATIONS     = [1, 2, 5, 8, 12]
-const fmtMRU        = v => fmtNum(v) + ' MRU'
+const fmtSubPrice   = v => fmtMoney(v, { currency: CURRENCY }) // subscriptions are billed in the platform currency
 const renewTotal    = computed(() => rForm.value.months * MONTHLY_PRICE)
 
 const renewExpiry = computed(() => {
@@ -275,7 +277,7 @@ const phInfo = computed(() => detailPh.value ? [
   { l:t('common.email'),     v: detailPh.value.email||'—' },
   { l:t('common.phone'),     v: detailPh.value.phone||'—' },
   { l:t('common.city'),      v: detailPh.value.city||'—' },
-  { l:t('common.country'),   v: detailPh.value.country||'—' },
+  { l:t('common.country'),   v: countryName(detailPh.value.country)||'—' },
   { l:t('super.ph.licenseShort'), v: detailPh.value.license_number||'—' },
   { l:t('settings.duty'),    v: detailPh.value.duty_days?.length ? formatDutyDays(detailPh.value.duty_days) + ' · ' + formatDutyHours(detailPh.value) : '—' },
 ] : [])
@@ -296,7 +298,7 @@ async function openDetail(p) {
 }
 
 function openCreate() {
-  Object.assign(cForm.value, { pharmacyName:'',pharmacyLicense:'',pharmacyEmail:'',pharmacyPhone:'',pharmacyCity:'',pharmacyCountry:'Mauritanie',adminName:'',adminEmail:'',adminPassword:'',trialDays:30 })
+  Object.assign(cForm.value, { pharmacyName:'',pharmacyLicense:'',pharmacyEmail:'',pharmacyPhone:'',pharmacyCity:'',pharmacyCountry:DEFAULT_COUNTRY,adminName:'',adminEmail:'',adminPassword:'',trialDays:30 })
   cErr.value = ''; showCreate.value = true
 }
 

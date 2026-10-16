@@ -4,7 +4,8 @@ import {
   dashboardApi, productApi, categoryApi, saleApi,
   receptionApi, inventoryApi, movementApi, notifApi,
 } from '../services/api.js'
-import { fmtNum, fmtDate, locale } from '../i18n/index.js'
+import { fmtDate, locale } from '../i18n/index.js'
+import { fmtMoney } from '../utils/money.js'
 
 export const usePharmaStore = defineStore('pharma', () => {
   // ── State ──────────────────────────────────────────────────────
@@ -37,7 +38,7 @@ export const usePharmaStore = defineStore('pharma', () => {
 
   // ── Helpers ───────────────────────────────────────────────────
   const fmt      = d => fmtDate(d)
-  const fmtPrice = v => fmtNum(v) + ' MRU'
+  const fmtPrice = v => fmtMoney(v)
 
   // ── Dashboard ─────────────────────────────────────────────────
   async function fetchDashboard() {

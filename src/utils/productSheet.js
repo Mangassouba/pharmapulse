@@ -2,6 +2,8 @@
 // Les en-têtes sont écrits dans la langue de l'interface ; à l'import, ils sont reconnus dans les trois langues
 // ou sous leur nom technique (barcode, sale_price…), pour qu'un fichier exporté en arabe se réimporte en français.
 import { LOCALES, locale, t, tIn } from '../i18n/index.js'
+import { COUNTRIES } from '../config/countries.js'
+import { currentCurrency } from './money.js'
 
 // SheetJS (~400 Ko) n'est chargé qu'au moment d'exporter ou d'importer
 const loadXlsx = () => import('xlsx')
@@ -10,7 +12,7 @@ const COLUMNS = [
   { key: 'barcode',          label: 'products.barcode',              width: 16 },
   { key: 'name',             label: 'common.name',                   width: 32 },
   { key: 'category',         label: 'common.category',               width: 18 },
-  { key: 'sale_price',       label: 'products.salePriceMru',         width: 14 },
+  { key: 'sale_price',       label: 'products.salePriceCurrency',    width: 14 },
   { key: 'purchase_price',   label: 'reception.purchasePrice',      width: 14 },
   { key: 'stock',            label: 'common.stock',                  width: 10 },
   { key: 'threshold',        label: 'products.alertThreshold',       width: 12 },
@@ -24,10 +26,11 @@ const REQUIRED = ['barcode', 'name', 'category', 'sale_price', 'purchase_price']
 
 const norm = s => String(s ?? '').trim().toLowerCase()
 
-// En-tête lu dans le fichier → clé de colonne
+// En-tête lu dans le fichier → clé de colonne (prix : « Prix vente (MRU) », « Prix vente (XOF) »… quelle que soit la devise)
+const CURRENCIES  = [...new Set(Object.values(COUNTRIES).map(c => c.currency))]
 const HEADER_KEYS = new Map(COLUMNS.flatMap(c => [
   [norm(c.key), c.key],
-  ...LOCALES.map(l => [norm(tIn(l.code, c.label)), c.key]),
+  ...LOCALES.flatMap(l => CURRENCIES.map(currency => [norm(tIn(l.code, c.label, { currency })), c.key])),
 ]))
 
 /** Télécharge les produits (réponse de GET /products/export) en .xlsx */
@@ -50,7 +53,7 @@ export async function downloadProductSheet(products) {
   }))
 
   const sheet = XLSX.utils.aoa_to_sheet([
-    COLUMNS.map(c => t(c.label)),
+    COLUMNS.map(c => t(c.label, { currency: currentCurrency() })),
     ...rows.map(r => COLUMNS.map(c => r[c.key])),
   ])
   sheet['!cols'] = COLUMNS.map(c => ({ wch: c.width }))
@@ -83,7 +86,7 @@ export async function readProductSheet(file) {
   const keys = header.map(h => HEADER_KEYS.get(norm(h)))
   const missing = REQUIRED.filter(k => !keys.includes(k))
   if (missing.length) {
-    const labels = missing.map(k => t(COLUMNS.find(c => c.key === k).label))
+    const labels = missing.map(k => t(COLUMNS.find(c => c.key === k).label, { currency: currentCurrency() }))
     throw new Error(t('products.sheet.missingColumns', { list: labels.join(', ') }))
   }
 

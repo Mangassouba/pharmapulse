@@ -44,13 +44,13 @@
             <div style="font-size:.78rem;font-weight:700;color:#6b7280;margin-bottom:6px;">{{ $t('online.orderedItems') }}</div>
             <div v-for="item in orderData.items" :key="item.id" style="display:flex;justify-content:space-between;gap:10px;font-size:.82rem;padding:3px 0;">
               <span style="min-width:0;overflow-wrap:anywhere;">{{ item.product?.name }} × {{ item.quantity }}</span>
-              <span style="font-family:'JetBrains Mono',monospace;font-weight:600;white-space:nowrap;">{{ fmtNum(item.total || item.price*item.quantity) }} MRU</span>
+              <span style="font-family:'JetBrains Mono',monospace;font-weight:600;white-space:nowrap;">{{ fmtMoney(item.total || item.price*item.quantity, { currency: orderData.pharmacy?.currency }) }}</span>
             </div>
           </div>
           <!-- Total -->
           <div style="display:flex;justify-content:space-between;align-items:center;gap:6px 12px;flex-wrap:wrap;padding-top:10px;margin-top:8px;border-top:1px dashed #d1d5db;">
             <span style="font-weight:700;font-size:.9rem;">{{ $t('confirm.totalToPay') }}</span>
-            <strong style="font-size:1.2rem;color:#16a34a;font-family:'JetBrains Mono',monospace;white-space:nowrap;">{{ fmtNum(orderData.total_amount) }} MRU</strong>
+            <strong style="font-size:1.2rem;color:#16a34a;font-family:'JetBrains Mono',monospace;white-space:nowrap;">{{ fmtMoney(orderData.total_amount, { currency: orderData.pharmacy?.currency }) }}</strong>
           </div>
         </div>
 
@@ -110,7 +110,9 @@ import { jsPDF } from 'jspdf'
 import { useCartStore } from '../../stores/cart.js'
 import { useToastStore } from '../../stores/toast.js'
 import { directionsUrl } from '../../utils/geo.js'
-import { t, tIn, locale, fmtNum, intlLocale } from '../../i18n/index.js'
+import { t, tIn, locale, intlLocale } from '../../i18n/index.js'
+import { fmtMoney } from '../../utils/money.js'
+import { DEFAULT_CURRENCY } from '../../config/countries.js'
 
 const route     = useRoute()
 const cartStore = useCartStore()
@@ -168,7 +170,7 @@ async function refreshStatus() {
 const pdfLang = () => (locale.value === 'ar' ? 'en' : locale.value)
 const pt = (key, params) => tIn(pdfLang(), key, params)
 const pdfIntl = () => (pdfLang() === 'en' ? 'en-GB' : 'fr-FR')
-function fmt(n) { return Number(n || 0).toLocaleString(pdfIntl()) + ' MRU' }
+function fmt(n) { return `${Number(n || 0).toLocaleString(pdfIntl())} ${orderData.value?.pharmacy?.currency || DEFAULT_CURRENCY}` }
 
 function downloadReceipt() {
   const o = orderData.value

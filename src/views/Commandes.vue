@@ -14,7 +14,7 @@
               <td style="font-family:'JetBrains Mono',monospace;font-size:.8rem;color:#6b7280;">{{ store.fmt(o.order_date) }}</td>
               <td style="font-weight:600;">{{ o.customer }}</td>
               <td style="font-size:.8rem;color:#6b7280;">{{ $t('common.itemsShort', { n: o.details?.length ?? 0 }) }}</td>
-              <td style="font-family:'JetBrains Mono',monospace;font-weight:700;color:#16a34a;">{{ fmtNum(o.total_amount) }} MRU</td>
+              <td style="font-family:'JetBrains Mono',monospace;font-weight:700;color:#16a34a;">{{ fmtMoney(o.total_amount) }}</td>
               <td style="font-family:'JetBrains Mono',monospace;font-size:.8rem;color:#6b7280;">{{ o.delivery_date?store.fmt(o.delivery_date):'—' }}</td>
               <td><span class="badge" :class="{PENDING:'badge-yellow',READY:'badge-blue',COMPLETED:'badge-green',CANCELLED:'badge-red'}[o.status]">{{ $te('orderStatus', o.status) }}</span></td>
               <td>
@@ -53,7 +53,7 @@
               <div style="width:100px;"><input v-model.number="item.price" type="number" min="0" class="inp" :placeholder="$t('common.price')"/></div>
               <button class="btn btn-icon" @click="form.items.splice(i,1)" style="border-color:#fecaca;"><X size="1em" /></button>
             </div>
-            <div style="text-align:end;font-family:'JetBrains Mono',monospace;font-weight:700;color:#16a34a;margin-top:8px;">{{ $t('common.total') }} : {{ fmtNum(formTotal) }} MRU</div>
+            <div style="text-align:end;font-family:'JetBrains Mono',monospace;font-weight:700;color:#16a34a;margin-top:8px;">{{ $t('common.total') }} : {{ fmtMoney(formTotal) }}</div>
             <div v-if="formErr" class="alert alert-red" style="margin-top:10px;"><CircleX size="1em" /> {{ formErr }}</div>
           </div>
           <div class="modal-ft"><button class="btn btn-outline" @click="showModal=false">{{ $t('common.cancel') }}</button><button class="btn btn-primary" @click="save" :disabled="saving">{{ saving?'...':$t('orders.create') }}</button></div>
@@ -68,7 +68,8 @@ import { ref, computed, onMounted } from 'vue'
 import { usePharmaStore } from '../stores/pharma.js'
 import { useToastStore }  from '../stores/toast.js'
 import { orderApi } from '../services/api.js'
-import { t, fmtNum, intlLocale } from '../i18n/index.js'
+import { t, intlLocale } from '../i18n/index.js'
+import { fmtMoney } from '../utils/money.js'
 
 const store=usePharmaStore(); const toast=useToastStore()
 const orders=ref([]); const meta=ref({totalPages:1}); const loading=ref(false)

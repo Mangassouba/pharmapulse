@@ -10,6 +10,7 @@
       <div v-if="error" class="alert alert-red" style="margin-bottom:12px;"><CircleX size="1em" /> {{ error }}</div>
       <div class="form-grid" style="gap:12px;">
         <div><label class="lbl">{{ $t('auth.pharmacyName') }} *</label><input v-model="form.pharmacyName" class="inp" :placeholder="$t('auth.pharmacyNamePh')"/></div>
+        <div><label class="lbl">{{ $t('common.country') }} *</label><select v-model="form.pharmacyCountry" class="inp"><option v-for="c in COUNTRY_CODES" :key="c" :value="c">{{ countryName(c) }} ({{ COUNTRIES[c].currency }})</option></select></div>
         <div><label class="lbl">{{ $t('auth.yourName') }} *</label><input v-model="form.name" class="inp" placeholder="Dr. Mohamed Ould Ahmed"/></div>
         <div><label class="lbl">{{ $t('common.email') }} *</label><input v-model="form.email" class="inp" type="email"/></div>
         <div><label class="lbl">{{ $t('auth.passwordMin') }}</label><input v-model="form.password" class="inp" type="password" @keyup.enter="submit"/></div>
@@ -29,11 +30,13 @@ import { CircleX } from 'lucide-vue-next'
 import { ref } from 'vue'
 import LangSwitcher from '../../components/LangSwitcher.vue'
 import { t } from '../../i18n/index.js'
+import { COUNTRIES, COUNTRY_CODES, DEFAULT_COUNTRY } from '../../config/countries.js'
+import { countryName } from '../../utils/geo.js'
 
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../../stores/auth.js'
 const auth = useAuthStore(); const router = useRouter()
-const error = ref(''); const form = ref({ pharmacyName:'', name:'', email:'', password:'' })
+const error = ref(''); const form = ref({ pharmacyName:'', pharmacyCountry: DEFAULT_COUNTRY, name:'', email:'', password:'' })
 async function submit() {
   error.value = ''
   if (!form.value.pharmacyName || !form.value.name || !form.value.email || !form.value.password) { error.value = t('auth.allRequired'); return }

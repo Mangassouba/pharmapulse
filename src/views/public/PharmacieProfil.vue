@@ -13,7 +13,7 @@
               <DutyBadge :pharmacy="pharmacy"/>
             </div>
             <div style="color:#6b7280;font-size:.875rem;display:flex;gap:6px 16px;flex-wrap:wrap;margin-top:6px;">
-              <span><MapPin size="1em" /> {{ pharmacy.address || pharmacy.city || $t('pub.defaultCountry') }}</span>
+              <span><MapPin size="1em" /> {{ [pharmacy.address, pharmacy.city, countryName(pharmacy.country)].filter(Boolean).join(', ') }}</span>
               <span v-if="pharmacy.phone"><Phone size="1em" /> <span class="mono-ltr">{{ pharmacy.phone }}</span></span>
               <span v-if="pharmacy.email"><Mail size="1em" /> {{ pharmacy.email }}</span>
             </div>
@@ -108,7 +108,7 @@
 
                 <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap;margin-bottom:12px;">
                   <div style="font-family:'JetBrains Mono',monospace;font-size:1.15rem;font-weight:800;color:#16a34a;">
-                    {{ fmtNum(p.sale_price) }} MRU
+                    {{ fmtMoney(p.sale_price, { currency: pharmacy?.currency }) }}
                   </div>
                   <div style="font-size:.72rem;color:#9ca3af;">{{ $te('unitTypes', p.unit_type) }}{{ p.unit_quantity ? ' ×'+p.unit_quantity : '' }}</div>
                 </div>
@@ -153,9 +153,10 @@ import { formatDutyDays, formatDutyHours } from '../../utils/duty.js'
 import DutyBadge from '../../components/DutyBadge.vue'
 import ProductImage from '../../components/ProductImage.vue'
 import { pharmacyLogoUrl } from '../../utils/logo.js'
-import { distanceKm, formatDistance, hasPosition, directionsUrl, getCurrentPosition } from '../../utils/geo.js'
+import { distanceKm, formatDistance, hasPosition, directionsUrl, getCurrentPosition, countryName } from '../../utils/geo.js'
 import PharmacyMap from '../../components/PharmacyMap.vue'
-import { t, fmtNum } from '../../i18n/index.js'
+import { t } from '../../i18n/index.js'
+import { fmtMoney } from '../../utils/money.js'
 
 const route     = useRoute()
 const cartStore = useCartStore()
@@ -207,7 +208,7 @@ function selectCat(id) {
 
 function addToCart(p) {
   cartStore.addItem(
-    { id: p.id, name: p.name, sale_price: p.sale_price, stock: p.stock, unit_type: p.unit_type, image_updated_at: p.image_updated_at },
+    { id: p.id, name: p.name, sale_price: p.sale_price, currency: pharmacy.value?.currency, stock: p.stock, unit_type: p.unit_type, image_updated_at: p.image_updated_at },
     parseInt(route.params.id),
     pharmacy.value?.name || t('receipt.pharmacy')
   )

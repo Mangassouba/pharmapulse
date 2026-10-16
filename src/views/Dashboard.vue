@@ -73,20 +73,21 @@ import { Banknote, Calendar, Package, Siren, TriangleAlert, PackagePlus, Clipboa
 import { ref, computed, onMounted, watch } from 'vue'
 import { Chart, registerables } from 'chart.js'
 import { usePharmaStore } from '../stores/pharma.js'
-import { t, fmtNum, intlLocale, locale } from '../i18n/index.js'
+import { t, intlLocale, locale } from '../i18n/index.js'
+import { fmtMoney, currentCurrency } from '../utils/money.js'
 Chart.register(...registerables)
 const store = usePharmaStore()
 const chartRef = ref(null)
 let chartInst = null
 const d = computed(() => store.dashboard)
-const fmtP = v => fmtNum(v) + ' MRU'
+const fmtP = v => fmtMoney(v)
 function buildChart() {
   if (!chartRef.value || !d.value) return
   if (chartInst) { chartInst.destroy(); chartInst = null }
   const last7 = d.value.sales?.last7days ?? []
   chartInst = new Chart(chartRef.value, {
     type:'bar',
-    data:{ labels:last7.map(x=>new Date(x.date).toLocaleDateString(intlLocale(),{weekday:'short',day:'numeric'})), datasets:[{ label:t('dashboard.chartLabel'), data:last7.map(x=>parseFloat(x.total)), backgroundColor:'rgba(22,163,74,.12)', borderColor:'#16a34a', borderWidth:2, borderRadius:7, borderSkipped:false }] },
+    data:{ labels:last7.map(x=>new Date(x.date).toLocaleDateString(intlLocale(),{weekday:'short',day:'numeric'})), datasets:[{ label:t('dashboard.chartLabel', { currency: currentCurrency() }), data:last7.map(x=>parseFloat(x.total)), backgroundColor:'rgba(22,163,74,.12)', borderColor:'#16a34a', borderWidth:2, borderRadius:7, borderSkipped:false }] },
     options:{ responsive:true, maintainAspectRatio:true, plugins:{ legend:{ display:false } }, scales:{ x:{ grid:{ display:false }, ticks:{ font:{ family:'Inter', size:11 }, color:'#6b7280' } }, y:{ grid:{ color:'rgba(0,0,0,.04)' }, ticks:{ font:{ family:'JetBrains Mono', size:10 }, color:'#6b7280' } } } }
   })
 }

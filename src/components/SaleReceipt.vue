@@ -60,7 +60,8 @@ import { Receipt, Printer, X } from 'lucide-vue-next'
 import { ref, computed } from 'vue'
 import { useAuthStore } from '../stores/auth.js'
 import { pharmacyLogoUrl } from '../utils/logo.js'
-import { t, fmtNum, fmtDateTime, locale, isRtl } from '../i18n/index.js'
+import { t, fmtDateTime, locale, isRtl } from '../i18n/index.js'
+import { fmtMoney } from '../utils/money.js'
 
 // `sale` : une vente, ou une commande en ligne ramenée au même format (voir CommandesEnLigne.vue)
 const props = defineProps({
@@ -77,7 +78,7 @@ const logoUrl  = computed(() => pharmacyLogoUrl(pharmacy.value))
 const pharmacyLine = computed(() => [pharmacy.value?.address, pharmacy.value?.city].filter(Boolean).join(', '))
 const subtotal = computed(() => (props.sale?.details || []).reduce((s, d) => s + Number(d.total ?? d.price * d.quantity), 0))
 
-const money   = v => `${fmtNum(v, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} MRU`
+const money   = v => fmtMoney(v, { fixed: true })
 const fmtDate = d => fmtDateTime(d || new Date(), { dateStyle: 'short', timeStyle: 'short' })
 
 // Imprime uniquement le ticket, dans une iframe isolée des styles de l'application

@@ -11,6 +11,10 @@
           <span style="position:absolute;inset-inline-start:11px;top:50%;transform:translateY(-50%);color:#9ca3af;"><Search size="1em" /></span>
           <input v-model="search" style="width:100%;padding:9px 12px;padding-inline-start:36px;border:1px solid #e5e7eb;border-radius:9px;font-size:.875rem;outline:none;font-family:'Inter',sans-serif;box-sizing:border-box;" :placeholder="$t('super.ph.searchPh')"/>
         </div>
+        <select v-if="countries.length > 1" v-model="filterCountry" @change="filterCity = ''" style="padding:8px 14px;border:1px solid #e5e7eb;border-radius:8px;font-size:.85rem;background:white;cursor:pointer;outline:none;font-family:'Inter',sans-serif;">
+          <option value="">{{ $t('list.allCountries') }}</option>
+          <option v-for="c in countries" :key="c" :value="c">{{ countryName(c) }}</option>
+        </select>
         <select v-model="filterCity" style="padding:8px 14px;border:1px solid #e5e7eb;border-radius:8px;font-size:.85rem;background:white;cursor:pointer;outline:none;font-family:'Inter',sans-serif;">
           <option value="">{{ $t('list.allCities') }}</option>
           <option v-for="c in cities" :key="c" :value="c">{{ c }}</option>
@@ -38,7 +42,7 @@
               <div style="width:50px;height:50px;border-radius:14px;background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1px solid #bbf7d0;display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;overflow:hidden;" :style="pharmacyLogoUrl(ph) ? 'background:#fff;' : ''"><img v-if="pharmacyLogoUrl(ph)" :src="pharmacyLogoUrl(ph)" :alt="ph.name" style="width:100%;height:100%;object-fit:contain;"/><Hospital v-else size="1em" /></div>
               <div style="flex:1;min-width:0;">
                 <div style="font-weight:700;font-size:1rem;margin-bottom:3px;">{{ ph.name }}</div>
-                <div style="font-size:.78rem;color:#6b7280;"><MapPin size="1em" /> {{ [ph.address, ph.city, ph.country].filter(Boolean).join(', ') || $t('pub.defaultCountry') }}</div>
+                <div style="font-size:.78rem;color:#6b7280;"><MapPin size="1em" /> {{ [ph.address, ph.city, countryName(ph.country)].filter(Boolean).join(', ') }}</div>
                 <div v-if="ph.distance" style="font-size:.75rem;color:#16a34a;font-weight:600;margin-top:3px;"><Navigation size="1em" /> {{ formatDistance(ph.distance) }}</div>
               </div>
               <div class="lp-card-badges">
@@ -88,23 +92,31 @@ import { useCartStore } from '../../stores/cart.js'
 import { dutyStatus, formatDutyDays, formatDutyHours } from '../../utils/duty.js'
 import DutyBadge from '../../components/DutyBadge.vue'
 import { pharmacyLogoUrl } from '../../utils/logo.js'
-import { formatDistance } from '../../utils/geo.js'
+import { formatDistance, countryName } from '../../utils/geo.js'
 
 const cartStore = useCartStore()
 const search    = ref('')
+const filterCountry = ref('')
 const filterCity = ref('')
 const onDutyOnly = ref(false)
 
-const cities = computed(() => [...new Set(cartStore.pharmacies.map(p => p.city).filter(Boolean))])
+// Countries that have at least one pharmacy, by display name; cities narrowed to the chosen country
+const countries = computed(() => [...new Set(cartStore.pharmacies.map(p => p.country).filter(Boolean))]
+  .sort((a, b) => countryName(a).localeCompare(countryName(b))))
+const cities = computed(() => [...new Set(cartStore.pharmacies
+  .filter(p => !filterCountry.value || p.country === filterCountry.value)
+  .map(p => p.city).filter(Boolean))])
 
 const filtered = computed(() => {
   const q = search.value.toLowerCase()
+  const k = filterCountry.value
   const c = filterCity.value
   return cartStore.pharmacies.filter(p => {
     const mQ = !q || p.name.toLowerCase().includes(q) || p.city?.toLowerCase().includes(q)
+    const mK = !k || p.country === k
     const mC = !c || p.city === c
     const mD = !onDutyOnly.value || dutyStatus(p) !== null
-    return mQ && mC && mD
+    return mQ && mK && mC && mD
   })
 })
 

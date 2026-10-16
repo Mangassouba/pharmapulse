@@ -15,6 +15,10 @@
 
       <!-- Filters -->
       <div class="rc-filters">
+        <select v-if="countries.length > 1" v-model="filterCountry" class="pub-filter-select" @change="filterCity = ''; doSearch()">
+          <option value="">{{ $t('list.allCountries') }}</option>
+          <option v-for="c in countries" :key="c" :value="c">{{ countryName(c) }}</option>
+        </select>
         <select v-model="filterCity" class="pub-filter-select" @change="doSearch">
           <option value="">{{ $t('list.allCities') }}</option>
           <option v-for="c in cities" :key="c" :value="c">{{ c }}</option>
@@ -60,7 +64,7 @@
               <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:12px;">
                 <div style="min-width:0;overflow-wrap:anywhere;">
                   <div style="font-weight:700;font-size:.9rem;">{{ item.pharmacyName }}</div>
-                  <div style="font-size:.75rem;color:#6b7280;margin-top:2px;"><MapPin size="1em" /> {{ item.pharmacyCity }}</div>
+                  <div style="font-size:.75rem;color:#6b7280;margin-top:2px;"><MapPin size="1em" /> {{ [item.pharmacyCity, countryName(item.pharmacyCountry)].filter(Boolean).join(', ') }}</div>
                   <div v-if="item.distance" style="font-size:.75rem;color:#16a34a;font-weight:600;margin-top:2px;">
                     <Navigation size="1em" /> {{ formatDistance(item.distance) }}
                   </div>
@@ -71,7 +75,7 @@
 
               <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
                 <div style="font-family:'JetBrains Mono',monospace;font-size:1.2rem;font-weight:800;color:#16a34a;">
-                  {{ fmtNum(item.sale_price) }} MRU
+                  {{ fmtMoney(item.sale_price, { currency: item.currency }) }}
                 </div>
                 <div style="font-size:.75rem;color:#9ca3af;">
                   {{ $te('unitTypes', item.unit_type) }}{{ item.unit_quantity ? ' × '+item.unit_quantity : '' }}
@@ -120,8 +124,9 @@ import { useRoute, useRouter } from 'vue-router'
 import { useCartStore } from '../../stores/cart.js'
 import { useToastStore } from '../../stores/toast.js'
 import ProductImage from '../../components/ProductImage.vue'
-import { formatDistance } from '../../utils/geo.js'
-import { t, fmtNum } from '../../i18n/index.js'
+import { formatDistance, countryName } from '../../utils/geo.js'
+import { t } from '../../i18n/index.js'
+import { fmtMoney } from '../../utils/money.js'
 
 const route     = useRoute()
 const router    = useRouter()
@@ -131,9 +136,13 @@ const toast     = useToastStore()
 const query      = ref(route.query.q || '')
 const results    = ref([])
 const loading    = ref(false)
+const filterCountry = ref('')
 const filterCity = ref('')
 const inStockOnly = ref(false)
 
+// Filtered server-side (results are capped), so the choices come from the pharmacy list, not from the results
+const countries = computed(() => [...new Set(cartStore.pharmacies.map(p => p.country).filter(Boolean))]
+  .sort((a, b) => countryName(a).localeCompare(countryName(b))))
 const cities = computed(() => [...new Set(results.value.map(r => r.pharmacyCity).filter(Boolean))])
 
 const groupedResults = computed(() => {
@@ -156,14 +165,14 @@ async function doSearch() {
   router.replace({ path: '/recherche', query: { q } })
   loading.value = true
   try {
-    await cartStore.searchProducts(q)
+    await cartStore.searchProducts(q, null, filterCountry.value)
     results.value = cartStore.searchResults
   } finally { loading.value = false }
 }
 
 function addToCart(item) {
   cartStore.addItem(
-    { id: item.productId || item.id, name: item.name, sale_price: item.sale_price, stock: item.stock, unit_type: item.unit_type, image_updated_at: item.image_updated_at },
+    { id: item.productId || item.id, name: item.name, sale_price: item.sale_price, currency: item.currency, stock: item.stock, unit_type: item.unit_type, image_updated_at: item.image_updated_at },
     item.pharmacyId,
     item.pharmacyName
   )
@@ -179,7 +188,10 @@ function locateMe() {
 }
 
 watch(() => route.query.q, val => { if (val) { query.value = val; doSearch() } })
-onMounted(() => { if (query.value) doSearch() })
+onMounted(() => {
+  if (query.value) doSearch()
+  if (!cartStore.pharmacies.length) cartStore.fetchPharmacies(cartStore.userLocation?.lat, cartStore.userLocation?.lng)
+})
 </script>
 
 <style scoped>

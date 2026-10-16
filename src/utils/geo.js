@@ -1,4 +1,4 @@
-import { t } from '../i18n/index.js'
+import { t, intlLocale } from '../i18n/index.js'
 
 // Straight-line distance in km between two GPS points (same formula as the API)
 export function distanceKm(lat1, lng1, lat2, lng2) {
@@ -23,7 +23,7 @@ export function hasPosition(ph) {
 export function directionsUrl(ph) {
   const destination = hasPosition(ph)
     ? `${ph.latitude},${ph.longitude}`
-    : [ph?.name, ph?.address, ph?.city, ph?.country].filter(Boolean).join(', ')
+    : [ph?.name, ph?.address, ph?.city, countryName(ph?.country)].filter(Boolean).join(', ')
   if (!destination) return null
   return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}`
 }
@@ -46,4 +46,11 @@ export function getCurrentPosition() {
       { enableHighAccuracy: true, timeout: 15000 },
     )
   })
+}
+
+/** Country name in the current language: "MR" → "Mauritanie"; legacy free text is returned as-is */
+export function countryName(code) {
+  if (!code) return ''
+  try { return new Intl.DisplayNames(intlLocale(), { type: 'region' }).of(code) || code }
+  catch { return code }
 }

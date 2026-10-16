@@ -145,11 +145,13 @@ import { useRouter } from 'vue-router'
 import { useSuperAdminStore } from '../../stores/superAdmin.js'
 import { useSuperNotificationsStore, NOTIF_COLORS, timeAgo } from '../../stores/superNotifications.js'
 import { t, fmtNum, intlLocale } from '../../i18n/index.js'
+import { fmtMoney } from '../../utils/money.js'
+import { CURRENCY } from '../../config/payment.js'
 const store  = useSuperAdminStore()
 const notifs = useSuperNotificationsStore() // shared with the header bell: reading here updates its badge
 const router = useRouter()
 const s = computed(() => store.stats)
-function fmtPrice(v) { return fmtNum(v) + ' MRU' }
+function fmtPrice(v) { return fmtMoney(v, { currency: CURRENCY }) } // subscription revenue, platform currency
 
 const v = computed(() => s.value?.visitors)
 const visitTiles = computed(() => [

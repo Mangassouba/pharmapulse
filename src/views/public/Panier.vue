@@ -37,7 +37,7 @@
                   <button @click="cartStore.updateQty(item.idx, item.qty+1)" :disabled="item.qty>=item.product.stock" style="width:30px;height:30px;border:none;background:#f9fafb;cursor:pointer;font-weight:700;" :style="item.qty>=item.product.stock?'opacity:.4;cursor:not-allowed':''">+</button>
                 </div>
                 <div class="pn-item-price">
-                  {{ fmtNum(item.qty * Number(item.product.sale_price)) }} MRU
+                  {{ fmtMoney(item.qty * Number(item.product.sale_price), { currency: item.product.currency }) }}
                 </div>
                 <button @click="cartStore.removeItem(item.idx)" class="pn-item-del" :title="$t('common.delete')" :aria-label="$t('common.delete')"><Trash2 size="1em" /></button>
               </div>
@@ -54,12 +54,12 @@
                 <div style="font-size:.8rem;color:#6b7280;font-weight:600;margin-bottom:4px;">{{ group.pharmacyName }}</div>
                 <div v-for="item in group.items" :key="item.idx" style="display:flex;justify-content:space-between;gap:10px;font-size:.85rem;margin-bottom:3px;">
                   <span style="min-width:0;overflow-wrap:anywhere;">{{ item.product.name }} ×{{ item.qty }}</span>
-                  <span style="font-family:'JetBrains Mono',monospace;font-weight:600;white-space:nowrap;">{{ fmtNum(item.qty*Number(item.product.sale_price)) }} MRU</span>
+                  <span style="font-family:'JetBrains Mono',monospace;font-weight:600;white-space:nowrap;">{{ fmtMoney(item.qty*Number(item.product.sale_price), { currency: item.product.currency }) }}</span>
                 </div>
               </div>
               <div style="border-top:1px dashed #e5e7eb;margin-top:12px;padding-top:12px;display:flex;justify-content:space-between;font-weight:800;font-size:1.05rem;">
                 <span>{{ $t('common.total') }}</span>
-                <span style="color:#16a34a;font-family:'JetBrains Mono',monospace;">{{ fmtNum(cartStore.totalAmount) }} MRU</span>
+                <span style="color:#16a34a;font-family:'JetBrains Mono',monospace;">{{ Object.entries(cartStore.totalsByCurrency).map(([currency, v]) => fmtMoney(v, { currency })).join(' + ') }}</span>
               </div>
             </div>
 
@@ -112,7 +112,8 @@ import { useRouter } from 'vue-router'
 import { useCartStore } from '../../stores/cart.js'
 import { useToastStore } from '../../stores/toast.js'
 import ProductImage from '../../components/ProductImage.vue'
-import { t, fmtNum } from '../../i18n/index.js'
+import { t } from '../../i18n/index.js'
+import { fmtMoney } from '../../utils/money.js'
 
 const cartStore = useCartStore()
 const toast     = useToastStore()

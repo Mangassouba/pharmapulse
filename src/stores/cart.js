@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import axios from 'axios'
 import { locale } from '../i18n/index.js'
+import { DEFAULT_CURRENCY } from '../config/countries.js'
 
 const pub = axios.create({
   baseURL: (import.meta.env.VITE_API_URL || 'http://localhost:3000/api'),
@@ -19,6 +20,12 @@ export const useCartStore = defineStore('cart', () => {
 
   const totalItems  = computed(() => items.value.reduce((s, i) => s + i.qty, 0))
   const totalAmount = computed(() => items.value.reduce((s, i) => s + i.qty * Number(i.product.sale_price), 0))
+  // One total per currency: pharmacies from different countries can't be summed ({ MRU: 1500, XOF: 3000 })
+  const totalsByCurrency = computed(() => items.value.reduce((acc, i) => {
+    const cur = i.product.currency || DEFAULT_CURRENCY
+    acc[cur] = (acc[cur] || 0) + i.qty * Number(i.product.sale_price)
+    return acc
+  }, {}))
 
   function saveCart() { localStorage.setItem('pub_cart', JSON.stringify(items.value)) }
 
@@ -54,12 +61,13 @@ export const useCartStore = defineStore('cart', () => {
     finally { loading.value = false }
   }
 
-  async function searchProducts(q, pharmacyId) {
+  async function searchProducts(q, pharmacyId, country) {
     if (!q || q.length < 2) { searchResults.value = []; return }
     loading.value = true
     try {
       const params = { q }
       if (pharmacyId) params.pharmacyId = pharmacyId
+      if (country)    params.country    = country
       if (userLocation.value) { params.lat = userLocation.value.lat; params.lng = userLocation.value.lng }
       const res = await pub.get('/public/products/search', { params })
       searchResults.value = res.data.data || res.data
@@ -91,7 +99,7 @@ export const useCartStore = defineStore('cart', () => {
 
   return {
     items, userLocation, pharmacies, searchResults, loading,
-    totalItems, totalAmount, byPharmacy,
+    totalItems, totalAmount, totalsByCurrency, byPharmacy,
     addItem, removeItem, updateQty, clearCart,
     fetchPharmacies, searchProducts, fetchPharmacyProducts, fetchPharmacyDetail,
     placeOrder, trackOrder,

@@ -23,7 +23,7 @@
             <tr v-for="p in store.products" :key="p.id">
               <td><div style="display:flex;align-items:center;gap:10px;"><ProductImage :product="p" :size="40"/><div><div style="font-weight:600;">{{ p.name }}</div><div style="font-size:.72rem;color:#6b7280;font-family:'JetBrains Mono',monospace;">{{ p.barcode }}</div></div></div></td>
               <td><span class="badge badge-blue">{{ p.category?.name }}</span></td>
-              <td style="font-family:'JetBrains Mono',monospace;font-weight:700;">{{ fmtNum(p.sale_price) }} MRU</td>
+              <td style="font-family:'JetBrains Mono',monospace;font-weight:700;">{{ fmtMoney(p.sale_price) }}</td>
               <td>
                 <div style="display:flex;align-items:center;gap:8px;">
                   <span style="font-family:'JetBrains Mono',monospace;font-weight:700;" :style="{color:p.stock===0?'#dc2626':p.stock<p.threshold?'#ca8a04':'#16a34a'}">{{ p.stock }}</span>
@@ -66,8 +66,8 @@
               <div style="grid-column:1/-1"><label class="lbl">{{ $t('common.name') }} *</label><input v-model="form.name" class="inp"/></div>
               <div><label class="lbl">{{ $t('common.category') }} *</label><select v-model="form.categoryId" class="inp"><option value="">—</option><option v-for="c in store.categories" :key="c.id" :value="c.id">{{ c.name }}</option></select></div>
               <div><label class="lbl">{{ $t('products.barcode') }} *</label><input v-model="form.barcode" class="inp"/></div>
-              <div><label class="lbl">{{ $t('products.salePriceMru') }} *</label><input v-model.number="form.sale_price" type="number" min="0" class="inp"/></div>
-              <div><label class="lbl">{{ $t('reception.purchasePrice') }} *</label><input v-model.number="form.purchase_price" type="number" min="0" class="inp"/></div>
+              <div><label class="lbl">{{ $t('products.salePriceCurrency', { currency: currentCurrency() }) }} *</label><input v-model.number="form.sale_price" type="number" min="0" class="inp"/></div>
+              <div><label class="lbl">{{ $t('reception.purchasePrice', { currency: currentCurrency() }) }} *</label><input v-model.number="form.purchase_price" type="number" min="0" class="inp"/></div>
               <div><label class="lbl">{{ $t('products.initialStock') }}</label><input v-model.number="form.stock" type="number" min="0" class="inp"/></div>
               <div><label class="lbl">{{ $t('products.alertThreshold') }}</label><input v-model.number="form.threshold" type="number" min="0" class="inp"/></div>
               <div><label class="lbl">{{ $t('products.unitType') }}</label><select v-model="form.unit_type" class="inp"><option v-for="u in ['PIECE','BOX','BOTTLE','PACKET','TUBE','TABLET','AMPOULE']" :key="u" :value="u">{{ $t('unitTypes.' + u) }}</option></select></div>
@@ -126,7 +126,8 @@ import { productApi }     from '../services/api.js'
 import { productImageUrl, resizeImage } from '../utils/logo.js'
 import { downloadProductSheet, readProductSheet } from '../utils/productSheet.js'
 import ProductImage from '../components/ProductImage.vue'
-import { t, fmtNum } from '../i18n/index.js'
+import { t } from '../i18n/index.js'
+import { fmtMoney, currentCurrency } from '../utils/money.js'
 const store = usePharmaStore(); const toast = useToastStore(); const auth = useAuthStore()
 const search=ref(''); const filterCat=ref(''); const filterStatus=ref(''); const filterLow=ref(false); const page=ref(1)
 const showModal=ref(false); const editId=ref(null); const saving=ref(false); const formErr=ref(''); const delTarget=ref(null)

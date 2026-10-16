@@ -37,7 +37,7 @@
         <div><label class="lbl">{{ $t('common.name') }}</label><input :value="auth.user?.pharmacy?.name||'—'" class="inp" disabled style="background:#f9fafb;cursor:not-allowed;"/></div>
         <div><label class="lbl">{{ $t('common.email') }}</label><input :value="auth.user?.pharmacy?.email||'—'" class="inp" disabled style="background:#f9fafb;cursor:not-allowed;"/></div>
         <div><label class="lbl">{{ $t('common.city') }}</label><input :value="auth.user?.pharmacy?.city||'—'" class="inp" disabled style="background:#f9fafb;cursor:not-allowed;"/></div>
-        <div><label class="lbl">{{ $t('common.country') }}</label><input :value="auth.user?.pharmacy?.country||'—'" class="inp" disabled style="background:#f9fafb;cursor:not-allowed;"/></div>
+        <div><label class="lbl">{{ $t('common.country') }}</label><input :value="countryName(auth.user?.pharmacy?.country)||'—'" class="inp" disabled style="background:#f9fafb;cursor:not-allowed;"/></div>
       </div>
     </div>
 
@@ -132,7 +132,7 @@ import { usePharmaStore } from '../stores/pharma.js'
 import { authApi }        from '../services/api.js'
 import { WEEK_DAYS }      from '../utils/duty.js'
 import { pharmacyLogoUrl, resizeImage } from '../utils/logo.js'
-import { getCurrentPosition } from '../utils/geo.js'
+import { getCurrentPosition, countryName } from '../utils/geo.js'
 import PharmacyMap from '../components/PharmacyMap.vue'
 import { t, te } from '../i18n/index.js'
 

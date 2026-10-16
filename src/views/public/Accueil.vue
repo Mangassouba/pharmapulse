@@ -121,7 +121,7 @@
                   </div>
                   <div class="pub-card-info">
                     <div class="pub-card-name">{{ ph.name }}</div>
-                    <div class="pub-card-city"><MapPin size="1em" /> {{ ph.city || $t('pub.defaultCountry') }}</div>
+                    <div class="pub-card-city"><MapPin size="1em" /> {{ ph.city || countryName(ph.country) }}</div>
                   </div>
                 </div>
                 <DutyBadge v-if="dutyStatus(ph)" :pharmacy="ph"/>
@@ -168,7 +168,7 @@ import { useCartStore } from '../../stores/cart.js'
 import { dutyStatus, formatDutyDays, formatDutyHours } from '../../utils/duty.js'
 import DutyBadge from '../../components/DutyBadge.vue'
 import { pharmacyLogoUrl } from '../../utils/logo.js'
-import { formatDistance } from '../../utils/geo.js'
+import { formatDistance, countryName } from '../../utils/geo.js'
 
 const router    = useRouter()
 const cartStore = useCartStore()

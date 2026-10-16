@@ -17,12 +17,12 @@
       <div v-for="(item,i) in form.items" :key="i" style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;padding:12px;background:#f9fafb;border-radius:9px;border:1px solid #f3f4f6;margin-bottom:8px;">
         <div style="flex:2;min-width:180px;"><label class="lbl">{{ $t('common.product') }} *</label><select v-model="item.productId" class="inp"><option value="">— {{ $t('common.choose') }} —</option><option v-for="p in store.products" :key="p.id" :value="p.id">{{ p.name }} ({{ $t('common.units', { n: p.stock }) }})</option></select></div>
         <div style="width:80px;"><label class="lbl">{{ $t('common.qtyShort') }} *</label><input v-model.number="item.quantity" type="number" min="1" class="inp"/></div>
-        <div style="width:110px;"><label class="lbl">{{ $t('reception.purchasePrice') }}</label><input v-model.number="item.price" type="number" min="0" class="inp"/></div>
+        <div style="width:110px;"><label class="lbl">{{ $t('reception.purchasePrice', { currency: currentCurrency() }) }}</label><input v-model.number="item.price" type="number" min="0" class="inp"/></div>
         <div style="width:120px;"><label class="lbl">{{ $t('batches.number') }}</label><input v-model="item.batchNumber" class="inp"/></div>
         <div style="width:140px;"><label class="lbl">{{ $t('batches.expiryDate') }}</label><input v-model="item.expirationDate" type="date" class="inp"/></div>
         <button class="btn btn-icon" @click="form.items.splice(i,1)" style="border-color:#fecaca;"><X size="1em" /></button>
       </div>
-      <div v-if="formTotal>0" style="padding:12px;background:#f0fdf4;border-radius:8px;display:flex;justify-content:space-between;font-size:.875rem;"><span>{{ $t('reception.estimatedTotal') }}</span><strong style="color:#16a34a;font-family:'JetBrains Mono',monospace;">{{ fmtNum(formTotal) }} MRU</strong></div>
+      <div v-if="formTotal>0" style="padding:12px;background:#f0fdf4;border-radius:8px;display:flex;justify-content:space-between;font-size:.875rem;"><span>{{ $t('reception.estimatedTotal') }}</span><strong style="color:#16a34a;font-family:'JetBrains Mono',monospace;">{{ fmtMoney(formTotal) }}</strong></div>
       <div v-if="formErr" class="alert alert-red" style="margin-top:12px;"><CircleX size="1em" /> {{ formErr }}</div>
       <button class="btn btn-primary" style="margin-top:14px;" @click="save" :disabled="saving">{{ saving?$t('common.saving'):$t('reception.save') }}</button>
     </div>
@@ -38,7 +38,7 @@
               <td style="font-family:'JetBrains Mono',monospace;font-size:.8rem;color:#6b7280;">{{ store.fmt(r.reception_date) }}</td>
               <td style="font-weight:600;">{{ r.supplier }}</td>
               <td style="font-size:.8rem;color:#6b7280;">{{ $t('categories.productCount', { n: r.details?.length ?? 0 }) }}</td>
-              <td style="font-family:'JetBrains Mono',monospace;font-weight:700;color:#16a34a;">{{ fmtNum(r.total_amount) }} MRU</td>
+              <td style="font-family:'JetBrains Mono',monospace;font-weight:700;color:#16a34a;">{{ fmtMoney(r.total_amount) }}</td>
               <td><span class="badge" :class="r.status==='COMPLETED'?'badge-green':r.status==='PENDING'?'badge-yellow':'badge-red'">{{ $te('receptionStatus', r.status) }}</span></td>
               <td>
                 <div style="display:flex;gap:5px;" v-if="r.status==='PENDING'">
@@ -61,7 +61,8 @@ import { PackagePlus, X, CircleX, CircleCheck } from 'lucide-vue-next'
 import { ref, computed, onMounted } from 'vue'
 import { usePharmaStore } from '../stores/pharma.js'
 import { useToastStore }  from '../stores/toast.js'
-import { t, fmtNum } from '../i18n/index.js'
+import { t } from '../i18n/index.js'
+import { fmtMoney, currentCurrency } from '../utils/money.js'
 const store=usePharmaStore(); const toast=useToastStore()
 const saving=ref(false); const formErr=ref(''); const filterStatus=ref('')
 const suppliers=['CAMEC','Pharmagroupe Mauritanie','MedDist Nouakchott','SanofiDist','LABOREX']

@@ -10,7 +10,6 @@ export default {
     mySpace:           ['Mon espace', 'My space', 'فضائي'],
     login:             ['Connexion', 'Sign in', 'تسجيل الدخول'],
     pharmacyMap:       ['Carte de la pharmacie', 'Pharmacy map', 'خريطة الصيدلية'],
-    defaultCountry:    ['Mauritanie', 'Mauritania', 'موريتانيا'],
     open:              ['OUVERTE', 'OPEN', 'مفتوحة'],
     dutyLabel:         ['Garde :', 'On duty:', 'المناوبة:'],
     notProvided:       ['Non renseigné', 'Not provided', 'غير متوفر'],
@@ -60,6 +59,7 @@ export default {
 
   list: {
     count:       ['{n} pharmacie(s) partenaire(s) disponible(s)', '{n} partner pharmac(y/ies) available', '{n} صيدلية شريكة متاحة'],
+    allCountries: ['Tous les pays', 'All countries', 'كل البلدان'],
     allCities:   ['Toutes les villes', 'All cities', 'كل المدن'],
     onDutyToday: ["De garde aujourd'hui", 'On duty today', 'مناوبة اليوم'],
     nearMe:      ['Proches de moi', 'Near me', 'القريبة مني'],

@@ -74,7 +74,7 @@
             <div style="margin-top:14px;padding:16px;background:var(--green-l);border-radius:10px;text-align:center;border:1px solid var(--green-b);">
               <div style="font-size:.75rem;color:var(--green);font-weight:700;margin-bottom:4px;">{{ $t('online.totalToCollect') }}</div>
               <div style="font-size:2rem;font-weight:800;font-family:'JetBrains Mono',monospace;color:#15803d;">
-                {{ fmtNum(verifiedOrder.total_amount) }} MRU
+                {{ fmtMoney(verifiedOrder.total_amount) }}
               </div>
             </div>
           </div>
@@ -100,12 +100,12 @@
                     <div style="font-size:.72rem;color:var(--gray);">{{ $te('unitTypes', item.product?.unit_type) }}</div>
                   </td>
                   <td style="text-align:center;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:1rem;">{{ item.quantity }}</td>
-                  <td style="text-align:end;font-family:'JetBrains Mono',monospace;">{{ fmtNum(item.price) }} MRU</td>
-                  <td style="text-align:end;font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--green);">{{ fmtNum(item.total || item.price * item.quantity) }} MRU</td>
+                  <td style="text-align:end;font-family:'JetBrains Mono',monospace;">{{ fmtMoney(item.price) }}</td>
+                  <td style="text-align:end;font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--green);">{{ fmtMoney(item.total || item.price * item.quantity) }}</td>
                 </tr>
                 <tr>
                   <td colspan="3" style="text-align:end;font-weight:700;padding-top:12px;border-top:2px solid var(--border);">{{ $t('common.total') }}</td>
-                  <td style="text-align:end;font-family:'JetBrains Mono',monospace;font-weight:800;color:var(--green);font-size:1.1rem;border-top:2px solid var(--border);">{{ fmtNum(verifiedOrder.total_amount) }} MRU</td>
+                  <td style="text-align:end;font-family:'JetBrains Mono',monospace;font-weight:800;color:var(--green);font-size:1.1rem;border-top:2px solid var(--border);">{{ fmtMoney(verifiedOrder.total_amount) }}</td>
                 </tr>
               </tbody>
             </table>
@@ -188,7 +188,7 @@
               <td style="font-size:.8rem;color:var(--gray);white-space:nowrap;">{{ fmtDatetime(o.order_date) }}</td>
               <td style="font-size:.8rem;color:var(--gray);">{{ $t('categories.productCount', { n: o.details?.length ?? o._count?.details ?? 0 }) }}</td>
               <td style="font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--green);">
-                {{ fmtNum(o.total_amount) }} MRU
+                {{ fmtMoney(o.total_amount) }}
               </td>
               <td>
                 <span class="badge" :class="statusBadge(o.status)">{{ statusLabel(o.status) }}</span>
@@ -258,7 +258,7 @@
               <div style="display:flex;justify-content:space-between;align-items:center;padding-top:10px;border-top:1px solid var(--green-b);margin-top:6px;">
                 <span style="font-weight:700;">{{ $t('online.amountToCollect') }}</span>
                 <strong style="font-size:1.4rem;font-family:'JetBrains Mono',monospace;color:#15803d;">
-                  {{ fmtNum(verifiedOrder.total_amount) }} MRU
+                  {{ fmtMoney(verifiedOrder.total_amount) }}
                 </strong>
               </div>
             </div>
@@ -297,7 +297,8 @@ import { useToastStore } from '../stores/toast.js'
 import { useAuthStore }  from '../stores/auth.js'
 import { orderApi }      from '../services/api.js'
 import apiClient         from '../services/api.js'
-import { t, te, fmtNum, intlLocale } from '../i18n/index.js'
+import { t, te, intlLocale } from '../i18n/index.js'
+import { fmtMoney } from '../utils/money.js'
 
 const toast = useToastStore()
 const auth  = useAuthStore()
@@ -390,7 +391,7 @@ async function validatePickup() {
       res.data?.validator?.name || auth.user?.name,
       validatePayment.value,
     )
-    const amount = fmtNum(verifiedOrder.value.total_amount)
+    const amount = fmtMoney(verifiedOrder.value.total_amount)
     toast.success(t('online.validated', { code: verifiedOrder.value.pickup_code, amount }))
     showValidateModal.value = false
     resetAll()
