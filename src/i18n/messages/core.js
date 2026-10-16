@@ -130,9 +130,8 @@ export default {
 
   orderStatus: {
     PENDING:   ['En attente', 'Pending', 'قيد الانتظار'],
-    CONFIRMED: ['Confirmée', 'Confirmed', 'مؤكَّد'],
-    SHIPPED:   ['Expédiée', 'Shipped', 'تم الشحن'],
-    DELIVERED: ['Livrée', 'Delivered', 'تم التسليم'],
+    READY:     ['Prête', 'Ready', 'جاهز'],
+    COMPLETED: ['Validée', 'Completed', 'مكتمل'],
     CANCELLED: ['Annulée', 'Cancelled', 'ملغى'],
   },
 

@@ -179,6 +179,7 @@
                 <div v-if="o.pickup_expires_at" style="font-size:.68rem;color:#9ca3af;margin-top:1px;">
                   {{ $t('online.expires', { date: fmtDate(o.pickup_expires_at) }) }}
                 </div>
+                <span v-if="isExpired(o)" class="badge badge-red" style="font-size:.62rem;margin-top:2px;">{{ $t('online.expiredTag') }}</span>
               </td>
               <td>
                 <div style="font-weight:600;">{{ o.customer }}</div>
@@ -214,6 +215,9 @@
                   </button>
                   <button v-if="o.status === 'COMPLETED'" class="btn btn-xs btn-outline" @click="openReceipt(o, o.validator?.name)" :title="$t('sales.receiptTitle')">
                     <Printer size="1em" /> {{ $t('receipt.short') }}
+                  </button>
+                  <button v-if="isExpired(o) && canDelete" class="btn btn-xs btn-danger" @click="deleteExpired(o)">
+                    <Trash2 size="1em" /> {{ $t('online.delete') }}
                   </button>
                 </div>
               </td>
@@ -286,8 +290,8 @@
 </template>
 
 <script setup>
-import { Search, CircleX, CircleCheck, User, StickyNote, ClipboardList, Pill, Lightbulb, X, Inbox, TriangleAlert, Printer } from 'lucide-vue-next'
-import { ref, onMounted } from 'vue'
+import { Search, CircleX, CircleCheck, User, StickyNote, ClipboardList, Pill, Lightbulb, X, Inbox, TriangleAlert, Printer, Trash2 } from 'lucide-vue-next'
+import { ref, computed, onMounted } from 'vue'
 import SaleReceipt from '../components/SaleReceipt.vue'
 import { useToastStore } from '../stores/toast.js'
 import { useAuthStore }  from '../stores/auth.js'
@@ -401,6 +405,21 @@ async function markReady(order) {
   try {
     await orderApi.updateStatus(order.id, { status: 'READY' })
     toast.success(t('online.markedReady', { code: order.pickup_code }))
+    await fetchOnlineOrders()
+  } catch (e) { toast.error(e.message) }
+}
+
+// ── Delete expired order ──────────────────────────────────────────
+// Pickup deadline passed without the order being collected
+const isExpired = o => (o.status === 'PENDING' || o.status === 'READY')
+  && !!o.pickup_expires_at && new Date(o.pickup_expires_at) < new Date()
+const canDelete = computed(() => ['ADMIN', 'MANAGER'].includes(auth.user?.role))
+
+async function deleteExpired(order) {
+  if (!confirm(t('online.deleteConfirm', { code: order.pickup_code, customer: order.customer }))) return
+  try {
+    await orderApi.delete(order.id)
+    toast.success(t('online.deleted', { code: order.pickup_code }))
     await fetchOnlineOrders()
   } catch (e) { toast.error(e.message) }
 }
