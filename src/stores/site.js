@@ -3,7 +3,7 @@ import { ref, computed, watch } from 'vue'
 import api, { siteApi } from '../services/api.js'
 import { t, locale } from '../i18n/index.js'
 
-export const DEFAULT_SITE_NAME = 'PharmaPulse'
+export const DEFAULT_SITE_NAME = 'Yonki Saha'
 
 // Platform-wide settings managed by the SuperAdmin: site name and logo
 export const useSiteStore = defineStore('site', () => {

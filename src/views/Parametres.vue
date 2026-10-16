@@ -289,7 +289,7 @@ async function saveDuty() {
 }
 
 const sysInfo = computed(() => [
-  { label: t('settings.sys.version'),   value: 'PharmaPulse v1.0.0',       color: '#16a34a' },
+  { label: t('settings.sys.version'),   value: 'Yonki Saha v1.0.0',       color: '#16a34a' },
   { label: t('settings.sys.framework'), value: 'Vue 3 + Vite 5' },
   { label: t('settings.sys.backend'),   value: 'Express + Prisma v6' },
   { label: t('settings.sys.products'),  value: t('settings.sys.refs', { n: store.products.length }) },

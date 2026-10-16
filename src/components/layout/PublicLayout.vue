@@ -70,8 +70,8 @@
           <div>
             <div style="font-weight:700;margin-bottom:10px;">{{ $t('pub.footer.contact') }}</div>
             <div class="pub-footer-contact">
-              <div><Mail :size="14" /> support@pharmapulse.mr</div>
-              <div><Phone :size="14" /> <span class="mono-ltr">+222 45 00 00 00</span></div>
+              <div><Mail :size="14" /> yonkisaha@gmail.com</div>
+              <div><Phone :size="14" /> <span class="mono-ltr">+222 44 89 69 20</span></div>
               <div><Clock :size="14" /> {{ $t('pub.footer.hours') }}</div>
             </div>
           </div>

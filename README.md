@@ -1,6 +1,6 @@
-# PharmaPulse — Front
+# Yonki Saha — Front
 
-Interface web de **PharmaPulse**, plateforme SaaS de gestion de pharmacies. Elle regroupe trois espaces :
+Interface web de **Yonki Saha**, plateforme SaaS de gestion de pharmacies. Elle regroupe trois espaces :
 
 | Espace | Adresse | Pour qui |
 |---|---|---|
