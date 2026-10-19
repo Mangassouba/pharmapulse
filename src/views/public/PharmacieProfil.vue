@@ -210,7 +210,8 @@ function addToCart(p) {
   cartStore.addItem(
     { id: p.id, name: p.name, sale_price: p.sale_price, currency: pharmacy.value?.currency, stock: p.stock, unit_type: p.unit_type, image_updated_at: p.image_updated_at },
     parseInt(route.params.id),
-    pharmacy.value?.name || t('receipt.pharmacy')
+    pharmacy.value?.name || t('receipt.pharmacy'),
+    qty.value[p.id] || 1
   )
   toast.success(t('profile.addedToCart', { name: p.name }))
   qty.value[p.id] = 1

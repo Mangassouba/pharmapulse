@@ -5,7 +5,7 @@
       <div class="pub-container">
         <RouterLink to="/pharmacies" class="pub-logo">
           <div class="pub-logo-icon"><SiteLogo :size="20" color="white" /></div>
-          <div>
+          <div class="pub-logo-text">
             <div class="pub-logo-name"><SiteName /></div>
             <div class="pub-logo-sub">{{ $t('pub.tagline') }}</div>
           </div>
@@ -134,8 +134,10 @@ function requestLocation() {
 .pub-container { max-width: 1200px; margin: 0 auto; padding: 0 20px; width: 100%; }
 .pub-header { background: #1a1a2e; border-bottom: 1px solid #16213e; position: sticky; top: 0; z-index: 100; }
 .pub-header .pub-container { display: flex; align-items: center; gap: 16px; height: 64px; }
-.pub-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; flex-shrink: 0; }
-.pub-logo-icon { width: 36px; height: 36px; border-radius: 9px; background: linear-gradient(135deg,#16a34a,#15803d); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
+.pub-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; flex-shrink: 1; min-width: 0; }
+.pub-logo-text { min-width: 0; }
+.pub-logo-name, .pub-logo-sub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pub-logo-icon { flex-shrink: 0; overflow: hidden; width: 36px; height: 36px; border-radius: 9px; background: linear-gradient(135deg,#16a34a,#15803d); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
 .pub-logo-name { font-weight: 800; font-size: .95rem; color: white; line-height: 1.2; }
 .pub-logo-name span { color: #4ade80; }
 .pub-logo-sub { font-size: .65rem; color: #6b7280; font-weight: 500; }
@@ -156,7 +158,7 @@ function requestLocation() {
 .pub-cart-btn:hover { background: #15803d; }
 .pub-login-btn { display: flex; align-items: center; gap: 6px; background: transparent; border: 1px solid #4ade80; color: #4ade80; border-radius: 99px; padding: 7px 16px; font-size: .85rem; font-weight: 700; text-decoration: none; white-space: nowrap; transition: all .15s; }
 .pub-login-btn:hover { background: #16a34a; border-color: #16a34a; color: white; }
-.pub-cart-badge { background: #ef4444; color: white; border-radius: 50%; width: 20px; height: 20px; font-size: .68rem; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+.pub-cart-badge { position: absolute; top: -6px; inset-inline-end: -6px; border: 2px solid #1a1a2e; background: #ef4444; color: white; border-radius: 50%; width: 20px; height: 20px; font-size: .68rem; font-weight: 800; display: flex; align-items: center; justify-content: center; }
 .pub-main { flex: 1; }
 .pub-footer { background: #111827; padding: 40px 0 20px; margin-top: auto; }
 .pub-footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 32px; }
@@ -183,7 +185,12 @@ function requestLocation() {
 }
 @media (max-width: 560px) {
   .pub-btn-label { display: none; }
-  .pub-cart-btn, .pub-login-btn { padding: 8px 10px; gap: 4px; }
+  .pub-header .pub-container { gap: 8px; }
+  .pub-cart-btn, .pub-login-btn, .pub-loc-btn { padding: 0; width: 34px; height: 34px; justify-content: center; flex-shrink: 0; }
+  /* Sélecteur de langue compact : code court visible, <select> natif en surcouche invisible */
+  .pub-header .pub-header-right .lang-sw { padding: 0 10px; gap: 4px; }
+  .pub-header .pub-header-right .lang-sw-short { display: inline; }
+  .pub-header .pub-header-right .lang-sw select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; }
   .pub-search-btn { padding: 8px 10px; }
   .pub-search-btn-text { display: none; }
   .pub-search-btn-icon { display: block; }

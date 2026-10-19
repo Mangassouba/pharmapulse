@@ -1,4 +1,4 @@
-import { defineStore } from 'pinia'
+import { defineStore, acceptHMRUpdate } from 'pinia'
 import { ref, computed } from 'vue'
 import axios from 'axios'
 import { locale } from '../i18n/index.js'
@@ -29,10 +29,11 @@ export const useCartStore = defineStore('cart', () => {
 
   function saveCart() { localStorage.setItem('pub_cart', JSON.stringify(items.value)) }
 
-  function addItem(product, pharmacyId, pharmacyName) {
+  function addItem(product, pharmacyId, pharmacyName, qty = 1) {
+    const n  = Math.max(1, parseInt(qty) || 1)
     const ex = items.value.find(i => i.product.id === product.id && i.pharmacyId === pharmacyId)
-    if (ex) { if (ex.qty < product.stock) ex.qty++ } else {
-      items.value.push({ product, pharmacyId, pharmacyName, qty: 1 })
+    if (ex) { ex.qty = Math.min(ex.qty + n, product.stock) } else {
+      items.value.push({ product, pharmacyId, pharmacyName, qty: Math.min(n, product.stock) })
     }
     saveCart()
   }
@@ -105,3 +106,6 @@ export const useCartStore = defineStore('cart', () => {
     placeOrder, trackOrder,
   }
 })
+
+// Recharge le store à chaud en dev (sinon l'onglet garde l'ancienne version jusqu'au F5)
+if (import.meta.hot) import.meta.hot.accept(acceptHMRUpdate(useCartStore, import.meta.hot))
