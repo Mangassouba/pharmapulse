@@ -10,6 +10,7 @@ export default {
   },
   common: {
     language:          ['Langue', 'Language', 'اللغة'],
+    home:              ['Accueil', 'Home', 'الرئيسية'],
     search:            ['Rechercher', 'Search', 'بحث'],
     searchPh:          ['Rechercher...', 'Search...', 'بحث...'],
     loading:           ['Chargement...', 'Loading...', 'جارٍ التحميل...'],
@@ -239,6 +240,12 @@ export default {
     trialUntil:  ["Votre essai gratuit est actif jusqu'au", 'Your free trial is active until', 'تجربتك المجانية سارية حتى'],
     activation:  ['Après réception du paiement, votre abonnement sera activé par notre équipe.', 'Once payment is received, our team will activate your subscription.', 'بعد استلام الدفع، سيقوم فريقنا بتفعيل اشتراكك.'],
     understood:  ["J'ai compris", 'Got it', 'فهمت'],
+    expiredTitle: ['Abonnement expiré', 'Subscription expired', 'انتهى الاشتراك'],
+    expiredIntro: ["L'abonnement de votre pharmacie a expiré. Pour continuer à utiliser l'application, payez l'abonnement au numéro :", "Your pharmacy's subscription has expired. To keep using the app, pay the subscription to this number:", 'انتهى اشتراك صيدليتك. لمواصلة استخدام التطبيق، ادفع الاشتراك على الرقم:'],
+    retry:        ["J'ai payé, réessayer", 'I have paid, try again', 'لقد دفعت، أعد المحاولة'],
+    stillExpired: ["L'abonnement n'est pas encore réactivé. Réessayez un peu plus tard ou contactez-nous.", 'The subscription is not reactivated yet. Try again a bit later or contact us.', 'لم يُعَد تفعيل الاشتراك بعد. أعد المحاولة لاحقًا أو تواصل معنا.'],
+    contact:      ['Une question ? Contactez-nous :', 'Any question? Contact us:', 'لديك سؤال؟ تواصل معنا:'],
+    logout:       ['Se déconnecter', 'Log out', 'تسجيل الخروج'],
   },
 
   receipt: {

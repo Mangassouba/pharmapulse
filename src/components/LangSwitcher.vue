@@ -21,7 +21,7 @@ const current = computed(() => LOCALES.find(l => l.code === locale.value) || LOC
 </script>
 
 <style scoped>
-.lang-sw { position: relative; display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 10px; border-radius: 9px; cursor: pointer; font-size: .8rem; font-weight: 600; flex-shrink: 0; }
+.lang-sw { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 10px; border-radius: 9px; cursor: pointer; font-size: .8rem; font-weight: 600; flex-shrink: 0; }
 .lang-sw select { appearance: none; -webkit-appearance: none; background: transparent; border: none; outline: none; font: inherit; color: inherit; cursor: pointer; padding: 0; }
 .lang-sw-short { display: none; } /* affiché par le parent en mode compact (ex. en-tête public mobile) */
 .lang-sw select option { color: #111827; background: #fff; }

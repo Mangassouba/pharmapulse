@@ -581,4 +581,15 @@ table.tbl tbody tr:last-child td { border-bottom: none; }
 /* Les chiffres, codes et montants restent lisibles de gauche à droite */
 [dir="rtl"] .mono-ltr { direction: ltr; unicode-bidi: isolate; }
 /* Sélecteur de langue sur les pages de connexion */
-.auth-lang { position: fixed; top: 16px; inset-inline-end: 16px; z-index: 10; }
+/* Language switcher in the top corner of the auth card (login, register, SuperAdmin…) */
+.auth-card { position: relative; }
+.auth-card > .auth-lang { position: absolute; top: 14px; inset-inline-end: 14px; }
+/* "Home" link in the opposite corner */
+.auth-card > .auth-home {
+  position: absolute; top: 14px; inset-inline-start: 14px; height: 34px;
+  display: inline-flex; align-items: center; gap: 6px; padding: 0 10px; border-radius: 9px;
+  color: #6b7280; font-size: .8rem; font-weight: 600; text-decoration: none; transition: color .15s, background .15s;
+}
+.auth-card > .auth-home:hover { color: #16a34a; background: #f0fdf4; }
+[dir="rtl"] .auth-card > .auth-home svg { transform: scaleX(-1); }
+@media (max-width: 420px) { .auth-card > .auth-home + * { margin-top: 28px; } } /* keeps the logo clear of both */

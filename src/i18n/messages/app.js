@@ -19,6 +19,8 @@ export default {
     accessPanel:        ['Accéder au Panel', 'Open the panel', 'الدخول إلى اللوحة'],
     registerTitle:      ['Créer votre pharmacie', 'Create your pharmacy', 'أنشئ صيدليتك'],
     registerSubtitle:   ['Accès immédiat — SaaS sécurisé', 'Instant access — secure SaaS', 'وصول فوري — خدمة سحابية آمنة'],
+    trialBadge:         ['{n} jours d\'essai gratuit', '{n}-day free trial', 'تجربة مجانية لمدة {n} يومًا'],
+    trialNote:          ['Aucun paiement à l\'inscription, puis {price} / mois', 'No payment at sign-up, then {price} / month', 'لا دفع عند التسجيل، ثم {price} شهريًا'],
     pharmacyName:       ['Nom de la pharmacie', 'Pharmacy name', 'اسم الصيدلية'],
     pharmacyNamePh:     ['Pharmacie Chifa', 'Chifa Pharmacy', 'صيدلية الشفاء'],
     yourName:           ['Votre nom', 'Your name', 'اسمك'],

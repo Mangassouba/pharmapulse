@@ -1,11 +1,16 @@
 <template>
   <div class="auth-bg">
-    <LangSwitcher class="auth-lang" />
     <div class="auth-card">
+      <LangSwitcher class="auth-lang" />
+      <RouterLink to="/" class="auth-home"><ArrowLeft size="1em" /> {{ $t('common.home') }}</RouterLink>
       <div style="text-align:center;margin-bottom:24px;">
         <div style="width:52px;height:52px;border-radius:14px;background:#f0fdf4;border:1px solid #bbf7d0;display:flex;align-items:center;justify-content:center;font-size:1.6rem;margin:0 auto 12px;"><SiteLogo /></div>
         <h1 style="font-size:1.4rem;font-weight:800;margin:0;">{{ $t('auth.registerTitle') }}</h1>
         <p style="color:#6b7280;font-size:.82rem;margin:4px 0 0;">{{ $t('auth.registerSubtitle') }}</p>
+        <div style="display:inline-flex;align-items:center;gap:6px;margin-top:12px;padding:5px 14px;border-radius:99px;background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;font-size:.82rem;font-weight:700;">
+          <Gift size="1em" /> {{ $t('auth.trialBadge', { n: TRIAL_DAYS }) }}
+        </div>
+        <p style="color:#6b7280;font-size:.75rem;margin:6px 0 0;">{{ $t('auth.trialNote', { price }) }}</p>
       </div>
       <div v-if="error" class="alert alert-red" style="margin-bottom:12px;"><CircleX size="1em" /> {{ error }}</div>
       <div class="form-grid" style="gap:12px;">
@@ -26,16 +31,18 @@
 </template>
 <script setup>
 import SiteLogo from '../../components/SiteLogo.vue'
-import { CircleX } from 'lucide-vue-next'
-import { ref } from 'vue'
+import { CircleX, Gift, ArrowLeft } from 'lucide-vue-next'
+import { ref, computed } from 'vue'
 import LangSwitcher from '../../components/LangSwitcher.vue'
-import { t } from '../../i18n/index.js'
+import { t, fmtNum } from '../../i18n/index.js'
+import { TRIAL_DAYS, MONTHLY_PRICE, CURRENCY } from '../../config/payment.js'
 import { COUNTRIES, COUNTRY_CODES, DEFAULT_COUNTRY } from '../../config/countries.js'
 import { countryName } from '../../utils/geo.js'
 
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../../stores/auth.js'
 const auth = useAuthStore(); const router = useRouter()
+const price = computed(() => `${fmtNum(MONTHLY_PRICE)} ${CURRENCY}`) // reformatted on language change
 const error = ref(''); const form = ref({ pharmacyName:'', pharmacyCountry: DEFAULT_COUNTRY, name:'', email:'', password:'' })
 async function submit() {
   error.value = ''

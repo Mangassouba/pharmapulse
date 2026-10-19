@@ -1,7 +1,8 @@
 <template>
   <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#1e1b4b,#3730a3,#4c1d95);">
-    <LangSwitcher class="auth-lang" />
-    <div style="background:#fff;border-radius:18px;padding:36px;width:100%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,.3);">
+    <div class="auth-card" style="border:none;background:#fff;border-radius:18px;padding:36px;width:100%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,.3);">
+      <LangSwitcher class="auth-lang" />
+      <RouterLink to="/" class="auth-home"><ArrowLeft size="1em" /> {{ $t('common.home') }}</RouterLink>
       <div style="text-align:center;margin-bottom:28px;">
         <div style="width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,#7c3aed,#4c1d95);display:flex;align-items:center;justify-content:center;font-size:1.8rem;margin:0 auto 12px;box-shadow:0 8px 20px rgba(124,58,237,.3);"><SiteLogo :fallback="Shield" /></div>
         <h1 style="font-size:1.4rem;font-weight:800;margin:0;"><SiteName accent="#7c3aed" /></h1>
@@ -27,7 +28,7 @@
 <script setup>
 import SiteName from '../../components/SiteName.vue'
 import SiteLogo from '../../components/SiteLogo.vue'
-import { Shield, CircleX } from 'lucide-vue-next'
+import { Shield, CircleX, ArrowLeft } from 'lucide-vue-next'
 import { ref } from 'vue'
 import LangSwitcher from '../../components/LangSwitcher.vue'
 import { t } from '../../i18n/index.js'

@@ -188,7 +188,7 @@ function requestLocation() {
   .pub-header .pub-container { gap: 8px; }
   .pub-cart-btn, .pub-login-btn, .pub-loc-btn { padding: 0; width: 34px; height: 34px; justify-content: center; flex-shrink: 0; }
   /* Sélecteur de langue compact : code court visible, <select> natif en surcouche invisible */
-  .pub-header .pub-header-right .lang-sw { padding: 0 10px; gap: 4px; }
+  .pub-header .pub-header-right .lang-sw { position: relative; padding: 0 10px; gap: 4px; }
   .pub-header .pub-header-right .lang-sw-short { display: inline; }
   .pub-header .pub-header-right .lang-sw select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; }
   .pub-search-btn { padding: 8px 10px; }

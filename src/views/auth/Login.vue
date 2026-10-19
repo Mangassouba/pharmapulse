@@ -1,7 +1,8 @@
 <template>
   <div class="auth-bg">
-    <LangSwitcher class="auth-lang" />
     <div class="auth-card">
+      <LangSwitcher class="auth-lang" />
+      <RouterLink to="/" class="auth-home"><ArrowLeft size="1em" /> {{ $t('common.home') }}</RouterLink>
       <div style="text-align:center;margin-bottom:28px;">
         <div style="width:52px;height:52px;border-radius:14px;background:#f0fdf4;border:1px solid #bbf7d0;display:flex;align-items:center;justify-content:center;font-size:1.6rem;margin:0 auto 12px;"><SiteLogo /></div>
         <h1 style="font-size:1.5rem;font-weight:800;margin:0;"><SiteName accent="#16a34a" /></h1>
@@ -30,7 +31,7 @@
 <script setup>
 import SiteName from '../../components/SiteName.vue'
 import SiteLogo from '../../components/SiteLogo.vue'
-import { CircleX, Shield } from 'lucide-vue-next'
+import { CircleX, Shield, ArrowLeft } from 'lucide-vue-next'
 import { ref } from 'vue'
 import LangSwitcher from '../../components/LangSwitcher.vue'
 import { t } from '../../i18n/index.js'

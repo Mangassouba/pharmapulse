@@ -157,12 +157,31 @@
         </div>
       </div>
     </section>
+
+    <!-- Pharmacists: free trial -->
+    <section class="pub-pro-section">
+      <div class="pub-container">
+        <div class="pub-pro-banner">
+          <div class="pub-pro-text">
+            <span class="pub-pro-badge"><Gift size="1em" /> {{ $t('home.proTrial', { n: TRIAL_DAYS }) }}</span>
+            <h2 class="pub-pro-title">{{ $t('home.proTitle') }}</h2>
+            <p class="pub-pro-desc">{{ $t('home.proText') }}</p>
+          </div>
+          <div class="pub-pro-cta">
+            <RouterLink to="/register" class="pub-pro-btn">{{ $t('home.proCta') }}</RouterLink>
+            <span class="pub-pro-then">{{ $t('home.proThen', { price: proPrice }) }}</span>
+          </div>
+        </div>
+      </div>
+    </section>
   </div>
 </template>
 
 <script setup>
-import { Leaf, Search, MapPin, Pill, Stethoscope, Syringe, Hospital, Moon, Navigation, Phone, ShoppingCart } from 'lucide-vue-next'
-import { ref, onMounted } from 'vue'
+import { Leaf, Search, MapPin, Pill, Stethoscope, Syringe, Hospital, Moon, Navigation, Phone, ShoppingCart, Gift } from 'lucide-vue-next'
+import { ref, computed, onMounted } from 'vue'
+import { TRIAL_DAYS, MONTHLY_PRICE, CURRENCY } from '../../config/payment.js'
+import { fmtNum } from '../../i18n/index.js'
 import { useRouter } from 'vue-router'
 import { useCartStore } from '../../stores/cart.js'
 import { dutyStatus, formatDutyDays, formatDutyHours } from '../../utils/duty.js'
@@ -175,6 +194,8 @@ const cartStore = useCartStore()
 const query     = ref('')
 
 const quickTags = ['Paracetamol', 'Amoxicilline', 'Ibuprofène', 'Vitamines', 'Antitussif', 'Antipaludéen']
+const proPrice = computed(() => `${fmtNum(MONTHLY_PRICE)} ${CURRENCY}`)
+
 const steps = [
   // title / desc : clés i18n
   { num:1, icon:Search, bg:'#f0fdf4', title:'home.step1Title', desc:'home.step1Desc' },
@@ -845,6 +866,34 @@ onMounted(() => {
 
 .pub-btn-green:hover {
   background: var(--primary-dark);
+}
+
+/* Pharmacists banner */
+.pub-pro-section { padding: 0 0 clamp(2rem, 8vw, 3.75rem); background: var(--gray-50); }
+.pub-pro-banner {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1.25rem;
+  padding: clamp(1.25rem, 5vw, 2rem); border-radius: 16px;
+  background: linear-gradient(135deg, #1a1a2e, #16213e); color: #fff;
+}
+.pub-pro-text { flex: 1 1 320px; min-width: 0; }
+.pub-pro-badge {
+  display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 99px;
+  background: rgba(74, 222, 128, .15); border: 1px solid rgba(74, 222, 128, .4); color: #4ade80;
+  font-size: .8rem; font-weight: 700;
+}
+.pub-pro-title { font-size: clamp(1.2rem, 4vw, 1.5rem); font-weight: 800; margin: .6rem 0 .3rem; }
+.pub-pro-desc { color: #9ca3af; font-size: .9rem; margin: 0; }
+.pub-pro-cta { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.pub-pro-btn {
+  display: inline-flex; align-items: center; padding: .7rem 1.4rem; border-radius: 99px;
+  background: var(--primary); color: #fff; font-weight: 700; font-size: .9rem; text-decoration: none; white-space: nowrap;
+  transition: background .15s;
+}
+.pub-pro-btn:hover { background: var(--primary-dark); }
+.pub-pro-then { color: #9ca3af; font-size: .75rem; }
+@media (max-width: 560px) {
+  .pub-pro-cta { width: 100%; }
+  .pub-pro-btn { width: 100%; justify-content: center; }
 }
 
 .pub-btn-sm {

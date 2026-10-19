@@ -242,7 +242,7 @@ import { t, intlLocale } from '../../i18n/index.js'
 import { fmtMoney } from '../../utils/money.js'
 import { countryName } from '../../utils/geo.js'
 import { COUNTRIES, COUNTRY_CODES, DEFAULT_COUNTRY } from '../../config/countries.js'
-import { MONTHLY_PRICE, CURRENCY, DURATIONS } from '../../config/payment.js'
+import { MONTHLY_PRICE, CURRENCY, DURATIONS, TRIAL_DAYS } from '../../config/payment.js'
 
 const toast      = useToastStore()
 const superStore = useSuperAdminStore()
@@ -254,7 +254,7 @@ const showCreate = ref(false); const cSaving = ref(false); const cErr = ref('')
 const suspendTarget = ref(null); const suspendReason = ref(''); const sSaving = ref(false)
 const renewTarget = ref(null); const rSaving = ref(false)
 
-const cForm = ref({ pharmacyName:'',pharmacyLicense:'',pharmacyEmail:'',pharmacyPhone:'',pharmacyCity:'',pharmacyCountry:DEFAULT_COUNTRY,adminName:'',adminEmail:'',adminPassword:'',trialDays:30 })
+const cForm = ref({ pharmacyName:'',pharmacyLicense:'',pharmacyEmail:'',pharmacyPhone:'',pharmacyCity:'',pharmacyCountry:DEFAULT_COUNTRY,adminName:'',adminEmail:'',adminPassword:'',trialDays:TRIAL_DAYS })
 const rForm = ref({ months:12, method:'CASH', reference:'' })
 
 // Subscription pricing — keep in sync with pharmapulse-api/src/utils/subscription.js
@@ -298,7 +298,7 @@ async function openDetail(p) {
 }
 
 function openCreate() {
-  Object.assign(cForm.value, { pharmacyName:'',pharmacyLicense:'',pharmacyEmail:'',pharmacyPhone:'',pharmacyCity:'',pharmacyCountry:DEFAULT_COUNTRY,adminName:'',adminEmail:'',adminPassword:'',trialDays:30 })
+  Object.assign(cForm.value, { pharmacyName:'',pharmacyLicense:'',pharmacyEmail:'',pharmacyPhone:'',pharmacyCity:'',pharmacyCountry:DEFAULT_COUNTRY,adminName:'',adminEmail:'',adminPassword:'',trialDays:TRIAL_DAYS })
   cErr.value = ''; showCreate.value = true
 }
 

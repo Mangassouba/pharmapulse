@@ -11,6 +11,7 @@ const ForgotPassword = () => import('../views/auth/ForgotPassword.vue')
 const ResetPassword  = () => import('../views/auth/ResetPassword.vue')
 const SuperForgotPassword = () => import('../views/superadmin/SuperForgotPassword.vue')
 const SuperResetPassword  = () => import('../views/superadmin/SuperResetPassword.vue')
+const AbonnementExpire    = () => import('../views/auth/AbonnementExpire.vue')
 
 // Pharmacy app
 const AppLayout          = () => import('../components/layout/AppLayout.vue')
@@ -54,6 +55,9 @@ const routes = [
   { path:'/reset-password',  component:ResetPassword,  meta:{ public:true } },
   { path:'/super/forgot-password', component:SuperForgotPassword, meta:{ public:true } },
   { path:'/super/reset-password',  component:SuperResetPassword,  meta:{ public:true } },
+
+  // Subscription expired (logged in, outside AppLayout so no API call loops on 402)
+  { path:'/abonnement-expire', component:AbonnementExpire },
 
   // SuperAdmin
   { path:'/super', component:SuperLayout, meta:{ super:true },

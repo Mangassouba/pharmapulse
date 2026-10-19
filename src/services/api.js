@@ -23,6 +23,10 @@ api.interceptors.response.use(
       localStorage.removeItem('pharma_user')
       window.location.href = '/login'
     }
+    // Subscription past its end date (only status the API sends 402 for) → payment page
+    if (err.response?.status === 402 && window.location.pathname !== '/abonnement-expire') {
+      window.location.href = '/abonnement-expire'
+    }
     const data = err.response?.data
     return Promise.reject({ status: err.response?.status, message: data?.message || httpErrorText(err), errors: data?.errors })
   }

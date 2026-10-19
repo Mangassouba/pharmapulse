@@ -51,6 +51,12 @@ export default {
     nearest:            ['Les plus proches', 'Nearest', 'الأقرب'],
     seeAll:             ['Voir toutes →', 'View all →', 'عرض الكل ←'],
     noPharmacy:         ['Aucune pharmacie disponible pour le moment.', 'No pharmacy available at the moment.', 'لا توجد صيدلية متاحة حاليًا.'],
+    // Bandeau pharmaciens (inscription)
+    proTitle:           ['Vous êtes pharmacien ?', 'Are you a pharmacist?', 'هل أنت صيدلي؟'],
+    proText:            ['Gérez votre stock, vos ventes et recevez des commandes en ligne.', 'Manage your stock and sales, and receive online orders.', 'أدِر مخزونك ومبيعاتك واستقبل الطلبات عبر الإنترنت.'],
+    proTrial:           ['{n} jours d\'essai gratuit', '{n}-day free trial', 'تجربة مجانية لمدة {n} يومًا'],
+    proThen:            ['Sans engagement, puis {price} / mois', 'No commitment, then {price} / month', 'بدون التزام، ثم {price} شهريًا'],
+    proCta:             ['Créer ma pharmacie', 'Create my pharmacy', 'أنشئ صيدليتي'],
     // Cartes d'exemple décoratives du bandeau
     demo1:              ['Pharmacie Chifa · Nouakchott', 'Chifa Pharmacy · Nouakchott', 'صيدلية الشفاء · نواكشوط'],
     demo2:              ['Pharmacie Centrale · Thiès', 'Central Pharmacy · Thiès', 'الصيدلية المركزية · تييس'],
