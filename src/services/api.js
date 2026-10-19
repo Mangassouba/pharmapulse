@@ -144,6 +144,8 @@ export const superApi      = {
   getPayments:    id => api.get(`/super/pharmacies/${id}/payments`),
   listUsers:      p  => api.get('/super/users', { params: p }),
   getLogs:        p  => api.get('/super/logs', { params: p }),
+  getPharmacyLogs:       p  => api.get('/super/pharmacy-logs', { params: p }),
+  getPharmacyLogFilters: () => api.get('/super/pharmacy-logs/filters'),
 }
 
 // Expose raw axios instance for custom calls
