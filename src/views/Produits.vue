@@ -68,11 +68,35 @@
               <div><label class="lbl">{{ $t('products.barcode') }} *</label><input v-model="form.barcode" class="inp"/></div>
               <div><label class="lbl">{{ $t('products.salePriceCurrency', { currency: currentCurrency() }) }} *</label><input v-model.number="form.sale_price" type="number" min="0" class="inp"/></div>
               <div><label class="lbl">{{ $t('reception.purchasePrice', { currency: currentCurrency() }) }} *</label><input v-model.number="form.purchase_price" type="number" min="0" class="inp"/></div>
-              <div><label class="lbl">{{ $t('products.initialStock') }}</label><input v-model.number="form.stock" type="number" min="0" class="inp"/></div>
-              <div><label class="lbl">{{ $t('products.alertThreshold') }}</label><input v-model.number="form.threshold" type="number" min="0" class="inp"/></div>
-              <div><label class="lbl">{{ $t('products.unitType') }}</label><select v-model="form.unit_type" class="inp"><option v-for="u in ['PIECE','BOX','BOTTLE','PACKET','TUBE','TABLET','AMPOULE']" :key="u" :value="u">{{ $t('unitTypes.' + u) }}</option></select></div>
-              <div><label class="lbl">{{ $t('products.qtyPerUnit') }}</label><input v-model.number="form.unit_quantity" type="number" min="0" class="inp" :placeholder="$t('products.qtyPerUnitPh')"/></div>
-              <div style="grid-column:1/-1;display:flex;gap:16px;"><label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.875rem;"><input type="checkbox" v-model="form.prescription_req"/> {{ $t('products.prescriptionRequired') }}</label><label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.875rem;"><input type="checkbox" v-model="form.is_divisible"/> {{ $t('products.divisible') }}</label></div>
+              <!-- Stock initial (création seulement) et seuil : saisis dans l'unité principale, envoyés en unités de base -->
+              <div v-if="!editId"><label class="lbl">{{ $t('products.initialStock') }} <span class="pk-hint">({{ $t('products.inMainUnit', { unit: mainUnitLabel }) }})</span></label><input v-model.number="form.stock" type="number" min="0" class="inp"/></div>
+              <div><label class="lbl">{{ $t('products.alertThreshold') }} <span class="pk-hint">({{ $t('products.inMainUnit', { unit: mainUnitLabel }) }})</span></label><input v-model.number="form.threshold" type="number" min="0" class="inp"/></div>
+              <div style="grid-column:1/-1;display:flex;gap:16px;"><label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.875rem;"><input type="checkbox" v-model="form.prescription_req"/> {{ $t('products.prescriptionRequired') }}</label></div>
+              <!-- Conditionnement : boîte → plaquette → comprimé -->
+              <div class="pk">
+                <label class="lbl">{{ $t('products.packaging') }}</label>
+                <div class="pk-hint" style="margin-bottom:8px;">{{ $t('products.packagingHelp') }}</div>
+                <div v-for="(lv,i) in form.levels" :key="i" class="pk-row">
+                  <select v-model="lv.unit" class="inp pk-unit"><option v-for="u in UNIT_CHOICES" :key="u" :value="u">{{ $t('unitTypes.' + u) }}</option></select>
+                  <template v-if="i<form.levels.length-1">
+                    <span class="pk-txt">{{ $t('products.contains') }}</span>
+                    <input v-model.number="lv.per" type="number" min="2" step="1" class="inp pk-num"/>
+                    <span class="pk-txt">{{ $te('unitTypes', form.levels[i+1].unit) }}</span>
+                  </template>
+                  <span v-else class="pk-txt pk-base">{{ $t('products.baseUnit') }}</span>
+                  <div class="pk-opts">
+                    <label class="pk-check"><input type="radio" :value="i" v-model="form.mainIndex"/> {{ $t('products.mainUnit') }}</label>
+                    <label class="pk-check"><input type="checkbox" v-model="lv.sellable" :disabled="i===form.mainIndex"/> {{ $t('products.sellable') }}</label>
+                    <span v-if="i===form.mainIndex" class="pk-txt">{{ $t('products.isSalePrice') }}</span>
+                    <input v-else v-model.number="lv.sale_price" type="number" min="0" step="any" class="inp pk-price" :disabled="!lv.sellable" :placeholder="autoPricePh(i)"/>
+                    <button v-if="form.levels.length>1" type="button" class="btn btn-icon btn-sm" style="border-color:#fecaca;" @click="removeLevel(i)" :title="$t('products.removeLevel')"><Trash2 size="1em" /></button>
+                  </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+                  <button type="button" class="btn btn-outline btn-sm" @click="addLevel" :disabled="form.levels.length>=6">+ {{ $t('products.addLevel') }}</button>
+                  <span v-if="packagingPreview" class="pk-preview">{{ packagingPreview }}</span>
+                </div>
+              </div>
             </div>
             <div v-if="formErr" class="alert alert-red" style="margin-top:12px;"><CircleX size="1em" /> {{ formErr }}</div>
           </div>
@@ -126,8 +150,9 @@ import { productApi }     from '../services/api.js'
 import { productImageUrl, resizeImage } from '../utils/logo.js'
 import { downloadProductSheet, readProductSheet } from '../utils/productSheet.js'
 import ProductImage from '../components/ProductImage.vue'
-import { t } from '../i18n/index.js'
-import { fmtMoney, currentCurrency } from '../utils/money.js'
+import { t, te } from '../i18n/index.js'
+import { fmtMoney, currentCurrency, roundMoney } from '../utils/money.js'
+import { UNIT_CHOICES, levelSizes, levelsFromUnits, unitsFromLevels, newLevel } from '../utils/units.js'
 const store = usePharmaStore(); const toast = useToastStore(); const auth = useAuthStore()
 const search=ref(''); const filterCat=ref(''); const filterStatus=ref(''); const filterLow=ref(false); const page=ref(1)
 const showModal=ref(false); const editId=ref(null); const saving=ref(false); const formErr=ref(''); const delTarget=ref(null)
@@ -147,8 +172,30 @@ async function saveImage(id) {
   if (imageData.value) await productApi.updateImage(id, { image: imageData.value })
   else if (imageRemoved.value) await productApi.deleteImage(id)
 }
-const emptyForm = () => ({ name:'',categoryId:'',barcode:'',sale_price:0,purchase_price:0,stock:0,threshold:10,unit_type:'BOX',unit_quantity:null,prescription_req:false,is_divisible:false })
+const emptyForm = () => ({ name:'',categoryId:'',barcode:'',sale_price:0,purchase_price:0,stock:0,threshold:10,prescription_req:false,levels:[newLevel('BOX')],mainIndex:0 })
 const form = ref(emptyForm())
+// Conditionnement : unités de base par niveau, aperçu « 1 Boîte = 2 × Plaquette = 20 × Comprimé », prix auto
+const sizes = computed(() => levelSizes(form.value.levels))
+const mainUnitLabel = computed(() => te('unitTypes', form.value.levels[form.value.mainIndex]?.unit))
+const packagingPreview = computed(() => {
+  const s = sizes.value, lv = form.value.levels
+  if (lv.length < 2 || !s.every(Number.isFinite)) return ''
+  return lv.map((l, i) => (i === 0 ? `1 ${te('unitTypes', l.unit)}` : `${s[0] / s[i]} × ${te('unitTypes', l.unit)}`)).join(' = ')
+})
+function autoPricePh(i) {
+  const s = sizes.value, main = form.value.mainIndex
+  if (!(form.value.sale_price > 0) || !Number.isFinite(s[i]) || !Number.isFinite(s[main])) return ''
+  return t('products.unitPricePh', { price: fmtMoney(roundMoney(form.value.sale_price * s[i] / s[main])) })
+}
+function addLevel() {
+  const used = new Set(form.value.levels.map(l => l.unit))
+  form.value.levels.push(newLevel(['TABLET', ...UNIT_CHOICES].find(u => !used.has(u))))
+}
+function removeLevel(i) {
+  form.value.levels.splice(i, 1)
+  if (form.value.mainIndex === i) form.value.mainIndex = 0
+  else if (form.value.mainIndex > i) form.value.mainIndex--
+}
 let dt; function debouncedFetch() { clearTimeout(dt); dt=setTimeout(fetchData,380) }
 async function fetchData() {
   const p = { page:page.value, pageSize:20 }
@@ -159,16 +206,33 @@ async function fetchData() {
   await store.fetchProducts(p)
 }
 function openAdd() { editId.value=null; form.value=emptyForm(); resetImage(null); formErr.value=''; showModal.value=true }
-function openEdit(p) { editId.value=p.id; form.value={name:p.name,categoryId:p.categoryId,barcode:p.barcode,sale_price:Number(p.sale_price),purchase_price:Number(p.purchase_price),stock:p.stock,threshold:p.threshold,unit_type:p.unit_type,unit_quantity:p.unit_quantity,prescription_req:p.prescription_req,is_divisible:p.is_divisible}; resetImage(p); formErr.value=''; showModal.value=true }
+function openEdit(p) {
+  const { levels, mainIndex } = levelsFromUnits(p.units, p.unit_type)
+  // Seuil stocké en unités de base, affiché dans l'unité principale
+  const threshold = p.threshold / levelSizes(levels)[mainIndex]
+  editId.value=p.id; form.value={name:p.name,categoryId:p.categoryId,barcode:p.barcode,sale_price:Number(p.sale_price),purchase_price:Number(p.purchase_price),threshold,prescription_req:p.prescription_req,levels,mainIndex}; resetImage(p); formErr.value=''; showModal.value=true
+}
 async function save() {
   formErr.value=''
   if (!form.value.name) { formErr.value=t('common.nameRequired'); return }
   if (!form.value.categoryId) { formErr.value=t('products.categoryRequired'); return }
   if (!form.value.barcode) { formErr.value=t('products.barcodeRequired'); return }
+  const { levels, mainIndex, stock, threshold, ...fields } = form.value
+  if (levels.slice(0, -1).some(l => !Number.isInteger(l.per) || l.per < 2)) { formErr.value=t('products.levelPerRequired'); return }
+  if (new Set(levels.map(l => l.unit)).size !== levels.length) { formErr.value=t('products.levelDuplicate'); return }
+  // Stock initial et seuil saisis dans l'unité principale → unités de base
+  const size = levelSizes(levels)[mainIndex]
+  const data = {
+    ...fields,
+    unit_type: levels[mainIndex].unit,
+    units:     unitsFromLevels(levels, mainIndex),
+    threshold: threshold === '' ? undefined : threshold * size,
+    ...(!editId.value && { stock: (stock || 0) * size }),
+  }
   saving.value=true
   try {
     let id = editId.value
-    if (id) { await store.updateProduct(id,form.value); toast.success(t('products.updated')) } else { id = (await store.createProduct(form.value)).data.id; toast.success(t('products.created')) }
+    if (id) { await store.updateProduct(id,data); toast.success(t('products.updated')) } else { id = (await store.createProduct(data)).data.id; toast.success(t('products.created')) }
     // The product is saved at this point: an image failure is only reported, not blocking
     try { await saveImage(id) } catch(e) { toast.error(t('products.imageNotSaved') + ' ' + e.message) }
     showModal.value=false; fetchData()
@@ -213,3 +277,18 @@ async function doImport() {
 }
 onMounted(async () => { await store.fetchCategories(); fetchData() })
 </script>
+<style scoped>
+.pk { grid-column: 1 / -1; border: 1px solid #e5e7eb; border-radius: 10px; padding: 12px; background: #f9fafb; }
+.pk-hint { font-size: .75rem; font-weight: 400; color: #6b7280; }
+.pk-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 8px 0; border-bottom: 1px dashed #e5e7eb; }
+.pk-row:last-of-type { border-bottom: none; margin-bottom: 8px; }
+.pk-unit { width: 130px; }
+.pk-num { width: 72px; }
+.pk-price { width: 130px; }
+.pk-txt { font-size: .82rem; color: #374151; }
+.pk-base { color: #4338ca; font-weight: 600; }
+.pk-opts { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-inline-start: auto; }
+.pk-check { display: flex; align-items: center; gap: 4px; font-size: .8rem; cursor: pointer; }
+.pk-preview { font-size: .8rem; font-weight: 600; color: #16a34a; }
+@media (max-width: 600px) { .pk-opts { margin-inline-start: 0; width: 100%; } }
+</style>

@@ -10,6 +10,12 @@ export function currentCurrency() {
   return ph?.currency || COUNTRIES[ph?.country]?.currency || DEFAULT_CURRENCY
 }
 
+/** Rounds to the decimals of a currency (default: the current pharmacy's) — e.g. price of a blister from a box price */
+export function roundMoney(v, currency = currentCurrency()) {
+  const f = 10 ** (DECIMALS[currency] ?? 2)
+  return Math.round(Number(v) * f) / f
+}
+
 /**
  * fmtMoney(1500) → "1 500 MRU" in the current pharmacy's currency.
  * { currency } formats in another one (public pages: the pharmacy shown);

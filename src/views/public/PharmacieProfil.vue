@@ -250,7 +250,6 @@ onMounted(async () => {
 .pub-btn-outline { display: inline-flex; align-items: center; gap: 6px; background: white; color: #374151; border: 1px solid #d1d5db; border-radius: 8px; padding: 9px 18px; font-size: .875rem; font-weight: 600; cursor: pointer; text-decoration: none; transition: all .12s; font-family: 'Inter', sans-serif; }
 .pub-btn-outline:hover { border-color: #16a34a; color: #16a34a; }
 @keyframes spin { to { transform: rotate(360deg); } }
-
 .pp-hero { background: white; border-bottom: 1px solid #e5e7eb; padding: 28px 0; }
 .pp-hero-row { display: flex; align-items: flex-start; gap: 20px; flex-wrap: wrap; }
 .pp-hero-icon { width: 64px; height: 64px; border-radius: 16px; background: linear-gradient(135deg,#f0fdf4,#dcfce7); border: 2px solid #bbf7d0; display: flex; align-items: center; justify-content: center; font-size: 2rem; flex-shrink: 0; }
