@@ -44,7 +44,7 @@
                   <td style="font-family:'JetBrains Mono',monospace;font-size:.8rem;color:#6b7280;">{{ store.fmt(m.movement_date) }}</td>
                   <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.875rem;">{{ m.product?.name }}</td>
                   <td><span class="badge" :class="m.type==='ENTRY'?'badge-blue':m.type==='SALE'?'badge-yellow':'badge-purple'" style="font-size:.65rem;">{{ m.type==='ENTRY'?$t('movementType.ENTRY'):m.type==='SALE'?$t('movementType.SALE'):$t('movementType.ADJUSTMENT') }}</span></td>
-                  <td style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:.9rem;" :style="{color:m.quantity>0?'#16a34a':'#dc2626'}">{{ m.quantity>0?'+':'' }}{{ m.quantity }}</td>
+                  <td style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:.9rem;" :style="{color:m.quantity>0?'#16a34a':'#dc2626'}">{{ m.quantity>0?'+':'' }}{{ fmtQty(m.product, m.quantity) }}</td>
                 </tr>
                 <tr v-if="!d?.movements?.recentMovements?.length"><td colspan="4" style="text-align:center;color:#6b7280;padding:16px;">{{ $t('movements.none') }}</td></tr>
               </tbody>
@@ -59,7 +59,7 @@
           <div style="display:flex;flex-direction:column;gap:8px;">
             <div v-for="p in store.alerts.slice(0,5)" :key="p.id" style="display:flex;align-items:center;justify-content:space-between;padding:9px;background:#f9fafb;border-radius:8px;border:1px solid #f3f4f6;">
               <div><div style="font-weight:600;font-size:.875rem;">{{ p.name }}</div><div style="font-size:.72rem;color:#6b7280;">{{ p.category?.name }}</div></div>
-              <div style="text-align:end;"><div style="font-family:'JetBrains Mono',monospace;font-weight:700;" :style="{color:p.stock===0?'#dc2626':'#ca8a04'}">{{ $t('common.units', { n: p.stock }) }}</div><span class="badge" :class="p.stock===0?'badge-red':'badge-yellow'" style="font-size:.65rem;">{{ p.stock===0?$t('stock.out'):$t('stock.low') }}</span></div>
+              <div style="text-align:end;"><div style="font-family:'JetBrains Mono',monospace;font-weight:700;" :style="{color:p.stock===0?'#dc2626':'#ca8a04'}">{{ productUnitsOf(p).length>1 ? fmtStock(p) : $t('common.units', { n: p.stock }) }}</div><span class="badge" :class="p.stock===0?'badge-red':'badge-yellow'" style="font-size:.65rem;">{{ p.stock===0?$t('stock.out'):$t('stock.low') }}</span></div>
             </div>
             <div v-if="!store.alerts.length" style="text-align:center;padding:16px;color:#6b7280;font-size:.875rem;"><CircleCheck size="1em" /> {{ $t('dashboard.allOk') }}</div>
           </div>
@@ -75,6 +75,7 @@ import { Chart, registerables } from 'chart.js'
 import { usePharmaStore } from '../stores/pharma.js'
 import { t, intlLocale, locale } from '../i18n/index.js'
 import { fmtMoney, currentCurrency } from '../utils/money.js'
+import { fmtQty, fmtStock, productUnitsOf } from '../utils/units.js'
 Chart.register(...registerables)
 const store = usePharmaStore()
 const chartRef = ref(null)

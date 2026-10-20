@@ -15,7 +15,7 @@
           <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;"><div><div style="font-weight:700;">{{ p.name }}</div><div style="font-size:.72rem;color:#6b7280;">{{ p.category?.name }}</div></div><span class="badge badge-red">{{ $t('stock.out') }}</span></div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
             <div style="background:#fef2f2;border-radius:7px;padding:8px;"><div style="font-size:.68rem;color:#6b7280;">{{ $t('common.stock') }}</div><div style="font-family:'JetBrains Mono',monospace;font-weight:700;color:#dc2626;">0</div></div>
-            <div style="background:#f9fafb;border-radius:7px;padding:8px;"><div style="font-size:.68rem;color:#6b7280;">{{ $t('alerts.minThreshold') }}</div><div style="font-family:'JetBrains Mono',monospace;font-weight:700;">{{ p.threshold }}</div></div>
+            <div style="background:#f9fafb;border-radius:7px;padding:8px;"><div style="font-size:.68rem;color:#6b7280;">{{ $t('alerts.minThreshold') }}</div><div style="font-family:'JetBrains Mono',monospace;font-weight:700;">{{ fmtQty(p, p.threshold) }}</div></div>
           </div>
         </div>
       </div>
@@ -27,9 +27,9 @@
         <div v-for="p in lowStock" :key="p.id" style="border:1px solid #fef08a;border-radius:10px;padding:14px;background:#fefce8;">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;"><div><div style="font-weight:700;">{{ p.name }}</div><div style="font-size:.72rem;color:#6b7280;">{{ p.category?.name }}</div></div><span class="badge badge-yellow">{{ $t('stock.low') }}</span></div>
           <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;font-size:.78rem;">
-            <div style="background:#f9fafb;border-radius:6px;padding:6px;text-align:center;"><div style="color:#6b7280;font-size:.65rem;">{{ $t('common.stock') }}</div><div style="font-weight:700;color:#ca8a04;font-family:'JetBrains Mono',monospace;">{{ p.stock }}</div></div>
-            <div style="background:#f9fafb;border-radius:6px;padding:6px;text-align:center;"><div style="color:#6b7280;font-size:.65rem;">{{ $t('alerts.min') }}</div><div style="font-weight:700;font-family:'JetBrains Mono',monospace;">{{ p.threshold }}</div></div>
-            <div style="background:#f9fafb;border-radius:6px;padding:6px;text-align:center;"><div style="color:#6b7280;font-size:.65rem;">{{ $t('alerts.missing') }}</div><div style="font-weight:700;color:#dc2626;font-family:'JetBrains Mono',monospace;">{{ p.threshold-p.stock }}</div></div>
+            <div style="background:#f9fafb;border-radius:6px;padding:6px;text-align:center;"><div style="color:#6b7280;font-size:.65rem;">{{ $t('common.stock') }}</div><div style="font-weight:700;color:#ca8a04;font-family:'JetBrains Mono',monospace;">{{ fmtStock(p) }}</div></div>
+            <div style="background:#f9fafb;border-radius:6px;padding:6px;text-align:center;"><div style="color:#6b7280;font-size:.65rem;">{{ $t('alerts.min') }}</div><div style="font-weight:700;font-family:'JetBrains Mono',monospace;">{{ fmtQty(p, p.threshold) }}</div></div>
+            <div style="background:#f9fafb;border-radius:6px;padding:6px;text-align:center;"><div style="color:#6b7280;font-size:.65rem;">{{ $t('alerts.missing') }}</div><div style="font-weight:700;color:#dc2626;font-family:'JetBrains Mono',monospace;">{{ fmtQty(p, p.threshold-p.stock) }}</div></div>
             <div style="background:#f9fafb;border-radius:6px;padding:6px;text-align:center;"><div style="color:#6b7280;font-size:.65rem;">{{ $t('alerts.coverageShort') }}</div><div style="font-weight:700;font-family:'JetBrains Mono',monospace;">{{ Math.round((p.stock/p.threshold)*100) }}%</div></div>
           </div>
           <div class="progress" style="margin-top:8px;"><div class="progress-fill" :style="{width:Math.min(100,Math.round((p.stock/p.threshold)*100))+'%',background:'#ca8a04'}"></div></div>
@@ -42,7 +42,7 @@
       <div class="tbl-wrap">
         <table class="tbl"><thead><tr><th>{{ $t('common.product') }}</th><th>{{ $t('batches.number') }}</th><th>{{ $t('common.quantity') }}</th><th>{{ $t('batches.expiry') }}</th><th>{{ $t('batches.daysLeft') }}</th></tr></thead>
           <tbody>
-            <tr v-for="b in expiringBatches" :key="b.id"><td style="font-weight:600;">{{ b.product?.name }}</td><td style="font-family:'JetBrains Mono',monospace;font-size:.8rem;">{{ b.number }}</td><td style="font-family:'JetBrains Mono',monospace;">{{ b.quantity }}</td><td style="font-family:'JetBrains Mono',monospace;font-size:.8rem;color:#dc2626;">{{ store.fmt(b.expiration_date) }}</td><td><span class="badge" :class="daysLeft(b.expiration_date)<7?'badge-red':'badge-yellow'">{{ $t('common.daysShort', { n: daysLeft(b.expiration_date) }) }}</span></td></tr>
+            <tr v-for="b in expiringBatches" :key="b.id"><td style="font-weight:600;">{{ b.product?.name }}</td><td style="font-family:'JetBrains Mono',monospace;font-size:.8rem;">{{ b.number }}</td><td style="font-family:'JetBrains Mono',monospace;">{{ fmtQty(b.product, b.quantity) }}</td><td style="font-family:'JetBrains Mono',monospace;font-size:.8rem;color:#dc2626;">{{ store.fmt(b.expiration_date) }}</td><td><span class="badge" :class="daysLeft(b.expiration_date)<7?'badge-red':'badge-yellow'">{{ $t('common.daysShort', { n: daysLeft(b.expiration_date) }) }}</span></td></tr>
           </tbody>
         </table>
       </div>
@@ -55,8 +55,8 @@
           <tbody>
             <tr v-for="p in sortedProds" :key="p.id">
               <td><div style="font-weight:600;">{{ p.name }}</div><div style="font-size:.72rem;color:#6b7280;">{{ p.category?.name }}</div></td>
-              <td style="font-family:'JetBrains Mono',monospace;font-weight:700;" :style="{color:p.stock===0?'#dc2626':p.stock<p.threshold?'#ca8a04':'#16a34a'}">{{ p.stock }}</td>
-              <td style="font-family:'JetBrains Mono',monospace;color:#6b7280;">{{ p.threshold }}</td>
+              <td style="font-family:'JetBrains Mono',monospace;font-weight:700;" :style="{color:p.stock===0?'#dc2626':p.stock<p.threshold?'#ca8a04':'#16a34a'}">{{ fmtStock(p) }}</td>
+              <td style="font-family:'JetBrains Mono',monospace;color:#6b7280;">{{ fmtQty(p, p.threshold) }}</td>
               <td style="min-width:120px;"><div style="display:flex;align-items:center;gap:8px;"><div class="progress" style="flex:1;"><div class="progress-fill" :style="{width:Math.min(100,p.stock===0?0:Math.round((p.stock/p.threshold)*100))+'%',background:p.stock===0?'#dc2626':p.stock<p.threshold?'#ca8a04':'#16a34a'}"></div></div><span style="font-size:.72rem;font-family:'JetBrains Mono',monospace;color:#6b7280;width:32px;">{{ p.stock===0?0:Math.min(100,Math.round((p.stock/p.threshold)*100)) }}%</span></div></td>
               <td><span class="badge" :class="p.stock===0?'badge-red':p.stock<p.threshold?'badge-yellow':'badge-green'">{{ p.stock===0?$t('stock.out'):p.stock<p.threshold?$t('stock.low'):$t('stock.ok') }}</span></td>
             </tr>
@@ -71,6 +71,7 @@ import { CircleCheck, Siren, PackagePlus, TriangleAlert, CalendarClock } from 'l
 import { ref, computed, onMounted } from 'vue'
 import { usePharmaStore } from '../stores/pharma.js'
 import { batchApi } from '../services/api.js'
+import { fmtStock, fmtQty } from '../utils/units.js'
 const store=usePharmaStore()
 const expiringBatches=ref([])
 const outOfStock=computed(()=>store.products.filter(p=>p.stock===0))

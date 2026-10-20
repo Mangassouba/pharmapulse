@@ -26,11 +26,11 @@
               <td style="font-family:'JetBrains Mono',monospace;font-weight:700;">{{ fmtMoney(p.sale_price) }}</td>
               <td>
                 <div style="display:flex;align-items:center;gap:8px;">
-                  <span style="font-family:'JetBrains Mono',monospace;font-weight:700;" :style="{color:p.stock===0?'#dc2626':p.stock<p.threshold?'#ca8a04':'#16a34a'}">{{ p.stock }}</span>
+                  <span style="font-family:'JetBrains Mono',monospace;font-weight:700;" :style="{color:p.stock===0?'#dc2626':p.stock<p.threshold?'#ca8a04':'#16a34a'}">{{ fmtStock(p) }}</span>
                   <div class="progress" style="width:48px;"><div class="progress-fill" :style="{width:Math.min(100,(p.stock/p.threshold)*100)+'%',background:p.stock===0?'#dc2626':p.stock<p.threshold?'#ca8a04':'#16a34a'}"></div></div>
                 </div>
               </td>
-              <td style="font-family:'JetBrains Mono',monospace;color:#6b7280;">{{ p.threshold }}</td>
+              <td style="font-family:'JetBrains Mono',monospace;color:#6b7280;">{{ fmtQty(p, p.threshold) }}</td>
               <td><span class="badge" :class="p.stock===0?'badge-red':p.stock<p.threshold?'badge-yellow':'badge-green'">{{ p.stock===0?$t('stock.out'):p.stock<p.threshold?$t('stock.low'):$t('stock.ok') }}</span></td>
               <td><div style="display:flex;gap:5px;justify-content:flex-end;"><button class="btn btn-icon btn-sm" @click="openEdit(p)" :title="$t('common.edit')"><Pencil size="1em" /></button><button class="btn btn-icon btn-sm" @click="confirmDel(p)" style="border-color:#fecaca;"><Trash2 size="1em" /></button></div></td>
             </tr>
@@ -152,7 +152,7 @@ import { downloadProductSheet, readProductSheet } from '../utils/productSheet.js
 import ProductImage from '../components/ProductImage.vue'
 import { t, te } from '../i18n/index.js'
 import { fmtMoney, currentCurrency, roundMoney } from '../utils/money.js'
-import { UNIT_CHOICES, levelSizes, levelsFromUnits, unitsFromLevels, newLevel } from '../utils/units.js'
+import { UNIT_CHOICES, levelSizes, levelsFromUnits, unitsFromLevels, newLevel, fmtStock, fmtQty } from '../utils/units.js'
 const store = usePharmaStore(); const toast = useToastStore(); const auth = useAuthStore()
 const search=ref(''); const filterCat=ref(''); const filterStatus=ref(''); const filterLow=ref(false); const page=ref(1)
 const showModal=ref(false); const editId=ref(null); const saving=ref(false); const formErr=ref(''); const delTarget=ref(null)

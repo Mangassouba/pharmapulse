@@ -70,17 +70,35 @@ export function unitPrice(p, u) {
  * Stock (compté en unités de base) lisible : 47 comprimés d'une boîte de 20 en plaquettes de 10
  * → « 2 Boîte + 7 Comprimé ». Un produit à une seule unité garde l'affichage d'un simple nombre.
  */
-export function fmtStock(p) {
-  const units = productUnitsOf(p)
-  let left = Number(p?.stock || 0)
-  if (units.length < 2 || left <= 0) return fmtNum(left, { maximumFractionDigits: 2 })
-  const parts = []
-  for (const u of units) {
-    const n = Math.floor(left / u.base_quantity + 1e-9)
-    if (n > 0) { parts.push(`${fmtNum(n)} ${te('unitTypes', u.unit)}`); left -= n * u.base_quantity }
-  }
-  return parts.join(' + ')
+export const fmtStock = p => fmtQty(p, p?.stock)
+
+/**
+ * Toute quantité du produit en unités de base (stock, seuil, lot, mouvement, écart d'inventaire), lisible.
+ * Le signe est gardé devant : −30 comprimés d'une boîte de 20 → « −1 Boîte + 10 Comprimé ».
+ */
+export function fmtQty(p, qty) {
+  const value = Number(qty || 0)
+  if (productUnitsOf(p).length < 2 || value === 0) return fmtNum(value, { maximumFractionDigits: 2 })
+  const parts = Object.entries(splitQty(p, Math.abs(value)))
+    .filter(([, n]) => n > 0)
+    .map(([unit, n]) => `${fmtNum(n)} ${te('unitTypes', unit)}`)
+  return (value < 0 ? '−' : '') + parts.join(' + ')
 }
+
+/** Quantité en unités de base répartie par unité, plus grande d'abord : 47 → { BOX: 2, BLISTER: 0, TABLET: 7 } */
+export function splitQty(p, qty) {
+  let left = Math.max(0, Number(qty || 0))
+  const out = {}
+  for (const u of productUnitsOf(p)) {
+    out[u.unit] = Math.floor(left / u.base_quantity + 1e-9)
+    left -= out[u.unit] * u.base_quantity
+  }
+  return out
+}
+
+/** Inverse de splitQty : { BOX: 2, TABLET: 7 } → 47 unités de base */
+export const joinQty = (p, counts) =>
+  productUnitsOf(p).reduce((s, u) => s + (Number(counts?.[u.unit]) || 0) * u.base_quantity, 0)
 
 /** Stock exprimé dans l'unité principale (pour comparer au seuil, à une quantité en boîtes…) */
 export const stockInMainUnit = p => Number(p?.stock || 0) / mainUnitOf(p).base_quantity

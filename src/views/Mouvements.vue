@@ -24,9 +24,9 @@
               <td style="font-family:'JetBrains Mono',monospace;font-size:.8rem;color:#6b7280;white-space:nowrap;">{{ store.fmt(m.movement_date) }}</td>
               <td style="font-weight:500;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ m.product?.name }}</td>
               <td><span class="badge" :class="m.type==='ENTRY'?'badge-blue':m.type==='SALE'?'badge-yellow':'badge-purple'" style="font-size:.67rem;">{{ $te('movementType', m.type) }}</span></td>
-              <td style="font-family:'JetBrains Mono',monospace;font-weight:700;" :style="{color:m.quantity>0?'#16a34a':'#dc2626'}">{{ m.quantity>0?'+':'' }}{{ m.quantity }}</td>
-              <td style="font-family:'JetBrains Mono',monospace;font-size:.8rem;color:#6b7280;">{{ m.previous_stock??'—' }}</td>
-              <td style="font-family:'JetBrains Mono',monospace;font-size:.8rem;font-weight:600;">{{ m.new_stock??'—' }}</td>
+              <td style="font-family:'JetBrains Mono',monospace;font-weight:700;" :style="{color:m.quantity>0?'#16a34a':'#dc2626'}">{{ m.quantity>0?'+':'' }}{{ fmtQty(m.product, m.quantity) }}</td>
+              <td style="font-family:'JetBrains Mono',monospace;font-size:.8rem;color:#6b7280;">{{ m.previous_stock==null?'—':fmtQty(m.product, m.previous_stock) }}</td>
+              <td style="font-family:'JetBrains Mono',monospace;font-size:.8rem;font-weight:600;">{{ m.new_stock==null?'—':fmtQty(m.product, m.new_stock) }}</td>
               <td style="font-size:.8rem;color:#6b7280;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ m.reason||'—' }}</td>
             </tr>
             <tr v-if="!store.movements.length"><td colspan="7" style="text-align:center;padding:28px;color:#6b7280;">{{ $t('movements.none') }}</td></tr>
@@ -46,6 +46,7 @@ import { Search } from 'lucide-vue-next'
 import { ref, onMounted } from 'vue'
 import { usePharmaStore } from '../stores/pharma.js'
 import { movementApi } from '../services/api.js'
+import { fmtQty } from '../utils/units.js'
 const store=usePharmaStore()
 const search=ref(''); const filterType=ref(''); const filterProd=ref(''); const dateFrom=ref(''); const dateTo=ref(''); const page=ref(1); const mvStats=ref({})
 function reset(){search.value='';filterType.value='';filterProd.value='';dateFrom.value='';dateTo.value='';page.value=1;fetchData()}

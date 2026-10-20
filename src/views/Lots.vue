@@ -18,8 +18,8 @@
             <tr v-for="b in batches" :key="b.id" :style="isExpiringSoon(b)?'background:#fefce8':b.status==='EXPIRED'?'background:#fef2f2;opacity:.7':''">
               <td style="font-family:'JetBrains Mono',monospace;font-weight:700;">{{ b.number }}</td>
               <td style="font-weight:500;">{{ b.product?.name }}</td>
-              <td style="font-family:'JetBrains Mono',monospace;color:#6b7280;">{{ b.initial_quantity }}</td>
-              <td style="font-family:'JetBrains Mono',monospace;font-weight:700;" :style="{color:b.quantity===0?'#dc2626':'#111827'}">{{ b.quantity }}</td>
+              <td style="font-family:'JetBrains Mono',monospace;color:#6b7280;">{{ fmtQty(b.product, b.initial_quantity) }}</td>
+              <td style="font-family:'JetBrains Mono',monospace;font-weight:700;" :style="{color:b.quantity===0?'#dc2626':'#111827'}">{{ fmtQty(b.product, b.quantity) }}</td>
               <td style="font-family:'JetBrains Mono',monospace;font-size:.8rem;color:#6b7280;">{{ b.manufacturing_date?store.fmt(b.manufacturing_date):'—' }}</td>
               <td style="font-family:'JetBrains Mono',monospace;font-size:.8rem;" :style="{color:isExpiringSoon(b)||b.status==='EXPIRED'?'#dc2626':'#111827',fontWeight:isExpiringSoon(b)?700:400}">
                 {{ store.fmt(b.expiration_date) }}
@@ -45,7 +45,7 @@
             <div class="form-grid form-2col" style="gap:12px;">
               <div><label class="lbl">{{ $t('common.product') }} *</label><select v-model="form.productId" class="inp"><option value="">— {{ $t('common.choose') }} —</option><option v-for="p in store.products" :key="p.id" :value="p.id">{{ p.name }}</option></select></div>
               <div><label class="lbl">{{ $t('batches.number') }} *</label><input v-model="form.number" class="inp" placeholder="LOT-2024-XXX"/></div>
-              <div><label class="lbl">{{ $t('common.quantity') }} *</label><input v-model.number="form.quantity" type="number" min="0" class="inp"/></div>
+              <div><label class="lbl">{{ $t('common.quantity') }} *</label><div style="display:flex;gap:6px;"><input v-model.number="form.quantity" type="number" min="0" class="inp"/><select v-if="formUnits.length>1" v-model="form.unit" class="inp" style="width:130px;"><option v-for="u in formUnits" :key="u.unit" :value="u.unit">{{ $te('unitTypes', u.unit) }}</option></select></div></div>
               <div><label class="lbl">{{ $t('batches.expiryDate') }} *</label><input v-model="form.expiration_date" type="date" class="inp"/></div>
               <div><label class="lbl">{{ $t('batches.manufacturingDate') }}</label><input v-model="form.manufacturing_date" type="date" class="inp"/></div>
             </div>
@@ -59,11 +59,12 @@
 </template>
 <script setup>
 import { CalendarClock, X, CircleX } from 'lucide-vue-next'
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { usePharmaStore } from '../stores/pharma.js'
 import { useToastStore }  from '../stores/toast.js'
 import { batchApi } from '../services/api.js'
 import { t } from '../i18n/index.js'
+import { fmtQty, productUnitsOf } from '../utils/units.js'
 const store=usePharmaStore(); const toast=useToastStore()
 const batches=ref([]); const meta=ref({totalPages:1}); const loading=ref(false)
 const filterStatus=ref(''); const filterProd=ref(''); const filterExpiring=ref(false); const page=ref(1)
@@ -76,10 +77,16 @@ async function fetchData(){
   loading.value=true
   try{const p={page:page.value,pageSize:20,status:filterStatus.value||undefined,productId:filterProd.value||undefined};if(filterExpiring.value)p.expiringSoon='true';const r=await batchApi.list(p);batches.value=r.data;meta.value=r.meta}catch(e){toast.error(e.message)}finally{loading.value=false}
 }
-function openAdd(){form.value={productId:'',number:'',quantity:0,expiration_date:'',manufacturing_date:''};formErr.value='';showModal.value=true}
+function openAdd(){form.value={productId:'',number:'',quantity:0,unit:'',expiration_date:'',manufacturing_date:''};formErr.value='';showModal.value=true}
+// Quantité saisie dans une unité du produit (boîte par défaut) ; le lot est compté en unités de base
+const formProduct=computed(()=>store.products.find(p=>p.id===form.value.productId))
+const formUnits=computed(()=>formProduct.value?productUnitsOf(formProduct.value):[])
+watch(formProduct,p=>{form.value.unit=p?productUnitsOf(p).find(u=>u.is_main)?.unit:''})
 async function save(){
   formErr.value='';if(!form.value.productId){formErr.value=t('common.productRequired');return}if(!form.value.number){formErr.value=t('batches.numberRequired');return}if(!form.value.expiration_date){formErr.value=t('batches.expiryRequired');return}
-  saving.value=true;try{await batchApi.create({...form.value,initial_quantity:form.value.quantity,manufacturing_date:form.value.manufacturing_date||undefined});toast.success(t('batches.created'));showModal.value=false;fetchData()}catch(e){formErr.value=e.message}finally{saving.value=false}
+  const { unit, ...fields } = form.value
+  const quantity = fields.quantity * (formUnits.value.find(u=>u.unit===unit)?.base_quantity ?? 1)
+  saving.value=true;try{await batchApi.create({...fields,quantity,initial_quantity:quantity,manufacturing_date:fields.manufacturing_date||undefined});toast.success(t('batches.created'));showModal.value=false;fetchData()}catch(e){formErr.value=e.message}finally{saving.value=false}
 }
 onMounted(async()=>{await store.fetchProducts({pageSize:100});fetchData()})
 </script>

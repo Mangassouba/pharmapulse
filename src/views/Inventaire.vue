@@ -16,11 +16,17 @@
           <thead><tr><th>{{ $t('common.product') }}</th><th>{{ $t('inventory.systemStock') }}</th><th>{{ $t('inventory.realStock') }}</th><th>{{ $t('inventory.gap') }}</th><th>{{ $t('common.note') }}</th><th>{{ $t('common.action') }}</th></tr></thead>
           <tbody>
             <tr v-for="p in filtered" :key="p.id" :style="rows[p.id]?.dirty?'background:#f0fdf4':''">
-              <td><div style="font-weight:600;">{{ p.name }}</div><div style="font-size:.72rem;color:#6b7280;">{{ p.unit_type }}</div></td>
-              <td style="font-family:'JetBrains Mono',monospace;font-weight:700;" :style="{color:p.stock===0?'#dc2626':p.stock<p.threshold?'#ca8a04':'#111827'}">{{ p.stock }}</td>
-              <td><input v-if="rows[p.id]" v-model.number="rows[p.id].real" type="number" min="0" class="inp" style="width:90px;" @input="rows[p.id].dirty=true"/></td>
+              <td><div style="font-weight:600;">{{ p.name }}</div><div style="font-size:.72rem;color:#6b7280;">{{ $te('unitTypes', p.unit_type) }}</div></td>
+              <td style="font-family:'JetBrains Mono',monospace;font-weight:700;" :style="{color:p.stock===0?'#dc2626':p.stock<p.threshold?'#ca8a04':'#111827'}">{{ fmtStock(p) }}</td>
               <td>
-                <span v-if="rows[p.id]?.dirty" :style="{padding:'2px 8px',borderRadius:'99px',fontFamily:'JetBrains Mono,monospace',fontWeight:'700',fontSize:'.82rem',background:diff(p)>0?'#f0fdf4':diff(p)<0?'#fef2f2':'#f9fafb',color:diff(p)>0?'#16a34a':diff(p)<0?'#dc2626':'#6b7280'}">{{ diff(p)>0?'+':'' }}{{ isNaN(diff(p))?'—':diff(p) }}</span>
+                <!-- Produit à plusieurs conditionnements : on compte boîtes, plaquettes, comprimés… séparément -->
+                <div v-if="rows[p.id]&&productUnitsOf(p).length>1" style="display:flex;gap:6px;flex-wrap:wrap;">
+                  <label v-for="u in productUnitsOf(p)" :key="u.unit" style="display:flex;align-items:center;gap:4px;font-size:.75rem;color:#6b7280;"><input v-model.number="rows[p.id].counts[u.unit]" type="number" min="0" class="inp" style="width:64px;" @input="recount(p)"/>{{ $te('unitTypes', u.unit) }}</label>
+                </div>
+                <input v-else-if="rows[p.id]" v-model.number="rows[p.id].real" type="number" min="0" class="inp" style="width:90px;" @input="rows[p.id].dirty=true"/>
+              </td>
+              <td>
+                <span v-if="rows[p.id]?.dirty" :style="{padding:'2px 8px',borderRadius:'99px',fontFamily:'JetBrains Mono,monospace',fontWeight:'700',fontSize:'.82rem',background:diff(p)>0?'#f0fdf4':diff(p)<0?'#fef2f2':'#f9fafb',color:diff(p)>0?'#16a34a':diff(p)<0?'#dc2626':'#6b7280'}">{{ diff(p)>0?'+':'' }}{{ isNaN(diff(p))?'—':fmtQty(p, diff(p)) }}</span>
                 <span v-else style="color:#9ca3af;">—</span>
               </td>
               <td><input v-if="rows[p.id]" v-model="rows[p.id].note" class="inp" style="width:150px;" :placeholder="$t('inventory.reasonPh')"/></td>
@@ -44,9 +50,9 @@
             <tr v-for="inv in store.inventories" :key="inv.id">
               <td style="font-family:'JetBrains Mono',monospace;font-size:.8rem;color:#6b7280;">{{ store.fmt(inv.inventory_date) }}</td>
               <td style="font-weight:500;">{{ inv.product?.name }}</td>
-              <td style="font-family:'JetBrains Mono',monospace;color:#6b7280;">{{ inv.expected_stock }}</td>
-              <td style="font-family:'JetBrains Mono',monospace;font-weight:700;">{{ inv.stock }}</td>
-              <td style="font-family:'JetBrains Mono',monospace;font-weight:700;" :style="{color:(inv.difference??0)>0?'#16a34a':(inv.difference??0)<0?'#dc2626':'#6b7280'}">{{ (inv.difference??0)>0?'+':'' }}{{ inv.difference??0 }}</td>
+              <td style="font-family:'JetBrains Mono',monospace;color:#6b7280;">{{ fmtQty(inv.product, inv.expected_stock) }}</td>
+              <td style="font-family:'JetBrains Mono',monospace;font-weight:700;">{{ fmtQty(inv.product, inv.stock) }}</td>
+              <td style="font-family:'JetBrains Mono',monospace;font-weight:700;" :style="{color:(inv.difference??0)>0?'#16a34a':(inv.difference??0)<0?'#dc2626':'#6b7280'}">{{ (inv.difference??0)>0?'+':'' }}{{ fmtQty(inv.product, inv.difference??0) }}</td>
               <td style="font-size:.8rem;color:#6b7280;">{{ inv.notes||'—' }}</td>
             </tr>
             <tr v-if="!store.inventories.length"><td colspan="6" style="text-align:center;padding:20px;color:#6b7280;">{{ $t('inventory.noAdjustments') }}</td></tr>
@@ -62,10 +68,14 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { usePharmaStore } from '../stores/pharma.js'
 import { useToastStore }  from '../stores/toast.js'
 import { t } from '../i18n/index.js'
+import { fmtStock, fmtQty, productUnitsOf, splitQty, joinQty } from '../utils/units.js'
 const store=usePharmaStore(); const toast=useToastStore()
 const search=ref(''); const filterStatus=ref(''); const applying=ref(false)
 const rows=ref({})
-function initRows(){store.products.forEach(p=>{if(!rows.value[p.id])rows.value[p.id]={real:p.stock,note:'',dirty:false}})}
+// real = stock compté, en unités de base ; counts = le même réparti par unité (saisie boîtes / plaquettes / comprimés)
+const freshRow=(p,real)=>({real,counts:splitQty(p,real),note:'',dirty:false})
+function recount(p){const row=rows.value[p.id];row.real=joinQty(p,row.counts);row.dirty=true}
+function initRows(){store.products.forEach(p=>{if(!rows.value[p.id])rows.value[p.id]=freshRow(p,p.stock)})}
 watch(()=>store.products.length,initRows)
 const filtered=computed(()=>{
   const q=search.value.toLowerCase()
@@ -78,15 +88,16 @@ const filtered=computed(()=>{
 })
 const pendingCount=computed(()=>store.products.filter(p=>rows.value[p.id]?.dirty&&rows.value[p.id]?.real!==p.stock).length)
 const diff=p=>{const r=rows.value[p.id]?.real;return(typeof r==='number')?r-p.stock:NaN}
-function autoFill(){store.products.forEach(p=>{if(rows.value[p.id]){rows.value[p.id].real=p.stock;rows.value[p.id].dirty=false}})}
+function autoFill(){store.products.forEach(p=>{if(rows.value[p.id])rows.value[p.id]=freshRow(p,p.stock)})}
 async function applyOne(p){
   const row=rows.value[p.id];if(!row||row.real===undefined)return
-  try{await store.applyInventory([{productId:p.id,stock:row.real,notes:row.note}]);toast.success(`"${p.name}" → ${t('common.units', { n: row.real })}`);rows.value[p.id]={real:row.real,note:'',dirty:false};await store.fetchInventories({pageSize:20})}catch(e){toast.error(e.message)}
+  try{await store.applyInventory([{productId:p.id,stock:row.real,notes:row.note}]);toast.success(`"${p.name}" → ${productUnitsOf(p).length>1?fmtQty(p,row.real):t('common.units', { n: row.real })}`);rows.value[p.id]=freshRow(p,row.real);await store.fetchInventories({pageSize:20})}catch(e){toast.error(e.message)}
 }
 async function applyAll(){
-  const items=store.products.filter(p=>rows.value[p.id]?.dirty&&rows.value[p.id]?.real!==p.stock).map(p=>({productId:p.id,stock:rows.value[p.id].real,notes:rows.value[p.id].note}))
+  const changed=store.products.filter(p=>rows.value[p.id]?.dirty&&rows.value[p.id]?.real!==p.stock)
+  const items=changed.map(p=>({productId:p.id,stock:rows.value[p.id].real,notes:rows.value[p.id].note}))
   if(!items.length)return;applying.value=true
-  try{await store.applyInventory(items);toast.success(t('inventory.applied', { n: items.length }));items.forEach(i=>{rows.value[i.productId]={real:i.stock,note:'',dirty:false}});await store.fetchInventories({pageSize:20})}catch(e){toast.error(e.message)}finally{applying.value=false}
+  try{await store.applyInventory(items);toast.success(t('inventory.applied', { n: items.length }));changed.forEach(p=>{rows.value[p.id]=freshRow(p,rows.value[p.id].real)});await store.fetchInventories({pageSize:20})}catch(e){toast.error(e.message)}finally{applying.value=false}
 }
 onMounted(async()=>{await store.fetchProducts({pageSize:100});await store.fetchInventories({pageSize:20});initRows()})
 </script>
