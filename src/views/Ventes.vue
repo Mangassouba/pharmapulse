@@ -13,9 +13,13 @@
         <div v-for="p in store.products" :key="p.id" @click="p.stock>0&&addToCart(p)" :style="`border:1px solid ${p.stock===0?'#fecaca':'#e5e7eb'};border-radius:10px;padding:12px;cursor:${p.stock===0?'not-allowed':'pointer'};background:#fff;opacity:${p.stock===0?.5:1};transition:box-shadow .12s;`" onmouseover="if(this.style.opacity!=='0.5')this.style.boxShadow='0 4px 12px rgba(0,0,0,.1)'" onmouseout="this.style.boxShadow='none'">
           <div style="display:flex;justify-content:space-between;gap:4px;margin-bottom:8px;">
             <div><div style="font-weight:700;font-size:.82rem;line-height:1.3;">{{ p.name }}</div><div style="font-size:.7rem;color:#6b7280;margin-top:2px;">{{ p.category?.name }}</div></div>
-            <span class="badge" :class="p.stock===0?'badge-red':p.stock<p.threshold?'badge-yellow':'badge-green'" style="font-size:.62rem;flex-shrink:0;">{{ p.stock===0?'0':p.stock }}</span>
+            <span class="badge" :class="p.stock===0?'badge-red':p.stock<p.threshold?'badge-yellow':'badge-green'" style="font-size:.62rem;flex-shrink:0;">{{ p.stock===0?'0':fmtStock(p) }}</span>
           </div>
-          <div style="font-family:'JetBrains Mono',monospace;font-weight:700;color:#16a34a;font-size:.9rem;">{{ fmtMoney(p.sale_price) }}</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-weight:700;color:#16a34a;font-size:.9rem;">{{ fmtMoney(p.sale_price) }}<span v-if="sellableUnits(p).length>1" style="font-family:inherit;font-weight:500;font-size:.7rem;color:#6b7280;"> / {{ $te('unitTypes', mainUnitOf(p).unit) }}</span></div>
+          <!-- Vente au détail : un bouton par autre unité vendue (plaquette, comprimé…) -->
+          <div v-if="sellableUnits(p).length>1&&p.stock>0" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;">
+            <button v-for="u in sellableUnits(p).filter(u=>!u.is_main)" :key="u.unit" class="btn btn-outline btn-xs" @click.stop="addToCart(p,u)">+ {{ $te('unitTypes', u.unit) }} · {{ fmtMoney(unitPrice(p,u)) }}</button>
+          </div>
         </div>
         <div v-if="!store.products.length&&!store.isBusy('prods')" style="grid-column:1/-1;text-align:center;padding:28px;color:#6b7280;">{{ $t('products.none') }}</div>
       </div>
@@ -30,8 +34,8 @@
       </div>
       <div style="flex:1;overflow-y:auto;padding:0 12px;">
         <div v-if="!cart.length" style="text-align:center;padding:24px;color:#6b7280;font-size:.85rem;">{{ $t('sales.clickProduct') }}</div>
-        <div v-for="(item,i) in cart" :key="item.pid" style="border:1px solid #f3f4f6;border-radius:8px;padding:10px;margin-bottom:8px;">
-          <div style="font-weight:600;font-size:.875rem;margin-bottom:6px;">{{ item.name }}</div>
+        <div v-for="(item,i) in cart" :key="item.key" style="border:1px solid #f3f4f6;border-radius:8px;padding:10px;margin-bottom:8px;">
+          <div style="font-weight:600;font-size:.875rem;margin-bottom:6px;">{{ item.name }}<span v-if="item.showUnit" style="font-weight:400;font-size:.75rem;color:#6b7280;"> · {{ $te('unitTypes', item.unit) }} ({{ fmtMoney(item.price) }})</span></div>
           <div style="display:flex;align-items:center;justify-content:space-between;">
             <div style="display:flex;align-items:center;gap:6px;">
               <button @click="decQ(i)" style="width:26px;height:26px;border-radius:6px;border:1px solid #e5e7eb;background:#f9fafb;cursor:pointer;font-weight:700;">−</button>
@@ -89,19 +93,29 @@ import { useToastStore }  from '../stores/toast.js'
 import { saleApi } from '../services/api.js'
 import { t } from '../i18n/index.js'
 import { fmtMoney, currentCurrency } from '../utils/money.js'
+import { fmtStock, mainUnitOf, sellableUnits, unitPrice } from '../utils/units.js'
 const store=usePharmaStore(); const toast=useToastStore()
 const search=ref(''); const filterCat=ref(''); const cart=ref([]); const client=ref(''); const paymentMethod=ref('CASH'); const discount=ref(0); const saving=ref(false); const caTotal=ref(0); const receiptSale=ref(null)
 const subtotal = computed(() => cart.value.reduce((s,i)=>s+i.qty*i.price,0))
 const total    = computed(() => Math.max(0,subtotal.value-discount.value))
-function addToCart(p) { const ex=cart.value.find(i=>i.pid===p.id); if(ex){ if(ex.qty>=p.stock){toast.warning(t('sales.insufficientStock'));return}; ex.qty++; } else cart.value.push({pid:p.id,name:p.name,price:Number(p.sale_price),qty:1}) }
-function incQ(i) { const p=store.products.find(p=>p.id===cart.value[i].pid); if(cart.value[i].qty>=(p?.stock||0)){toast.warning(t('sales.maxStock'));return}; cart.value[i].qty++ }
+// Une ligne par produit et par unité (1 boîte + 2 plaquettes = 2 lignes) ; size = unités de base dans l'unité.
+// Le stock (en unités de base) est vérifié sur toutes les lignes du produit.
+const usedStock = pid => cart.value.filter(i=>i.pid===pid).reduce((s,i)=>s+i.qty*i.size,0)
+const fits = (p, size) => usedStock(p.id) + size <= Number(p.stock)
+function addToCart(p, u=mainUnitOf(p)) {
+  if(!fits(p,u.base_quantity)){toast.warning(t('sales.insufficientStock'));return}
+  const key=`${p.id}:${u.unit}`; const ex=cart.value.find(i=>i.key===key)
+  if(ex) ex.qty++
+  else cart.value.push({key,pid:p.id,name:p.name,unit:u.unit,size:u.base_quantity,price:unitPrice(p,u),qty:1,showUnit:sellableUnits(p).length>1})
+}
+function incQ(i) { const it=cart.value[i]; const p=store.products.find(p=>p.id===it.pid); if(!p||!fits(p,it.size)){toast.warning(t('sales.maxStock'));return}; it.qty++ }
 function decQ(i) { if(cart.value[i].qty<=1)cart.value.splice(i,1); else cart.value[i].qty-- }
 let dt; function debouncedFetch(){clearTimeout(dt);dt=setTimeout(fetchProds,350)}
 async function fetchProds() { await store.fetchProducts({pageSize:100,search:search.value||undefined,categoryId:filterCat.value||undefined}) }
 async function fetchSales() { await store.fetchSales({pageSize:20}); try{const r=await saleApi.stats();caTotal.value=r.data?.caMonth??0}catch{} }
 async function confirmSale() {
   if(!cart.value.length)return; saving.value=true
-  try { const r=await store.createSale({items:cart.value.map(i=>({productId:i.pid,quantity:i.qty,price:i.price})),customer:client.value||t('receipt.walkIn'),payment_method:paymentMethod.value,discount:discount.value}); receiptSale.value=r.data; toast.success(`${t('sales.saved')} — ${fmtMoney(total.value)}`); cart.value=[]; client.value=''; discount.value=0; fetchSales() } catch(e){toast.error(e.message)} finally{saving.value=false}
+  try { const r=await store.createSale({items:cart.value.map(i=>({productId:i.pid,quantity:i.qty,price:i.price,unit:i.unit})),customer:client.value||t('receipt.walkIn'),payment_method:paymentMethod.value,discount:discount.value}); receiptSale.value=r.data; toast.success(`${t('sales.saved')} — ${fmtMoney(total.value)}`); cart.value=[]; client.value=''; discount.value=0; fetchSales() } catch(e){toast.error(e.message)} finally{saving.value=false}
 }
 onMounted(async()=>{await store.fetchCategories(); await Promise.all([fetchProds(),fetchSales()])})
 </script>

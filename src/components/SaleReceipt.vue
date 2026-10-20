@@ -29,7 +29,7 @@
                 <template v-for="d in sale.details" :key="d.id">
                   <tr><td colspan="3" class="t-item-name">{{ d.product?.name || $t('common.product') }}</td></tr>
                   <tr class="t-item-line">
-                    <td class="t-muted">{{ money(d.price) }} × {{ Number(d.quantity) }}</td>
+                    <td class="t-muted">{{ money(d.price) }} × {{ Number(d.quantity) }}<template v-if="d.unit_type"> {{ $te('unitTypes', d.unit_type) }}</template></td>
                     <td></td>
                     <td style="text-align:end;" class="t-mono">{{ money(d.total ?? d.price * d.quantity) }}</td>
                   </tr>

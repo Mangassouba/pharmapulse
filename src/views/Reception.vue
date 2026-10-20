@@ -15,7 +15,9 @@
       <!-- Items -->
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;"><span style="font-weight:600;font-size:.9rem;">{{ $t('common.items') }}</span><button class="btn btn-outline btn-sm" @click="addItem">+ {{ $t('common.add') }}</button></div>
       <div v-for="(item,i) in form.items" :key="i" style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;padding:12px;background:#f9fafb;border-radius:9px;border:1px solid #f3f4f6;margin-bottom:8px;">
-        <div style="flex:2;min-width:180px;"><label class="lbl">{{ $t('common.product') }} *</label><select v-model="item.productId" class="inp"><option value="">— {{ $t('common.choose') }} —</option><option v-for="p in store.products" :key="p.id" :value="p.id">{{ p.name }} ({{ $t('common.units', { n: p.stock }) }})</option></select></div>
+        <div style="flex:2;min-width:180px;"><label class="lbl">{{ $t('common.product') }} *</label><select v-model="item.productId" class="inp"><option value="">— {{ $t('common.choose') }} —</option><option v-for="p in store.products" :key="p.id" :value="p.id">{{ p.name }} ({{ productUnitsOf(p).length>1 ? fmtStock(p) : $t('common.units', { n: p.stock }) }})</option></select></div>
+        <!-- Unité reçue (carton, boîte…), seulement pour un produit à plusieurs conditionnements ; principale par défaut -->
+        <div v-if="unitsFor(item).length>1" style="width:120px;"><label class="lbl">{{ $t('common.unit') }}</label><select v-model="item.unit" class="inp"><option v-for="u in unitsFor(item)" :key="u.unit" :value="u.is_main ? '' : u.unit">{{ $te('unitTypes', u.unit) }}</option></select></div>
         <div style="width:80px;"><label class="lbl">{{ $t('common.qtyShort') }} *</label><input v-model.number="item.quantity" type="number" min="1" class="inp"/></div>
         <div style="width:110px;"><label class="lbl">{{ $t('reception.purchasePrice', { currency: currentCurrency() }) }}</label><input v-model.number="item.price" type="number" min="0" class="inp"/></div>
         <div style="width:120px;"><label class="lbl">{{ $t('batches.number') }}</label><input v-model="item.batchNumber" class="inp"/></div>
@@ -63,15 +65,17 @@ import { usePharmaStore } from '../stores/pharma.js'
 import { useToastStore }  from '../stores/toast.js'
 import { t } from '../i18n/index.js'
 import { fmtMoney, currentCurrency } from '../utils/money.js'
+import { fmtStock, productUnitsOf } from '../utils/units.js'
 const store=usePharmaStore(); const toast=useToastStore()
 const saving=ref(false); const formErr=ref(''); const filterStatus=ref('')
 const suppliers=['CAMEC','Pharmagroupe Mauritanie','MedDist Nouakchott','SanofiDist','LABOREX']
-const emptyItem = () => ({ productId:'',quantity:1,price:0,batchNumber:'',expirationDate:'' })
+const emptyItem = () => ({ productId:'',unit:'',quantity:1,price:0,batchNumber:'',expirationDate:'' })
 const form = ref({ supplier:'', invoice_number:'', items:[emptyItem()] })
 const completed = computed(() => store.receptions.filter(r=>r.status==='COMPLETED').length)
 const pending   = computed(() => store.receptions.filter(r=>r.status==='PENDING').length)
 const formTotal = computed(() => form.value.items.reduce((s,i)=>s+(i.quantity||0)*(i.price||0),0))
 function addItem() { form.value.items.push(emptyItem()) }
+const unitsFor = item => { const p = store.products.find(p => p.id === item.productId); return p ? productUnitsOf(p) : [] }
 async function fetchData() { await store.fetchReceptions({ status:filterStatus.value||undefined, pageSize:20 }) }
 async function save() {
   formErr.value=''
@@ -80,7 +84,9 @@ async function save() {
   if (!items.length) { formErr.value=t('reception.addOneProduct'); return }
   if (items.some(i=>i.batchNumber?.trim()&&!i.expirationDate)) { formErr.value=t('reception.expiryRequired'); return }
   saving.value=true
-  try { await store.createReception({...form.value,items}); toast.success(t('reception.saved')); form.value={supplier:'',invoice_number:'',items:[emptyItem()]}; fetchData() } catch(e) { formErr.value=e.message } finally { saving.value=false }
+  // Unit left empty (single-unit product, or not changed) = main unit, chosen by the API
+  const payload = { ...form.value, items: items.map(({ unit, ...i }) => ({ ...i, ...(unit && { unit }) })) }
+  try { await store.createReception(payload); toast.success(t('reception.saved')); form.value={supplier:'',invoice_number:'',items:[emptyItem()]}; fetchData() } catch(e) { formErr.value=e.message } finally { saving.value=false }
 }
 async function complete(r,status) {
   try { await store.completeReception(r.id,status); toast.success(status==='COMPLETED'?t('reception.stocksUpdated'):status==='CANCELLED'?t('reception.cancelledToast'):t('reception.partialSaved')); fetchData() } catch(e) { toast.error(e.message) }
