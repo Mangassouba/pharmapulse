@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import axios from 'axios'
 import { locale } from '../i18n/index.js'
 import { DEFAULT_CURRENCY } from '../config/countries.js'
+import { productUnitsOf, mainUnitOf, unitPrice, maxUnits } from '../utils/units.js'
 
 const pub = axios.create({
   baseURL: (import.meta.env.VITE_API_URL || 'http://localhost:3000/api'),
@@ -18,28 +19,39 @@ export const useCartStore = defineStore('cart', () => {
   const searchResults = ref([])
   const loading       = ref(false)
 
+  // A line is a product in one of its sold units (`unit`: 'BLISTER'…; absent = main unit, as in older carts)
+  const lineUnit  = i => productUnitsOf(i.product).find(u => u.unit === i.unit) || mainUnitOf(i.product)
+  const linePrice = i => unitPrice(i.product, lineUnit(i))
+  const lineTotal = i => i.qty * linePrice(i)
+  const lineMax   = i => maxUnits(i.product, lineUnit(i))
+
   const totalItems  = computed(() => items.value.reduce((s, i) => s + i.qty, 0))
-  const totalAmount = computed(() => items.value.reduce((s, i) => s + i.qty * Number(i.product.sale_price), 0))
+  const totalAmount = computed(() => items.value.reduce((s, i) => s + lineTotal(i), 0))
   // One total per currency: pharmacies from different countries can't be summed ({ MRU: 1500, XOF: 3000 })
   const totalsByCurrency = computed(() => items.value.reduce((acc, i) => {
     const cur = i.product.currency || DEFAULT_CURRENCY
-    acc[cur] = (acc[cur] || 0) + i.qty * Number(i.product.sale_price)
+    acc[cur] = (acc[cur] || 0) + lineTotal(i)
     return acc
   }, {}))
 
   function saveCart() { localStorage.setItem('pub_cart', JSON.stringify(items.value)) }
 
-  function addItem(product, pharmacyId, pharmacyName, qty = 1) {
-    const n  = Math.max(1, parseInt(qty) || 1)
-    const ex = items.value.find(i => i.product.id === product.id && i.pharmacyId === pharmacyId)
-    if (ex) { ex.qty = Math.min(ex.qty + n, product.stock) } else {
-      items.value.push({ product, pharmacyId, pharmacyName, qty: Math.min(n, product.stock) })
+  function addItem(product, pharmacyId, pharmacyName, qty = 1, unit = mainUnitOf(product).unit) {
+    const n   = Math.max(1, parseInt(qty) || 1)
+    const max = maxUnits(product, productUnitsOf(product).find(u => u.unit === unit) || mainUnitOf(product))
+    if (max < 1) return
+    const ex = items.value.find(i => i.product.id === product.id && i.pharmacyId === pharmacyId && lineUnit(i).unit === unit)
+    if (ex) { ex.qty = Math.min(ex.qty + n, max) } else {
+      items.value.push({ product, pharmacyId, pharmacyName, qty: Math.min(n, max), unit })
     }
     saveCart()
   }
 
   function removeItem(idx) { items.value.splice(idx, 1); saveCart() }
-  function updateQty(idx, qty) { if (qty <= 0) { removeItem(idx); return }; items.value[idx].qty = qty; saveCart() }
+  function updateQty(idx, qty) {
+    if (qty <= 0) { removeItem(idx); return }
+    items.value[idx].qty = Math.min(qty, lineMax(items.value[idx])); saveCart()
+  }
   function clearCart() { items.value = []; localStorage.removeItem('pub_cart') }
 
   const byPharmacy = computed(() => {
@@ -101,7 +113,7 @@ export const useCartStore = defineStore('cart', () => {
   return {
     items, userLocation, pharmacies, searchResults, loading,
     totalItems, totalAmount, totalsByCurrency, byPharmacy,
-    addItem, removeItem, updateQty, clearCart,
+    addItem, removeItem, updateQty, clearCart, lineUnit, linePrice, lineTotal, lineMax,
     fetchPharmacies, searchProducts, fetchPharmacyProducts, fetchPharmacyDetail,
     placeOrder, trackOrder,
   }

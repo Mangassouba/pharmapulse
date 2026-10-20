@@ -69,7 +69,7 @@
                     <Navigation size="1em" /> {{ formatDistance(item.distance) }}
                   </div>
                 </div>
-                <span class="pub-badge-green" v-if="item.stock > 0">{{ $t('profile.nInStock', { n: item.stock }) }}</span>
+                <span class="pub-badge-green" v-if="item.stock > 0">{{ $t('profile.nInStock', { n: fmtStock(item) }) }}</span>
                 <span class="pub-badge-red" v-else>{{ $t('inventory.filterOut') }}</span>
               </div>
 
@@ -91,15 +91,26 @@
                   {{ $t('search.seePharmacy') }}
                 </button>
                 <button
-                  v-if="item.stock > 0"
+                  v-if="maxUnits(item, mainUnitOf(item)) >= 1"
                   @click="addToCart(item)"
                   style="flex:1;background:#16a34a;color:white;border:none;border-radius:8px;padding:8px;font-size:.8rem;font-weight:700;cursor:pointer;transition:background .12s;"
                   onmouseover="this.style.background='#15803d'" onmouseout="this.style.background='#16a34a'"
                 >
                   <ShoppingCart size="1em" /> {{ $t('common.add') }}
                 </button>
-                <button v-else style="flex:1;background:#f3f4f6;color:#9ca3af;border:none;border-radius:8px;padding:8px;font-size:.8rem;font-weight:700;cursor:not-allowed;" disabled>
+                <button v-else-if="!(item.stock > 0)" style="flex:1;background:#f3f4f6;color:#9ca3af;border:none;border-radius:8px;padding:8px;font-size:.8rem;font-weight:700;cursor:not-allowed;" disabled>
                   {{ $t('profile.unavailable') }}
+                </button>
+              </div>
+              <!-- Vente au détail : un bouton par autre unité vendue (plaquette, comprimé…) -->
+              <div v-if="item.stock > 0 && sellableUnits(item).length > 1" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;">
+                <button
+                  v-for="u in sellableUnits(item).filter(u => !u.is_main && maxUnits(item, u) >= 1)" :key="u.unit"
+                  @click="addToCart(item, u)"
+                  class="pub-btn-outline"
+                  style="flex:1;justify-content:center;font-size:.75rem;padding:6px;"
+                >
+                  + {{ $te('unitTypes', u.unit) }} · {{ fmtMoney(unitPrice(item, u), { currency: item.currency }) }}
                 </button>
               </div>
             </div>
@@ -125,8 +136,9 @@ import { useCartStore } from '../../stores/cart.js'
 import { useToastStore } from '../../stores/toast.js'
 import ProductImage from '../../components/ProductImage.vue'
 import { formatDistance, countryName } from '../../utils/geo.js'
-import { t } from '../../i18n/index.js'
+import { t, te } from '../../i18n/index.js'
 import { fmtMoney } from '../../utils/money.js'
+import { fmtStock, sellableUnits, mainUnitOf, unitPrice, maxUnits } from '../../utils/units.js'
 
 const route     = useRoute()
 const router    = useRouter()
@@ -170,13 +182,16 @@ async function doSearch() {
   } finally { loading.value = false }
 }
 
-function addToCart(item) {
+function addToCart(item, unit = mainUnitOf(item)) {
   cartStore.addItem(
-    { id: item.productId || item.id, name: item.name, sale_price: item.sale_price, currency: item.currency, stock: item.stock, unit_type: item.unit_type, image_updated_at: item.image_updated_at },
+    { id: item.productId || item.id, name: item.name, sale_price: item.sale_price, currency: item.currency, stock: item.stock, unit_type: item.unit_type, units: item.units, image_updated_at: item.image_updated_at },
     item.pharmacyId,
-    item.pharmacyName
+    item.pharmacyName,
+    1,
+    unit.unit
   )
-  toast.success(`${t('profile.addedToCart', { name: item.name })} (${item.pharmacyName})`)
+  const name = sellableUnits(item).length > 1 ? `${item.name} (${te('unitTypes', unit.unit)})` : item.name
+  toast.success(`${t('profile.addedToCart', { name })} (${item.pharmacyName})`)
 }
 
 function locateMe() {

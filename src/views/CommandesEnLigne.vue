@@ -97,7 +97,7 @@
                 <tr v-for="item in verifiedOrder.items" :key="item.id">
                   <td>
                     <div style="font-weight:600;">{{ item.product?.name }}</div>
-                    <div style="font-size:.72rem;color:var(--gray);">{{ $te('unitTypes', item.product?.unit_type) }}</div>
+                    <div style="font-size:.72rem;color:var(--gray);">{{ $te('unitTypes', item.unit_type || item.product?.unit_type) }}</div>
                   </td>
                   <td style="text-align:center;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:1rem;">{{ item.quantity }}</td>
                   <td style="text-align:end;font-family:'JetBrains Mono',monospace;">{{ fmtMoney(item.price) }}</td>

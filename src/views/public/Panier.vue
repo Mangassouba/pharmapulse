@@ -29,15 +29,15 @@
                 <ProductImage class="pn-item-icon" :product="item.product" :size="44"/>
                 <div class="pn-item-info">
                   <div style="font-weight:600;font-size:.9rem;">{{ item.product.name }}</div>
-                  <div style="font-size:.75rem;color:#6b7280;">{{ $te('unitTypes', item.product.unit_type) }}</div>
+                  <div style="font-size:.75rem;color:#6b7280;">{{ $te('unitTypes', cartStore.lineUnit(item).unit) }} · {{ fmtMoney(cartStore.linePrice(item), { currency: item.product.currency }) }}</div>
                 </div>
                 <div class="pn-item-qty">
                   <button @click="cartStore.updateQty(item.idx, item.qty-1)" style="width:30px;height:30px;border:none;background:#f9fafb;cursor:pointer;font-weight:700;">−</button>
                   <span style="width:28px;text-align:center;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:.85rem;">{{ item.qty }}</span>
-                  <button @click="cartStore.updateQty(item.idx, item.qty+1)" :disabled="item.qty>=item.product.stock" style="width:30px;height:30px;border:none;background:#f9fafb;cursor:pointer;font-weight:700;" :style="item.qty>=item.product.stock?'opacity:.4;cursor:not-allowed':''">+</button>
+                  <button @click="cartStore.updateQty(item.idx, item.qty+1)" :disabled="item.qty>=cartStore.lineMax(item)" style="width:30px;height:30px;border:none;background:#f9fafb;cursor:pointer;font-weight:700;" :style="item.qty>=cartStore.lineMax(item)?'opacity:.4;cursor:not-allowed':''">+</button>
                 </div>
                 <div class="pn-item-price">
-                  {{ fmtMoney(item.qty * Number(item.product.sale_price), { currency: item.product.currency }) }}
+                  {{ fmtMoney(cartStore.lineTotal(item), { currency: item.product.currency }) }}
                 </div>
                 <button @click="cartStore.removeItem(item.idx)" class="pn-item-del" :title="$t('common.delete')" :aria-label="$t('common.delete')"><Trash2 size="1em" /></button>
               </div>
@@ -53,8 +53,8 @@
               <div v-for="group in cartStore.byPharmacy" :key="group.pharmacyId" style="margin-bottom:10px;">
                 <div style="font-size:.8rem;color:#6b7280;font-weight:600;margin-bottom:4px;">{{ group.pharmacyName }}</div>
                 <div v-for="item in group.items" :key="item.idx" style="display:flex;justify-content:space-between;gap:10px;font-size:.85rem;margin-bottom:3px;">
-                  <span style="min-width:0;overflow-wrap:anywhere;">{{ item.product.name }} ×{{ item.qty }}</span>
-                  <span style="font-family:'JetBrains Mono',monospace;font-weight:600;white-space:nowrap;">{{ fmtMoney(item.qty*Number(item.product.sale_price), { currency: item.product.currency }) }}</span>
+                  <span style="min-width:0;overflow-wrap:anywhere;">{{ item.product.name }} ×{{ item.qty }} {{ $te('unitTypes', cartStore.lineUnit(item).unit) }}</span>
+                  <span style="font-family:'JetBrains Mono',monospace;font-weight:600;white-space:nowrap;">{{ fmtMoney(cartStore.lineTotal(item), { currency: item.product.currency }) }}</span>
                 </div>
               </div>
               <div style="border-top:1px dashed #e5e7eb;margin-top:12px;padding-top:12px;display:flex;justify-content:space-between;font-weight:800;font-size:1.05rem;">
@@ -142,7 +142,8 @@ async function placeOrder() {
         items: group.items.map(i => ({
           productId: i.product.id,
           quantity:  i.qty,
-          price:     Number(i.product.sale_price),
+          unit:      cartStore.lineUnit(i).unit,
+          price:     cartStore.linePrice(i), // indicative: the API sets the real price
         }))
       })
       orders.push(res.data)

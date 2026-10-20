@@ -43,7 +43,7 @@
           <div v-if="orderData.items?.length" style="margin-top:10px;border-top:1px solid #e5e7eb;padding-top:10px;">
             <div style="font-size:.78rem;font-weight:700;color:#6b7280;margin-bottom:6px;">{{ $t('online.orderedItems') }}</div>
             <div v-for="item in orderData.items" :key="item.id" style="display:flex;justify-content:space-between;gap:10px;font-size:.82rem;padding:3px 0;">
-              <span style="min-width:0;overflow-wrap:anywhere;">{{ item.product?.name }} × {{ item.quantity }}</span>
+              <span style="min-width:0;overflow-wrap:anywhere;">{{ item.product?.name }} × {{ item.quantity }}<template v-if="item.unit_type"> {{ $te('unitTypes', item.unit_type) }}</template></span>
               <span style="font-family:'JetBrains Mono',monospace;font-weight:600;white-space:nowrap;">{{ fmtMoney(item.total || item.price*item.quantity, { currency: orderData.pharmacy?.currency }) }}</span>
             </div>
           </div>
@@ -239,7 +239,8 @@ function downloadReceipt() {
   doc.setFont('helvetica', 'normal')
   ;(o.items || []).forEach(item => {
     if (y > 270) { doc.addPage(); y = 20 }
-    const name = item.product?.name || '—'
+    // The unit ordered (box, blister…) goes after the name; older orders have none
+    const name = (item.product?.name || '—') + (item.unit_type ? ` (${pt('unitTypes.' + item.unit_type)})` : '')
     const lines = doc.splitTextToSize(name, 90)
     doc.text(lines, marginX, y)
     doc.text(String(item.quantity), pageWidth - marginX - 55, y, { align: 'right' })

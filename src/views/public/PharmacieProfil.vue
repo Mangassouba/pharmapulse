@@ -102,15 +102,20 @@
                     <div v-if="p.prescription_req" style="font-size:.68rem;color:#2563eb;font-weight:600;margin-top:3px;"><Stethoscope size="1em" /> {{ $t('profile.prescription') }}</div>
                   </div>
                   <span :class="p.stock===0?'pub-badge-red':p.stock<p.threshold?'pub-badge-yellow':'pub-badge-green'" style="flex-shrink:0;font-size:.65rem;">
-                    {{ p.stock===0?$t('stock.out'):p.stock<p.threshold?$t('stock.low'):$t('profile.nInStock', { n: p.stock }) }}
+                    {{ p.stock===0?$t('stock.out'):p.stock<p.threshold?$t('stock.low'):$t('profile.nInStock', { n: fmtStock(p) }) }}
                   </span>
                 </div>
 
                 <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap;margin-bottom:12px;">
                   <div style="font-family:'JetBrains Mono',monospace;font-size:1.15rem;font-weight:800;color:#16a34a;">
-                    {{ fmtMoney(p.sale_price, { currency: pharmacy?.currency }) }}
+                    {{ fmtMoney(unitPrice(withCurrency(p), chosenUnit(p)), { currency: pharmacy?.currency }) }}
                   </div>
-                  <div style="font-size:.72rem;color:#9ca3af;">{{ $te('unitTypes', p.unit_type) }}{{ p.unit_quantity ? ' ×'+p.unit_quantity : '' }}</div>
+                  <div style="font-size:.72rem;color:#9ca3af;">{{ $te('unitTypes', chosenUnit(p).unit) }}{{ sellableUnits(p).length<2 && p.unit_quantity ? ' ×'+p.unit_quantity : '' }}</div>
+                </div>
+
+                <!-- Vente au détail : choix de l'unité (boîte, plaquette…) quand le produit en propose plusieurs -->
+                <div v-if="p.stock > 0 && sellableUnits(p).length > 1" class="pp-units">
+                  <button v-for="u in sellableUnits(p)" :key="u.unit" type="button" :class="{ on: chosenUnit(p).unit === u.unit }" :disabled="maxUnits(p, u) < 1" @click="chooseUnit(p, u)">{{ $te('unitTypes', u.unit) }}</button>
                 </div>
 
                 <!-- Qty selector -->
@@ -118,7 +123,7 @@
                   <div style="display:flex;align-items:center;gap:4px;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;">
                     <button @click="decQty(p)" style="width:32px;height:32px;border:none;background:#f9fafb;cursor:pointer;font-weight:700;font-size:1rem;">−</button>
                     <span style="width:28px;text-align:center;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:.875rem;">{{ qty[p.id] || 1 }}</span>
-                    <button @click="incQty(p)" style="width:32px;height:32px;border:none;background:#f9fafb;cursor:pointer;font-weight:700;font-size:1rem;" :disabled="(qty[p.id]||1)>=p.stock">+</button>
+                    <button @click="incQty(p)" style="width:32px;height:32px;border:none;background:#f9fafb;cursor:pointer;font-weight:700;font-size:1rem;" :disabled="(qty[p.id]||1)>=maxUnits(p, chosenUnit(p))">+</button>
                   </div>
                   <button @click="addToCart(p)" style="flex:1;background:#16a34a;color:white;border:none;border-radius:8px;padding:8px;font-size:.8rem;font-weight:700;cursor:pointer;transition:background .12s;" onmouseover="this.style.background='#15803d'" onmouseout="this.style.background='#16a34a'">
                     <ShoppingCart size="1em" /> {{ $t('common.add') }}
@@ -155,8 +160,9 @@ import ProductImage from '../../components/ProductImage.vue'
 import { pharmacyLogoUrl } from '../../utils/logo.js'
 import { distanceKm, formatDistance, hasPosition, directionsUrl, getCurrentPosition, countryName } from '../../utils/geo.js'
 import PharmacyMap from '../../components/PharmacyMap.vue'
-import { t } from '../../i18n/index.js'
+import { t, te } from '../../i18n/index.js'
 import { fmtMoney } from '../../utils/money.js'
+import { fmtStock, sellableUnits, mainUnitOf, unitPrice, maxUnits } from '../../utils/units.js'
 
 const route     = useRoute()
 const cartStore = useCartStore()
@@ -176,7 +182,16 @@ const sortBy     = ref('name')
 const page       = ref(1)
 const qty        = ref({})
 
-function incQty(p) { qty.value[p.id] = Math.min((qty.value[p.id]||1)+1, p.stock) }
+// Unité choisie par produit (boîte, plaquette…) : la principale par défaut, sinon la première encore en stock
+const unitChoice = ref({})
+const withCurrency = p => ({ ...p, currency: pharmacy.value?.currency })
+function chosenUnit(p) {
+  const units = sellableUnits(p)
+  return units.find(u => u.unit === unitChoice.value[p.id])
+    || [mainUnitOf(p), ...units].find(u => maxUnits(p, u) >= 1) || mainUnitOf(p)
+}
+function chooseUnit(p, u) { unitChoice.value[p.id] = u.unit; qty.value[p.id] = 1 }
+function incQty(p) { qty.value[p.id] = Math.min((qty.value[p.id]||1)+1, maxUnits(p, chosenUnit(p))) }
 function decQty(p) { qty.value[p.id] = Math.max(1, (qty.value[p.id]||1)-1) }
 
 let dt
@@ -208,12 +223,13 @@ function selectCat(id) {
 
 function addToCart(p) {
   cartStore.addItem(
-    { id: p.id, name: p.name, sale_price: p.sale_price, currency: pharmacy.value?.currency, stock: p.stock, unit_type: p.unit_type, image_updated_at: p.image_updated_at },
+    { id: p.id, name: p.name, sale_price: p.sale_price, currency: pharmacy.value?.currency, stock: p.stock, unit_type: p.unit_type, units: p.units, image_updated_at: p.image_updated_at },
     parseInt(route.params.id),
     pharmacy.value?.name || t('receipt.pharmacy'),
-    qty.value[p.id] || 1
+    qty.value[p.id] || 1,
+    chosenUnit(p).unit
   )
-  toast.success(t('profile.addedToCart', { name: p.name }))
+  toast.success(t('profile.addedToCart', { name: sellableUnits(p).length > 1 ? `${p.name} (${te('unitTypes', chosenUnit(p).unit)})` : p.name }))
   qty.value[p.id] = 1
 }
 
@@ -249,6 +265,10 @@ onMounted(async () => {
 .pub-filter-select { padding: 8px 14px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: .85rem; background: white; cursor: pointer; outline: none; font-family: 'Inter', sans-serif; }
 .pub-btn-outline { display: inline-flex; align-items: center; gap: 6px; background: white; color: #374151; border: 1px solid #d1d5db; border-radius: 8px; padding: 9px 18px; font-size: .875rem; font-weight: 600; cursor: pointer; text-decoration: none; transition: all .12s; font-family: 'Inter', sans-serif; }
 .pub-btn-outline:hover { border-color: #16a34a; color: #16a34a; }
+.pp-units { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
+.pp-units button { flex: 1; min-width: 0; padding: 6px 4px; border: 1px solid #e5e7eb; border-radius: 8px; background: white; color: #374151; font-size: .72rem; font-weight: 600; cursor: pointer; overflow-wrap: anywhere; }
+.pp-units button.on { border-color: #16a34a; background: #f0fdf4; color: #15803d; }
+.pp-units button:disabled { opacity: .4; cursor: not-allowed; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .pp-hero { background: white; border-bottom: 1px solid #e5e7eb; padding: 28px 0; }
 .pp-hero-row { display: flex; align-items: flex-start; gap: 20px; flex-wrap: wrap; }

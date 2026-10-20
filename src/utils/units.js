@@ -59,12 +59,19 @@ export const productUnitsOf = p => (p?.units?.length
 export const mainUnitOf    = p => productUnitsOf(p).find(u => u.is_main) || productUnitsOf(p)[0]
 export const sellableUnits = p => productUnitsOf(p).filter(u => u.sellable || u.is_main)
 
-/** Prix d'une unité : celui de l'unité principale (sale_price), celui fixé sur l'unité, sinon calculé au prorata */
+/**
+ * Prix d'une unité : celui de l'unité principale (sale_price), celui fixé sur l'unité, sinon calculé au prorata
+ * et arrondi dans la devise du produit (p.currency sur le site public, sinon celle de la pharmacie connectée).
+ * Même règle que unitSalePrice() côté API.
+ */
 export function unitPrice(p, u) {
   if (u.is_main) return Number(p.sale_price)
   if (u.sale_price != null) return Number(u.sale_price)
-  return roundMoney(Number(p.sale_price) * u.base_quantity / mainUnitOf(p).base_quantity)
+  return roundMoney(Number(p.sale_price) * u.base_quantity / mainUnitOf(p).base_quantity, p.currency || undefined)
 }
+
+/** Nombre maximal de cette unité que le stock permet (2 boîtes et 7 comprimés : 2 boîtes, 47 comprimés) */
+export const maxUnits = (p, u) => Math.floor(Number(p?.stock || 0) / u.base_quantity + 1e-9)
 
 /**
  * Stock (compté en unités de base) lisible : 47 comprimés d'une boîte de 20 en plaquettes de 10
