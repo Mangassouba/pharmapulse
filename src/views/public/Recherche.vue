@@ -78,7 +78,7 @@
                   {{ fmtMoney(item.sale_price, { currency: item.currency }) }}
                 </div>
                 <div style="font-size:.75rem;color:#9ca3af;">
-                  {{ $te('unitTypes', item.unit_type) }}{{ item.unit_quantity ? ' × '+item.unit_quantity : '' }}
+                  {{ $te('unitTypes', item.unit_type) }}
                 </div>
               </div>
 

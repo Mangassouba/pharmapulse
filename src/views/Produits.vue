@@ -112,6 +112,7 @@
           <div class="modal-bd" style="display:flex;flex-direction:column;gap:12px;">
             <p style="color:#374151;font-size:.875rem;margin:0;">{{ $t('products.importHelp') }}</p>
             <p style="color:#6b7280;font-size:.8rem;margin:0;">{{ $t('products.importRules') }}</p>
+            <p style="color:#6b7280;font-size:.8rem;margin:0;">{{ $t('products.importPackaging') }}</p>
             <div><button type="button" class="btn btn-outline btn-sm" @click="importInput.click()" :disabled="importing"><FileSpreadsheet size="1em" /> {{ $t('products.importChoose') }}</button></div>
             <input ref="importInput" type="file" accept=".xlsx,.xls,.csv" style="display:none" @change="onImportPicked"/>
             <div v-if="importRows.length" class="alert alert-green"><Check size="1em" /> {{ $t('products.importReady', { n: importRows.length, file: importFile }) }}</div>

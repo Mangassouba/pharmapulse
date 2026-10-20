@@ -110,7 +110,7 @@
                   <div style="font-family:'JetBrains Mono',monospace;font-size:1.15rem;font-weight:800;color:#16a34a;">
                     {{ fmtMoney(unitPrice(withCurrency(p), chosenUnit(p)), { currency: pharmacy?.currency }) }}
                   </div>
-                  <div style="font-size:.72rem;color:#9ca3af;">{{ $te('unitTypes', chosenUnit(p).unit) }}{{ sellableUnits(p).length<2 && p.unit_quantity ? ' ×'+p.unit_quantity : '' }}</div>
+                  <div style="font-size:.72rem;color:#9ca3af;">{{ $te('unitTypes', chosenUnit(p).unit) }}</div>
                 </div>
 
                 <!-- Vente au détail : choix de l'unité (boîte, plaquette…) quand le produit en propose plusieurs -->

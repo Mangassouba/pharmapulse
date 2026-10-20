@@ -1,9 +1,10 @@
 // Fichier Excel des produits : le même fichier sert à l'export et à l'import (exporter, modifier, réimporter).
 // Les en-têtes sont écrits dans la langue de l'interface ; à l'import, ils sont reconnus dans les trois langues
 // ou sous leur nom technique (barcode, sale_price…), pour qu'un fichier exporté en arabe se réimporte en français.
-import { LOCALES, locale, t, tIn } from '../i18n/index.js'
+import { LOCALES, locale, t, te, tIn } from '../i18n/index.js'
 import { COUNTRIES } from '../config/countries.js'
 import { currentCurrency } from './money.js'
+import { UNIT_CHOICES, productUnitsOf, mainUnitOf } from './units.js'
 
 // SheetJS (~400 Ko) n'est chargé qu'au moment d'exporter ou d'importer
 const loadXlsx = () => import('xlsx')
@@ -17,9 +18,8 @@ const COLUMNS = [
   { key: 'stock',            label: 'common.stock',                  width: 10 },
   { key: 'threshold',        label: 'products.alertThreshold',       width: 12 },
   { key: 'unit_type',        label: 'products.unitType',             width: 12 },
-  { key: 'unit_quantity',    label: 'products.qtyPerUnit',           width: 12 },
+  { key: 'units',            label: 'products.packagingSheet',       width: 34 },
   { key: 'prescription_req', label: 'products.prescriptionRequired', width: 12 },
-  { key: 'is_divisible',     label: 'products.divisible',            width: 10 },
   { key: 'description',      label: 'common.description',            width: 32 },
 ]
 const REQUIRED = ['barcode', 'name', 'category', 'sale_price', 'purchase_price']
@@ -33,22 +33,38 @@ const HEADER_KEYS = new Map(COLUMNS.flatMap(c => [
   ...LOCALES.flatMap(l => CURRENCIES.map(currency => [norm(tIn(l.code, c.label, { currency })), c.key])),
 ]))
 
+// Unités : libellé dans l'une des trois langues (« Boîte », « Box », « علبة ») ou code (BOX) → code pour l'API.
+// Un texte inconnu est envoyé tel quel : le serveur le refuse en indiquant la ligne.
+const UNIT_KEYS = new Map(UNIT_CHOICES.flatMap(u => [[norm(u), u], ...LOCALES.map(l => [norm(tIn(l.code, `unitTypes.${u}`)), u])]))
+const unitCode  = s => UNIT_KEYS.get(norm(s)) ?? String(s).trim().toUpperCase()
+
+/** Conditionnements → « Boîte=20 ; Plaquette=10 ; Comprimé=1 » (vide pour un produit à une seule unité) */
+const packagingText = p => {
+  const units = productUnitsOf(p)
+  return units.length < 2 ? '' : units.map(u => `${te('unitTypes', u.unit)}=${u.base_quantity}`).join(' ; ')
+}
+/** « Plaquette=10 ; Comprimé : 1 » → « BLISTER=10;TABLET=1 » (format lu par l'API) */
+const packagingCodes = v => String(v).split(/[;,]/).map(s => s.trim()).filter(Boolean)
+  .map(s => { const m = /^(.+?)\s*[=:]\s*(\d+)$/.exec(s); return m ? `${unitCode(m[1])}=${m[2]}` : s })
+  .join(';')
+
 /** Télécharge les produits (réponse de GET /products/export) en .xlsx */
 export async function downloadProductSheet(products) {
   const XLSX = await loadXlsx()
   const yesNo = v => t(v ? 'products.sheet.yes' : 'products.sheet.no')
+  // Stock et seuil sont comptés en unités de base : le fichier les donne dans l'unité principale (boîtes)
+  const inMain = (p, v) => Number((Number(v) / mainUnitOf(p).base_quantity).toFixed(2))
   const rows = products.map(p => ({
     barcode:          String(p.barcode), // texte : Excel ne doit pas l'afficher en 1,23E+12
     name:             p.name,
     category:         p.category?.name ?? '',
     sale_price:       Number(p.sale_price),
     purchase_price:   Number(p.purchase_price),
-    stock:            p.stock,
-    threshold:        p.threshold,
-    unit_type:        p.unit_type,
-    unit_quantity:    p.unit_quantity ?? '',
+    stock:            inMain(p, p.stock),
+    threshold:        inMain(p, p.threshold),
+    unit_type:        te('unitTypes', p.unit_type),
+    units:            packagingText(p),
     prescription_req: yesNo(p.prescription_req),
-    is_divisible:     yesNo(p.is_divisible),
     description:      p.description ?? '',
   }))
 
@@ -96,6 +112,8 @@ export async function readProductSheet(file) {
     if (cells.every(v => String(v).trim() === '')) continue
     const row = { line: firstLine + i }
     keys.forEach((k, j) => { if (k) row[k] = cells[j] })
+    if (String(row.unit_type ?? '').trim()) row.unit_type = unitCode(row.unit_type)
+    if (String(row.units ?? '').trim()) row.units = packagingCodes(row.units)
     rows.push(row)
   }
   if (!rows.length) throw new Error(t('products.sheet.empty'))
