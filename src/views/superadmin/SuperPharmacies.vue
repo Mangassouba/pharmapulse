@@ -24,7 +24,7 @@
       <div v-if="loading" class="loading-box"><div class="spinner" style="border-top-color:#7c3aed;"></div> {{ $t('common.loading') }}</div>
       <div v-else class="tbl-wrap">
         <table class="tbl" style="font-size:.875rem;">
-          <thead style="background:#faf5ff;"><tr><th style="color:#7c3aed;">{{ $t('receipt.pharmacy') }}</th><th style="color:#7c3aed;">{{ $t('settings.location') }}</th><th style="color:#7c3aed;">{{ $t('super.ph.plan') }}</th><th style="color:#7c3aed;">{{ $t('super.ph.subEnd') }}</th><th style="color:#7c3aed;">{{ $t('nav.users') }}</th><th style="color:#7c3aed;">{{ $t('common.status') }}</th><th style="color:#7c3aed;">{{ $t('common.actions') }}</th></tr></thead>
+          <thead style="background:#faf5ff;"><tr><th style="color:#7c3aed;">{{ $t('receipt.pharmacy') }}</th><th style="color:#7c3aed;">{{ $t('settings.location') }}</th><th style="color:#7c3aed;">{{ $t('super.ph.plan') }}</th><th style="color:#7c3aed;">{{ $t('super.ph.subStart') }}</th><th style="color:#7c3aed;">{{ $t('super.ph.subEnd') }}</th><th style="color:#7c3aed;">{{ $t('nav.users') }}</th><th style="color:#7c3aed;">{{ $t('common.status') }}</th><th style="color:#7c3aed;">{{ $t('common.actions') }}</th></tr></thead>
           <tbody>
             <tr v-for="p in pharmacies" :key="p.id" style="border-bottom:1px solid #f5f0ff;">
               <td>
@@ -40,6 +40,7 @@
               <td>
                 <span style="padding:2px 8px;border-radius:99px;font-size:.7rem;font-weight:700;font-family:'JetBrains Mono',monospace;" :style="planStyle(p.subscription?.plan)">{{ p.subscription?.plan||$t('super.ph.noPlan') }}</span>
               </td>
+              <td style="font-family:'JetBrains Mono',monospace;font-size:.8rem;color:#6b7280;">{{ p.subscription?.current_period_start ? fmtDate(p.subscription.current_period_start) : '—' }}</td>
               <td style="font-family:'JetBrains Mono',monospace;font-size:.8rem;" :style="{color:isExpired(p.subscription?.end_date)?'#dc2626':'#6b7280'}">
                 {{ p.subscription?.end_date ? fmtDate(p.subscription.end_date) : '—' }}
                 <span v-if="isExpired(p.subscription?.end_date)" style="font-size:.65rem;font-weight:700;"> <TriangleAlert size="1em" />{{ $t('super.ph.expired') }}</span>
@@ -62,7 +63,7 @@
                 </div>
               </td>
             </tr>
-            <tr v-if="!pharmacies.length"><td colspan="7" style="text-align:center;padding:32px;color:#6b7280;">{{ $t('super.ph.none') }}</td></tr>
+            <tr v-if="!pharmacies.length"><td colspan="8" style="text-align:center;padding:32px;color:#6b7280;">{{ $t('super.ph.none') }}</td></tr>
           </tbody>
         </table>
       </div>
@@ -88,6 +89,7 @@
                 <h4 style="font-weight:700;font-size:.875rem;margin:0 0 10px;padding-bottom:6px;border-bottom:1px solid #f3f4f6;">{{ $t('super.ph.subscription') }}</h4>
                 <div style="display:flex;justify-content:space-between;padding:5px 0;font-size:.85rem;border-bottom:1px solid #f9fafb;"><span style="color:#6b7280;">{{ $t('super.ph.plan') }}</span><strong style="color:#7c3aed;">{{ detailPh.subscription?.plan||'—' }}</strong></div>
                 <div style="display:flex;justify-content:space-between;padding:5px 0;font-size:.85rem;border-bottom:1px solid #f9fafb;"><span style="color:#6b7280;">{{ $t('common.status') }}</span><span class="badge" :class="detailPh.subscription?.status==='ACTIVE'?'badge-green':'badge-red'" style="font-size:.7rem;">{{ detailPh.subscription?.status ? $te('subscriptionStatus', detailPh.subscription.status) : '—' }}</span></div>
+                <div style="display:flex;justify-content:space-between;padding:5px 0;font-size:.85rem;border-bottom:1px solid #f9fafb;"><span style="color:#6b7280;">{{ $t('settings.start') }}</span><strong>{{ detailPh.subscription?.current_period_start?fmtDate(detailPh.subscription.current_period_start):'—' }}</strong></div>
                 <div style="display:flex;justify-content:space-between;padding:5px 0;font-size:.85rem;border-bottom:1px solid #f9fafb;"><span style="color:#6b7280;">{{ $t('settings.end') }}</span><strong :style="{color:isExpired(detailPh.subscription?.end_date)?'#dc2626':'inherit'}">{{ detailPh.subscription?.end_date?fmtDate(detailPh.subscription.end_date):'—' }}</strong></div>
               </div>
             </div>

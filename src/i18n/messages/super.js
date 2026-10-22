@@ -120,6 +120,7 @@ export default {
       countSuspended: ['{n} suspendues', '{n} suspended', '{n} موقوفة'],
       plan:           ['Plan', 'Plan', 'الخطة'],
       noPlan:         ['AUCUN', 'NONE', 'لا يوجد'],
+      subStart:       ['Début période', 'Period start', 'بداية الفترة'],
       subEnd:         ['Fin abonnement', 'Subscription end', 'نهاية الاشتراك'],
       expired:        ['EXPIRÉ', 'EXPIRED', 'منتهٍ'],
       detail:         ['Détail', 'Details', 'التفاصيل'],
