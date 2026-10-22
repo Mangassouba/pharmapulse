@@ -23,11 +23,16 @@
                 <div v-if="rows[p.id]&&productUnitsOf(p).length>1" style="display:flex;gap:6px;flex-wrap:wrap;">
                   <label v-for="u in productUnitsOf(p)" :key="u.unit" style="display:flex;align-items:center;gap:4px;font-size:.75rem;color:#6b7280;"><input v-model.number="rows[p.id].counts[u.unit]" type="number" min="0" class="inp" style="width:64px;" @input="recount(p)"/>{{ $te('unitTypes', u.unit) }}</label>
                 </div>
-                <input v-else-if="rows[p.id]" v-model.number="rows[p.id].real" type="number" min="0" class="inp" style="width:90px;" @input="rows[p.id].dirty=true"/>
+                <input v-else-if="rows[p.id]" v-model.number="rows[p.id].real" type="number" min="0" class="inp" style="width:90px;" @input="touch(p)"/>
               </td>
               <td>
                 <span v-if="rows[p.id]?.dirty" :style="{padding:'2px 8px',borderRadius:'99px',fontFamily:'JetBrains Mono,monospace',fontWeight:'700',fontSize:'.82rem',background:diff(p)>0?'#f0fdf4':diff(p)<0?'#fef2f2':'#f9fafb',color:diff(p)>0?'#16a34a':diff(p)<0?'#dc2626':'#6b7280'}">{{ diff(p)>0?'+':'' }}{{ isNaN(diff(p))?'—':fmtQty(p, diff(p)) }}</span>
                 <span v-else style="color:#9ca3af;">—</span>
+                <!-- Lot concerné par l'écart : perte retirée de ce lot d'abord, surplus ajouté à ce lot -->
+                <select v-if="rows[p.id]?.dirty&&diff(p)&&lots[p.id]?.length" v-model="rows[p.id].batchId" class="inp" style="display:block;margin-top:6px;width:220px;font-size:.75rem;" :title="$t('inventory.batchHelp')">
+                  <option value="">{{ diff(p)<0 ? $t('inventory.batchAutoLoss') : $t('inventory.batchNone') }}</option>
+                  <option v-for="b in lots[p.id]" :key="b.id" :value="b.id">{{ b.number }} · {{ store.fmt(b.expiration_date) }} · {{ fmtQty(p, b.quantity) }}{{ b.status!=='ACTIVE' ? ` (${$te('batchStatus', b.status)})` : '' }}</option>
+                </select>
               </td>
               <td><input v-if="rows[p.id]" v-model="rows[p.id].note" class="inp" style="width:150px;" :placeholder="$t('inventory.reasonPh')"/></td>
               <td>
@@ -67,14 +72,21 @@ import { ClipboardList, Search, Check, CircleCheck } from 'lucide-vue-next'
 import { ref, computed, onMounted, watch } from 'vue'
 import { usePharmaStore } from '../stores/pharma.js'
 import { useToastStore }  from '../stores/toast.js'
+import { batchApi } from '../services/api.js'
 import { t } from '../i18n/index.js'
 import { fmtStock, fmtQty, productUnitsOf, splitQty, joinQty } from '../utils/units.js'
 const store=usePharmaStore(); const toast=useToastStore()
 const search=ref(''); const filterStatus=ref(''); const applying=ref(false)
 const rows=ref({})
 // real = stock compté, en unités de base ; counts = le même réparti par unité (saisie boîtes / plaquettes / comprimés)
-const freshRow=(p,real)=>({real,counts:splitQty(p,real),note:'',dirty:false})
-function recount(p){const row=rows.value[p.id];row.real=joinQty(p,row.counts);row.dirty=true}
+// batchId = lot de l'écart choisi ('' = automatique : perte prise des lots expirés puis des plus anciens ; surplus hors lot)
+const freshRow=(p,real)=>({real,counts:splitQty(p,real),note:'',dirty:false,batchId:''})
+// Lots du produit, chargés à la première saisie sur sa ligne
+const lots=ref({})
+async function loadLots(p){if(lots.value[p.id])return;lots.value[p.id]=[];try{const r=await batchApi.list({productId:p.id,pageSize:100});lots.value[p.id]=r.data||[]}catch{}}
+function touch(p){rows.value[p.id].dirty=true;loadLots(p)}
+function recount(p){const row=rows.value[p.id];row.real=joinQty(p,row.counts);touch(p)}
+const itemOf=p=>({productId:p.id,stock:rows.value[p.id].real,notes:rows.value[p.id].note,...(rows.value[p.id].batchId&&{batchId:rows.value[p.id].batchId})})
 function initRows(){store.products.forEach(p=>{if(!rows.value[p.id])rows.value[p.id]=freshRow(p,p.stock)})}
 watch(()=>store.products.length,initRows)
 const filtered=computed(()=>{
@@ -91,13 +103,13 @@ const diff=p=>{const r=rows.value[p.id]?.real;return(typeof r==='number')?r-p.st
 function autoFill(){store.products.forEach(p=>{if(rows.value[p.id])rows.value[p.id]=freshRow(p,p.stock)})}
 async function applyOne(p){
   const row=rows.value[p.id];if(!row||row.real===undefined)return
-  try{await store.applyInventory([{productId:p.id,stock:row.real,notes:row.note}]);toast.success(`"${p.name}" → ${productUnitsOf(p).length>1?fmtQty(p,row.real):t('common.units', { n: row.real })}`);rows.value[p.id]=freshRow(p,row.real);await store.fetchInventories({pageSize:20})}catch(e){toast.error(e.message)}
+  try{await store.applyInventory([itemOf(p)]);toast.success(`"${p.name}" → ${productUnitsOf(p).length>1?fmtQty(p,row.real):t('common.units', { n: row.real })}`);rows.value[p.id]=freshRow(p,row.real);delete lots.value[p.id];await store.fetchInventories({pageSize:20})}catch(e){toast.error(e.message)}
 }
 async function applyAll(){
   const changed=store.products.filter(p=>rows.value[p.id]?.dirty&&rows.value[p.id]?.real!==p.stock)
-  const items=changed.map(p=>({productId:p.id,stock:rows.value[p.id].real,notes:rows.value[p.id].note}))
+  const items=changed.map(itemOf)
   if(!items.length)return;applying.value=true
-  try{await store.applyInventory(items);toast.success(t('inventory.applied', { n: items.length }));changed.forEach(p=>{rows.value[p.id]=freshRow(p,rows.value[p.id].real)});await store.fetchInventories({pageSize:20})}catch(e){toast.error(e.message)}finally{applying.value=false}
+  try{await store.applyInventory(items);toast.success(t('inventory.applied', { n: items.length }));changed.forEach(p=>{rows.value[p.id]=freshRow(p,rows.value[p.id].real);delete lots.value[p.id]});await store.fetchInventories({pageSize:20})}catch(e){toast.error(e.message)}finally{applying.value=false}
 }
 onMounted(async()=>{await store.fetchProducts({pageSize:100});await store.fetchInventories({pageSize:20});initRows()})
 </script>

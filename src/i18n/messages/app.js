@@ -124,6 +124,9 @@ export default {
     real:            ['Réel', 'Actual', 'الفعلي'],
     noAdjustments:   ['Aucun ajustement', 'No adjustments', 'لا توجد تعديلات'],
     applied:         ['{n} ajustement(s) appliqué(s)', '{n} adjustment(s) applied', 'تم تطبيق {n} تعديل'],
+    batchAutoLoss:   ["Lot : automatique (expirés d'abord)", 'Batch: automatic (expired first)', 'الدفعة: تلقائي (المنتهية أولاً)'],
+    batchNone:       ['Lot : aucun (hors lot)', 'Batch: none (untracked)', 'الدفعة: لا شيء (خارج الدفعات)'],
+    batchHelp:       ['Perte : retirée de ce lot en premier. Surplus : ajouté à ce lot.', 'Loss: taken from this batch first. Surplus: added to this batch.', 'النقص: يُسحب من هذه الدفعة أولاً. الزيادة: تُضاف إلى هذه الدفعة.'],
   },
 
   batches: {
