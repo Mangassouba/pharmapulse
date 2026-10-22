@@ -1,7 +1,7 @@
 <template>
   <div style="display:grid;grid-template-columns:1fr 300px;grid-template-rows:auto auto;gap:16px;">
     <!-- Catalogue -->
-    <div class="card" style="display:flex;flex-direction:column;max-height:62vh;overflow:hidden;">
+    <div class="card" style="display:flex;flex-direction:column;height:80vh;overflow:hidden;">
       <div style="padding:12px;border-bottom:1px solid #f3f4f6;">
         <div class="search-box"><span class="search-icon"><Search size="1em" /></span><input v-model="search" class="inp" :placeholder="$t('sales.searchPh')" @input="debouncedFetch"/></div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">
@@ -26,7 +26,7 @@
     </div>
 
     <!-- Cart -->
-    <div class="card" style="display:flex;flex-direction:column;max-height:62vh;position:sticky;top:76px;">
+    <div class="card" style="display:flex;flex-direction:column;height:80vh;position:sticky;top:76px;">
       <div style="padding:12px 14px;border-bottom:1px solid #f3f4f6;display:flex;align-items:center;justify-content:space-between;"><span style="font-weight:700;"><ShoppingCart size="1em" /> {{ $t('pub.cart') }}</span><button v-if="cart.length" class="btn btn-icon" @click="cart=[]"><Trash2 size="1em" /></button></div>
       <div style="padding:12px;">
         <label class="lbl">{{ $t('common.customer') }}</label><input v-model="client" class="inp" :placeholder="$t('sales.customerName')" style="margin-bottom:8px;"/>
