@@ -108,6 +108,7 @@ export const orderApi      = {
   get:          id => api.get(`/orders/${id}`),
   create:       d  => api.post('/orders', d),
   updateStatus: (id,d) => api.patch(`/orders/${id}/status`, d),
+  validatePickup: (id,d) => api.patch(`/orders/${id}/validate-pickup`, d),
   delete:       id => api.delete(`/orders/${id}`),
 }
 export const userApi       = {
