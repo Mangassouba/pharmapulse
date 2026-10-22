@@ -108,7 +108,7 @@ button, input, select, textarea { font-family: inherit; }
   font-size: 1.1rem; flex-shrink: 0;
 }
 .nav-logo-text strong { display: block; font-weight: 800; font-size: .9rem; color: var(--text); white-space: nowrap; }
-.nav-logo-text span   { display: block; font-size: .7rem; color: var(--gray); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px; }
+.nav-logo-text > span { display: block; font-size: .7rem; color: var(--gray); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px; }
 
 .nav-section { font-size: .65rem; font-weight: 700; color: var(--text-soft); letter-spacing: .07em; text-transform: uppercase; padding: 10px 14px 3px; }
 .nav-divider { height: 1px; background: var(--border); margin: 6px 0; }
@@ -167,7 +167,7 @@ button, input, select, textarea { font-family: inherit; }
 
 .sidebar-toggle {
   position: absolute;
-  right: -12px; top: 76px;
+  right: -12px; top: 21px; /* centered on the .nav-logo row (16px padding + 34px icon) */
   width: 24px; height: 24px;
   border-radius: 50%;
   background: var(--green);

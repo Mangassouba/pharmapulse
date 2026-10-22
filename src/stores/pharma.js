@@ -138,6 +138,13 @@ export const usePharmaStore = defineStore('pharma', () => {
     unreadCount.value = 0
   }
 
+  async function markRead(n) {
+    if (n.is_read) return
+    await notifApi.markRead(n.id)
+    n.is_read = true
+    unreadCount.value = Math.max(0, unreadCount.value - 1)
+  }
+
   return {
     // State
     dashboard, products, prodMeta, categories,
@@ -156,6 +163,6 @@ export const usePharmaStore = defineStore('pharma', () => {
     fetchReceptions, createReception, completeReception,
     fetchMovements,
     fetchInventories, applyInventory,
-    fetchNotifications, markAllRead,
+    fetchNotifications, markAllRead, markRead,
   }
 })

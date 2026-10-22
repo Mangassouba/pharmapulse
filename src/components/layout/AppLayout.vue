@@ -93,7 +93,7 @@
                 <button class="btn btn-xs btn-outline" @click="store.markAllRead();showNotifs=false">{{ $t('nav.readAll') }}</button>
               </div>
               <div style="max-height:280px;overflow-y:auto;">
-                <div v-for="n in store.notifications.slice(0,6)" :key="n.id" style="padding:10px 16px;border-bottom:1px solid var(--border);font-size:.8rem;color:var(--text);" :style="n.is_read ? '' : 'background:var(--green-l)'">
+                <div v-for="n in store.notifications.slice(0,6)" :key="n.id" @click="openNotif(n)" style="padding:10px 16px;border-bottom:1px solid var(--border);font-size:.8rem;color:var(--text);cursor:pointer;" :style="n.is_read ? '' : 'background:var(--green-l)'">
                   <div style="font-weight:600;">{{ n.title }}</div>
                   <div style="color:var(--text-muted);margin-top:2px;">{{ n.message }}</div>
                 </div>
@@ -121,8 +121,8 @@
       </div>
     </div>
 
-    <!-- Notif overlay -->
-    <div v-if="showNotifs" @click="showNotifs = false" style="position:fixed;inset:0;z-index:39;"></div>
+    <!-- Notif overlay: must stay below .topbar (z-index 30), whose stacking context holds the dropdown -->
+    <div v-if="showNotifs" @click="showNotifs = false" style="position:fixed;inset:0;z-index:29;"></div>
 
     <!-- Subscription payment instructions, right after registration -->
     <PaymentPrompt />
@@ -155,6 +155,18 @@ const theme  = useThemeStore()
 
 const collapsed  = ref(false)
 const showNotifs = ref(false)
+
+// Page each notification key leads to; keys not listed are only marked read
+const NOTIF_ROUTES = {
+  online_order:    '/app/commandes-en-ligne',
+  order_picked_up: '/app/commandes-en-ligne',
+}
+function openNotif(n) {
+  showNotifs.value = false
+  store.markRead(n).catch(() => {})
+  const to = NOTIF_ROUTES[n.key]
+  if (to && route.path !== to) router.push(to)
+}
 const onlineCount = ref(0)
 
 const initials = computed(() => (auth.user?.name || 'U').slice(0, 2).toUpperCase())
