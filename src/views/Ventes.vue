@@ -10,15 +10,17 @@
       </div>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;padding:12px;overflow-y:auto;flex:1;">
         <div v-if="store.isBusy('prods')" style="grid-column:1/-1;" class="loading-box"><div class="spinner"></div></div>
-        <div v-for="p in store.products" :key="p.id" @click="p.stock>0&&addToCart(p)" :style="`border:1px solid ${p.stock===0?'#fecaca':'#e5e7eb'};border-radius:10px;padding:12px;cursor:${p.stock===0?'not-allowed':'pointer'};background:#fff;opacity:${p.stock===0?.5:1};transition:box-shadow .12s;`" onmouseover="if(this.style.opacity!=='0.5')this.style.boxShadow='0 4px 12px rgba(0,0,0,.1)'" onmouseout="this.style.boxShadow='none'">
-          <div style="display:flex;justify-content:space-between;gap:4px;margin-bottom:8px;">
-            <div><div style="font-weight:700;font-size:.82rem;line-height:1.3;">{{ p.name }}</div><div style="font-size:.7rem;color:#6b7280;margin-top:2px;">{{ p.category?.name }}</div></div>
-            <span class="badge" :class="p.stock===0?'badge-red':p.stock<p.threshold?'badge-yellow':'badge-green'" style="font-size:.62rem;flex-shrink:0;">{{ p.stock===0?'0':fmtStock(p) }}</span>
+        <div v-for="p in store.products" :key="p.id" @click="p.stock>0&&addToCart(p)" :style="`border:1px solid ${p.stock===0?'#fecaca':'#e5e7eb'};border-radius:10px;padding:12px;cursor:${p.stock===0?'not-allowed':'pointer'};background:#fff;opacity:${p.stock===0?.5:1};transition:box-shadow .12s;min-width:0;overflow-wrap:anywhere;`" onmouseover="if(this.style.opacity!=='0.5')this.style.boxShadow='0 4px 12px rgba(0,0,0,.1)'" onmouseout="this.style.boxShadow='none'">
+          <div style="display:flex;justify-content:center;margin-bottom:8px;"><ProductImage :product="p" :size="64"/></div>
+          <!-- flex-wrap: a long multi-unit stock badge drops below the name instead of squeezing it -->
+          <div style="display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:4px;margin-bottom:8px;">
+            <div style="flex:1 1 7rem;min-width:0;"><div style="font-weight:700;font-size:.82rem;line-height:1.3;">{{ p.name }}</div><div style="font-size:.7rem;color:#6b7280;margin-top:2px;">{{ p.category?.name }}</div></div>
+            <span class="badge" :class="p.stock===0?'badge-red':p.stock<p.threshold?'badge-yellow':'badge-green'" style="font-size:.62rem;max-width:100%;white-space:normal;border-radius:8px;">{{ p.stock===0?'0':fmtStock(p) }}</span>
           </div>
           <div style="font-family:'JetBrains Mono',monospace;font-weight:700;color:#16a34a;font-size:.9rem;">{{ fmtMoney(p.sale_price) }}<span v-if="sellableUnits(p).length>1" style="font-family:inherit;font-weight:500;font-size:.7rem;color:#6b7280;"> / {{ $te('unitTypes', mainUnitOf(p).unit) }}</span></div>
           <!-- Vente au détail : un bouton par autre unité vendue (plaquette, comprimé…) -->
           <div v-if="sellableUnits(p).length>1&&p.stock>0" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;">
-            <button v-for="u in sellableUnits(p).filter(u=>!u.is_main)" :key="u.unit" class="btn btn-outline btn-xs" @click.stop="addToCart(p,u)">+ {{ $te('unitTypes', u.unit) }} · {{ fmtMoney(unitPrice(p,u)) }}</button>
+            <button v-for="u in sellableUnits(p).filter(u=>!u.is_main)" :key="u.unit" class="btn btn-outline btn-xs" style="white-space:normal;text-align:start;max-width:100%;" @click.stop="addToCart(p,u)">+ {{ $te('unitTypes', u.unit) }} · {{ fmtMoney(unitPrice(p,u)) }}</button>
           </div>
         </div>
         <div v-if="!store.products.length&&!store.isBusy('prods')" style="grid-column:1/-1;text-align:center;padding:28px;color:#6b7280;">{{ $t('products.none') }}</div>
@@ -87,6 +89,7 @@
 <script setup>
 import { Search, ShoppingCart, Trash2, X, Printer, Globe } from 'lucide-vue-next'
 import SaleReceipt from '../components/SaleReceipt.vue'
+import ProductImage from '../components/ProductImage.vue'
 import { ref, computed, onMounted } from 'vue'
 import { usePharmaStore } from '../stores/pharma.js'
 import { useToastStore }  from '../stores/toast.js'

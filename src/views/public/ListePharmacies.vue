@@ -41,8 +41,8 @@
             <div class="lp-card-head">
               <div style="width:50px;height:50px;border-radius:14px;background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1px solid #bbf7d0;display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;overflow:hidden;" :style="pharmacyLogoUrl(ph) ? 'background:#fff;' : ''"><img v-if="pharmacyLogoUrl(ph)" :src="pharmacyLogoUrl(ph)" :alt="ph.name" style="width:100%;height:100%;object-fit:contain;"/><Hospital v-else size="1em" /></div>
               <div style="flex:1;min-width:0;">
-                <div style="font-weight:700;font-size:1rem;margin-bottom:3px;">{{ ph.name }}</div>
-                <div style="font-size:.78rem;color:#6b7280;"><MapPin size="1em" /> {{ [ph.address, ph.city, countryName(ph.country)].filter(Boolean).join(', ') }}</div>
+                <div style="font-weight:700;font-size:1rem;margin-bottom:3px;overflow-wrap:anywhere;">{{ ph.name }}</div>
+                <div style="font-size:.78rem;color:#6b7280;overflow-wrap:anywhere;"><MapPin size="1em" /> {{ [ph.address, ph.city, countryName(ph.country)].filter(Boolean).join(', ') }}</div>
                 <div v-if="ph.distance" style="font-size:.75rem;color:#16a34a;font-weight:600;margin-top:3px;"><Navigation size="1em" /> {{ formatDistance(ph.distance) }}</div>
               </div>
               <div class="lp-card-badges">
@@ -56,20 +56,20 @@
               <span v-if="ph.email"><Mail size="1em" /> {{ ph.email }}</span>
             </div>
 
-            <div v-if="ph.duty_days?.length" style="font-size:.78rem;color:#4338ca;margin:-6px 0 14px;">
+            <div v-if="ph.duty_days?.length" style="font-size:.78rem;color:#4338ca;margin:-6px 0 14px;overflow-wrap:anywhere;">
               <Moon size="1em" /> {{ $t('list.onDutyLabel') }} {{ formatDutyDays(ph.duty_days) }} · {{ formatDutyHours(ph) }}
             </div>
 
             <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:14px;">
-              <div style="background:#f0fdf4;border-radius:8px;padding:8px;text-align:center;">
+              <div style="background:#f0fdf4;border-radius:8px;padding:8px;text-align:center;min-width:0;overflow-wrap:anywhere;">
                 <div style="font-family:'JetBrains Mono',monospace;font-weight:800;color:#16a34a;font-size:1.1rem;">{{ ph._count?.products ?? '—' }}</div>
                 <div style="font-size:.65rem;color:#6b7280;margin-top:2px;">{{ $t('nav.products') }}</div>
               </div>
-              <div style="background:#eff6ff;border-radius:8px;padding:8px;text-align:center;">
+              <div style="background:#eff6ff;border-radius:8px;padding:8px;text-align:center;min-width:0;overflow-wrap:anywhere;">
                 <div style="font-family:'JetBrains Mono',monospace;font-weight:800;color:#2563eb;font-size:.9rem;">{{ ph.subscription?.plan || 'FREE' }}</div>
                 <div style="font-size:.65rem;color:#6b7280;margin-top:2px;">{{ $t('super.ph.subscription') }}</div>
               </div>
-              <div style="background:#f5f3ff;border-radius:8px;padding:8px;text-align:center;">
+              <div style="background:#f5f3ff;border-radius:8px;padding:8px;text-align:center;min-width:0;overflow-wrap:anywhere;">
                 <div style="font-family:'JetBrains Mono',monospace;font-weight:800;color:#7c3aed;font-size:.9rem;">{{ ph._count?.users ?? '—' }}</div>
                 <div style="font-size:.65rem;color:#6b7280;margin-top:2px;">{{ $t('list.team') }}</div>
               </div>

@@ -61,15 +61,15 @@
           </div>
           <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(280px,100%),1fr));gap:14px;">
             <div v-for="item in group.items" :key="item.id + '-' + item.pharmacyId" class="pub-card" style="padding:16px;">
-              <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:12px;">
-                <div style="min-width:0;overflow-wrap:anywhere;">
+              <div style="display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:12px;">
+                <div style="flex:1 1 8rem;min-width:0;overflow-wrap:anywhere;">
                   <div style="font-weight:700;font-size:.9rem;">{{ item.pharmacyName }}</div>
                   <div style="font-size:.75rem;color:#6b7280;margin-top:2px;"><MapPin size="1em" /> {{ [item.pharmacyCity, countryName(item.pharmacyCountry)].filter(Boolean).join(', ') }}</div>
                   <div v-if="item.distance" style="font-size:.75rem;color:#16a34a;font-weight:600;margin-top:2px;">
                     <Navigation size="1em" /> {{ formatDistance(item.distance) }}
                   </div>
                 </div>
-                <span class="pub-badge-green" v-if="item.stock > 0">{{ $t('profile.nInStock', { n: fmtStock(item) }) }}</span>
+                <span class="pub-badge-green" style="max-width:100%;border-radius:8px;" v-if="item.stock > 0">{{ $t('profile.nInStock', { n: fmtStock(item) }) }}</span>
                 <span class="pub-badge-red" v-else>{{ $t('inventory.filterOut') }}</span>
               </div>
 

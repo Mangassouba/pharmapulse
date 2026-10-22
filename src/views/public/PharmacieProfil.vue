@@ -93,15 +93,16 @@
           </div>
           <div v-else class="pp-grid">
             <div v-for="p in products" :key="p.id" class="pub-card">
-              <div v-if="p.image_updated_at" class="pp-prod-img"><ProductImage :product="p" :size="120"/></div>
+              <div class="pp-prod-img"><ProductImage :product="p" :size="120"/></div>
               <div style="padding:16px;">
-                <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:6px;margin-bottom:10px;">
-                  <div style="min-width:0;overflow-wrap:anywhere;">
+                <!-- flex-wrap: a long multi-unit stock badge drops below the name instead of squeezing it -->
+                <div style="display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:6px;margin-bottom:10px;">
+                  <div style="flex:1 1 8rem;min-width:0;overflow-wrap:anywhere;">
                     <div style="font-weight:700;font-size:.9rem;line-height:1.3;">{{ p.name }}</div>
                     <div style="font-size:.72rem;color:#6b7280;margin-top:3px;">{{ p.category?.name }}</div>
                     <div v-if="p.prescription_req" style="font-size:.68rem;color:#2563eb;font-weight:600;margin-top:3px;"><Stethoscope size="1em" /> {{ $t('profile.prescription') }}</div>
                   </div>
-                  <span :class="p.stock===0?'pub-badge-red':p.stock<p.threshold?'pub-badge-yellow':'pub-badge-green'" style="flex-shrink:0;font-size:.65rem;">
+                  <span :class="p.stock===0?'pub-badge-red':p.stock<p.threshold?'pub-badge-yellow':'pub-badge-green'" style="font-size:.65rem;max-width:100%;border-radius:8px;">
                     {{ p.stock===0?$t('stock.out'):p.stock<p.threshold?$t('stock.low'):$t('profile.nInStock', { n: fmtStock(p) }) }}
                   </span>
                 </div>
