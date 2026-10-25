@@ -55,6 +55,7 @@
                   <button class="btn btn-xs btn-outline" @click="openDetail(p)"><Eye size="1em" /> {{ $t('super.ph.detail') }}</button>
                   <button v-if="p.deletedAt" class="btn btn-xs" style="background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;" @click="openRestore(p)"><RotateCcw size="1em" /> {{ $t('super.ph.restore') }}</button>
                   <template v-else>
+                  <button class="btn btn-xs btn-outline" @click="openEdit(p)"><Pencil size="1em" /> {{ $t('common.edit') }}</button>
                   <button v-if="p.status!=='ACTIVE'" class="btn btn-xs" style="background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;" @click="setStatus(p,'ACTIVE')"><CircleCheck size="1em" /> {{ $t('super.ph.activate') }}</button>
                   <button v-if="p.status==='ACTIVE'" class="btn btn-xs" style="background:#fef2f2;color:#dc2626;border:1px solid #fecaca;" @click="openSuspend(p)"><Ban size="1em" /> {{ $t('super.ph.suspend') }}</button>
                   <button class="btn btn-xs" style="background:#f5f3ff;color:#7c3aed;border:1px solid #ddd6fe;" @click="openRenew(p)"><RefreshCw size="1em" /> {{ $t('super.ph.renew') }}</button>
@@ -160,6 +161,28 @@
       </div>
     </Teleport>
 
+    <!-- ── EDIT MODAL ── -->
+    <Teleport to="body">
+      <div v-if="editTarget" class="modal-bg" @click.self="editTarget=null">
+        <div class="modal" style="max-width:580px;">
+          <div class="modal-hd"><h3><Pencil size="1em" /> {{ $t('super.ph.editTitle') }}</h3><button class="btn btn-icon" @click="editTarget=null"><X size="1em" /></button></div>
+          <div class="modal-bd">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px;">
+              <div><label class="lbl">{{ $t('super.ph.nameReq') }}</label><input v-model="eForm.name" class="inp" :placeholder="$t('super.ph.namePh')"/></div>
+              <div><label class="lbl">{{ $t('super.ph.license') }}</label><input v-model="eForm.license_number" class="inp" placeholder="LIC-2024-XXXXX"/></div>
+              <div><label class="lbl">{{ $t('common.email') }}</label><input v-model="eForm.email" class="inp" type="email"/></div>
+              <div><label class="lbl">{{ $t('common.phone') }}</label><input v-model="eForm.phone" class="inp"/></div>
+              <div style="grid-column:1/-1"><label class="lbl">{{ $t('common.address') }}</label><input v-model="eForm.address" class="inp"/></div>
+              <div><label class="lbl">{{ $t('common.city') }}</label><input v-model="eForm.city" class="inp" :placeholder="$t('super.ph.cityPh')"/></div>
+              <div><label class="lbl">{{ $t('common.country') }}</label><select v-model="eForm.country" class="inp"><option v-for="c in COUNTRY_CODES" :key="c" :value="c">{{ countryName(c) }} ({{ COUNTRIES[c].currency }})</option></select></div>
+            </div>
+            <div v-if="eErr" class="alert alert-red" style="margin-top:12px;"><CircleX size="1em" /> {{ eErr }}</div>
+          </div>
+          <div class="modal-ft"><button class="btn btn-outline" @click="editTarget=null">{{ $t('common.cancel') }}</button><button class="btn btn-purple" @click="doEdit" :disabled="eSaving">{{ eSaving?$t('common.saving'):$t('common.save') }}</button></div>
+        </div>
+      </div>
+    </Teleport>
+
     <!-- ── SUSPEND MODAL ── -->
     <Teleport to="body">
       <div v-if="suspendTarget" class="modal-bg" @click.self="suspendTarget=null">
@@ -233,7 +256,7 @@
 </template>
 
 <script setup>
-import { Search, Hospital, CircleCheck, CircleX, TriangleAlert, Eye, Ban, RefreshCw, X, Trash2, RotateCcw } from 'lucide-vue-next'
+import { Search, Hospital, CircleCheck, CircleX, TriangleAlert, Eye, Ban, RefreshCw, X, Trash2, RotateCcw, Pencil } from 'lucide-vue-next'
 import { ref, computed, onMounted } from 'vue'
 import { superApi }         from '../../services/api.js'
 import { useToastStore }    from '../../stores/toast.js'
@@ -322,6 +345,24 @@ async function setStatus(p, status) {
     toast.success(status === 'ACTIVE' ? t('super.ph.activated') : t('super.ph.modified'))
     await Promise.all([fetchData(), superStore.fetchStats()])
   } catch(e) { toast.error(e.message) }
+}
+
+// Edit the pharmacy's information (name, contact, location, license)
+const editTarget = ref(null); const eSaving = ref(false); const eErr = ref('')
+const eForm = ref({ name:'', license_number:'', email:'', phone:'', address:'', city:'', country:DEFAULT_COUNTRY })
+function openEdit(p) {
+  editTarget.value = p; eErr.value = ''
+  eForm.value = { name: p.name||'', license_number: p.license_number||'', email: p.email||'', phone: p.phone||'', address: p.address||'', city: p.city||'', country: p.country||DEFAULT_COUNTRY }
+}
+async function doEdit() {
+  eErr.value = ''
+  if (!eForm.value.name.trim()) { eErr.value = t('super.ph.missingFields'); return }
+  eSaving.value = true
+  try {
+    await superApi.updatePharmacy(editTarget.value.id, { ...eForm.value, name: eForm.value.name.trim() })
+    toast.success(t('super.ph.modified')); editTarget.value = null
+    await fetchData()
+  } catch(e) { eErr.value = e.message } finally { eSaving.value = false }
 }
 
 function openSuspend(p) { suspendTarget.value = p; suspendReason.value = '' }

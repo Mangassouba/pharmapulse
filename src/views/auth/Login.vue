@@ -11,7 +11,14 @@
       <div v-if="error" class="alert alert-red" style="margin-bottom:14px;"><CircleX size="1em" /> {{ error }}</div>
       <div class="form-grid" style="gap:13px;">
         <div><label class="lbl">{{ $t('common.email') }}</label><input v-model="email" class="inp" type="email" placeholder="admin@pharma.com" @keyup.enter="submit"/></div>
-        <div><label class="lbl">{{ $t('common.password') }}</label><input v-model="password" class="inp" type="password" placeholder="••••••••" @keyup.enter="submit"/></div>
+        <div><label class="lbl">{{ $t('common.password') }}</label>
+          <div style="position:relative;">
+            <input v-model="password" class="inp" :type="showPassword ? 'text' : 'password'" placeholder="••••••••" style="padding-inline-end:38px;" @keyup.enter="submit"/>
+            <button type="button" @click="showPassword = !showPassword" :aria-label="showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'" style="position:absolute;inset-inline-end:8px;top:50%;transform:translateY(-50%);background:none;border:none;padding:4px;cursor:pointer;color:#6b7280;display:flex;align-items:center;">
+              <EyeOff v-if="showPassword" size="1.1em" /><Eye v-else size="1.1em" />
+            </button>
+          </div>
+        </div>
       </div>
       <p style="text-align:end;margin:8px 0 0;font-size:.8rem;">
         <RouterLink to="/forgot-password" style="color:#16a34a;font-weight:600;">{{ $t('auth.forgotLink') }}</RouterLink>
@@ -31,7 +38,7 @@
 <script setup>
 import SiteName from '../../components/SiteName.vue'
 import SiteLogo from '../../components/SiteLogo.vue'
-import { CircleX, Shield, ArrowLeft } from 'lucide-vue-next'
+import { CircleX, Shield, ArrowLeft, Eye, EyeOff } from 'lucide-vue-next'
 import { ref } from 'vue'
 import LangSwitcher from '../../components/LangSwitcher.vue'
 import { t } from '../../i18n/index.js'
@@ -39,7 +46,7 @@ import { t } from '../../i18n/index.js'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../../stores/auth.js'
 const auth = useAuthStore(); const router = useRouter()
-const email = ref(''); const password = ref(''); const error = ref('')
+const email = ref(''); const password = ref(''); const error = ref(''); const showPassword = ref(false)
 async function submit() {
   error.value = ''
   if (!email.value || !password.value) { error.value = t('auth.fillAll'); return }

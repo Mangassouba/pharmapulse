@@ -156,6 +156,7 @@ export default {
       created:        ['Pharmacie créée avec succès !', 'Pharmacy created successfully!', 'تم إنشاء الصيدلية بنجاح!'],
       activated:      ['Pharmacie activée.', 'Pharmacy activated.', 'تم تفعيل الصيدلية.'],
       modified:       ['Pharmacie modifiée.', 'Pharmacy updated.', 'تم تعديل الصيدلية.'],
+      editTitle:      ['Modifier la pharmacie', 'Edit pharmacy', 'تعديل الصيدلية'],
       suspended:      ['Pharmacie suspendue.', 'Pharmacy suspended.', 'تم إيقاف الصيدلية.'],
       renewed:        ['Abonnement renouvelé !', 'Subscription renewed!', 'تم تجديد الاشتراك!'],
       delete:         ['Supprimer', 'Delete', 'حذف'],

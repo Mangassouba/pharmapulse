@@ -22,9 +22,14 @@
       <h3 style="font-weight:700;margin:0 0 4px;">{{ $t('auth.changePassword') }}</h3>
       <p style="font-size:.8rem;color:#6b7280;margin:0 0 16px;">{{ $t('settings.secureAccess') }}</p>
       <div style="display:flex;flex-direction:column;gap:12px;max-width:380px;">
-        <div><label class="lbl">{{ $t('settings.currentPassword') }}</label><input v-model="pwd.current" class="inp" type="password"/></div>
-        <div><label class="lbl">{{ $t('auth.newPassword') }}</label><input v-model="pwd.newPwd" class="inp" type="password"/></div>
-        <div><label class="lbl">{{ $t('common.confirm') }}</label><input v-model="pwd.confirm" class="inp" type="password" @keyup.enter="changePwd"/></div>
+        <div v-for="f in pwdFields" :key="f.key"><label class="lbl">{{ $t(f.label) }}</label>
+          <div style="position:relative;">
+            <input v-model="pwd[f.key]" class="inp" :type="showPwd[f.key] ? 'text' : 'password'" style="padding-inline-end:38px;" @keyup.enter="f.key === 'confirm' && changePwd()"/>
+            <button type="button" @click="showPwd[f.key] = !showPwd[f.key]" :aria-label="showPwd[f.key] ? 'Masquer le mot de passe' : 'Afficher le mot de passe'" style="position:absolute;inset-inline-end:8px;top:50%;transform:translateY(-50%);background:none;border:none;padding:4px;cursor:pointer;color:#6b7280;display:flex;align-items:center;">
+              <EyeOff v-if="showPwd[f.key]" size="1.1em" /><Eye v-else size="1.1em" />
+            </button>
+          </div>
+        </div>
       </div>
       <div v-if="pwdMsg" class="alert" :class="pwdMsg.ok?'alert-green':'alert-red'" style="margin-top:10px;max-width:380px;">{{ pwdMsg.text }}</div>
       <button class="btn btn-primary btn-sm" style="margin-top:14px;" @click="changePwd" :disabled="savingPwd">{{ savingPwd?'...':$t('auth.changePassword') }}</button>
@@ -34,11 +39,17 @@
     <div class="card card-p">
       <h3 style="font-weight:700;margin:0 0 16px;">{{ $t('settings.pharmacyInfo') }}</h3>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-        <div><label class="lbl">{{ $t('common.name') }}</label><input :value="auth.user?.pharmacy?.name||'—'" class="inp" disabled style="background:#f9fafb;cursor:not-allowed;"/></div>
-        <div><label class="lbl">{{ $t('common.email') }}</label><input :value="auth.user?.pharmacy?.email||'—'" class="inp" disabled style="background:#f9fafb;cursor:not-allowed;"/></div>
-        <div><label class="lbl">{{ $t('common.city') }}</label><input :value="auth.user?.pharmacy?.city||'—'" class="inp" disabled style="background:#f9fafb;cursor:not-allowed;"/></div>
+        <div><label class="lbl">{{ $t('common.name') }}</label><input v-model="pharmacy.name" class="inp" :disabled="!isAdmin"/></div>
+        <div><label class="lbl">{{ $t('common.email') }}</label><input v-model="pharmacy.email" class="inp" type="email" :disabled="!isAdmin"/></div>
+        <div><label class="lbl">{{ $t('common.phone') }}</label><input v-model="pharmacy.phone" class="inp" :disabled="!isAdmin"/></div>
+        <div><label class="lbl">{{ $t('common.city') }}</label><input v-model="pharmacy.city" class="inp" :disabled="!isAdmin"/></div>
+        <div style="grid-column:1/-1"><label class="lbl">{{ $t('common.address') }}</label><input v-model="pharmacy.address" class="inp" :disabled="!isAdmin"/></div>
         <div><label class="lbl">{{ $t('common.country') }}</label><input :value="countryName(auth.user?.pharmacy?.country)||'—'" class="inp" disabled style="background:#f9fafb;cursor:not-allowed;"/></div>
+        <div><label class="lbl">{{ $t('super.ph.license') }}</label><input :value="auth.user?.pharmacy?.license_number||'—'" class="inp" disabled style="background:#f9fafb;cursor:not-allowed;"/></div>
       </div>
+      <p style="font-size:.78rem;color:#9ca3af;margin:10px 0 0;">{{ isAdmin ? $t('settings.superOnlyFields') : $t('settings.adminOnlyPharmacy') }}</p>
+      <div v-if="pharmacyMsg" class="alert" :class="pharmacyMsg.ok?'alert-green':'alert-red'" style="margin-top:12px;">{{ pharmacyMsg.text }}</div>
+      <button v-if="isAdmin" class="btn btn-primary btn-sm" style="margin-top:14px;" @click="savePharmacy" :disabled="savingPharmacy">{{ savingPharmacy?'...':$t('settings.savePharmacy') }}</button>
     </div>
 
     <!-- Logo -->
@@ -124,7 +135,7 @@
 </template>
 
 <script setup>
-import { Moon, LogOut, Pill, MapPin, Crosshair, Image as ImageIcon } from 'lucide-vue-next'
+import { Moon, LogOut, Pill, MapPin, Crosshair, Eye, EyeOff, Image as ImageIcon } from 'lucide-vue-next'
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore }   from '../stores/auth.js'
@@ -152,8 +163,37 @@ const profile = ref({
   address: auth.user?.address || '',
 })
 const pwd = ref({ current: '', newPwd: '', confirm: '' })
+const showPwd = ref({ current: false, newPwd: false, confirm: false })
+const pwdFields = [
+  { key: 'current', label: 'settings.currentPassword' },
+  { key: 'newPwd',  label: 'auth.newPassword' },
+  { key: 'confirm', label: 'common.confirm' },
+]
 
 const isAdmin    = computed(() => auth.user?.role === 'ADMIN')
+
+const pharmacy       = ref({})
+const savingPharmacy = ref(false)
+const pharmacyMsg    = ref(null)
+
+function loadPharmacy(ph) {
+  pharmacy.value = { name: ph?.name || '', email: ph?.email || '', phone: ph?.phone || '', address: ph?.address || '', city: ph?.city || '' }
+}
+loadPharmacy(auth.user?.pharmacy)
+
+async function savePharmacy() {
+  pharmacyMsg.value = null
+  if (!pharmacy.value.name.trim()) { pharmacyMsg.value = { ok: false, text: t('settings.pharmacyNameReq') }; return }
+  savingPharmacy.value = true
+  try {
+    const res = await authApi.updatePharmacy(pharmacy.value)
+    auth.setUser({ pharmacy: { ...auth.user?.pharmacy, ...res.data } })
+    loadPharmacy(auth.user?.pharmacy)
+    pharmacyMsg.value = { ok: true, text: t('settings.pharmacySaved') }
+  } catch (e) {
+    pharmacyMsg.value = { ok: false, text: '' + e.message }
+  } finally { savingPharmacy.value = false }
+}
 const dutyDays   = ref([])
 const dutyAllDay = ref(true)
 const dutyStart  = ref('20:00')
@@ -225,6 +265,7 @@ onMounted(async () => {
       phone:   auth.user?.phone   || '',
       address: auth.user?.address || '',
     }
+    loadPharmacy(auth.user?.pharmacy)
     loadDuty(auth.user?.pharmacy)
     loadLocation(auth.user?.pharmacy)
   } catch (e) { /* keep cached values if refresh fails */ }

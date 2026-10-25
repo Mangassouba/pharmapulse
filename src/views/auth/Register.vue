@@ -18,7 +18,14 @@
         <div><label class="lbl">{{ $t('common.country') }} *</label><select v-model="form.pharmacyCountry" class="inp"><option v-for="c in COUNTRY_CODES" :key="c" :value="c">{{ countryName(c) }} ({{ COUNTRIES[c].currency }})</option></select></div>
         <div><label class="lbl">{{ $t('auth.yourName') }} *</label><input v-model="form.name" class="inp" placeholder="Dr. Mohamed Ould Ahmed"/></div>
         <div><label class="lbl">{{ $t('common.email') }} *</label><input v-model="form.email" class="inp" type="email"/></div>
-        <div><label class="lbl">{{ $t('auth.passwordMin') }}</label><input v-model="form.password" class="inp" type="password" @keyup.enter="submit"/></div>
+        <div><label class="lbl">{{ $t('auth.passwordMin') }}</label>
+          <div style="position:relative;">
+            <input v-model="form.password" class="inp" :type="showPassword ? 'text' : 'password'" style="padding-inline-end:38px;" @keyup.enter="submit"/>
+            <button type="button" @click="showPassword = !showPassword" :aria-label="showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'" style="position:absolute;inset-inline-end:8px;top:50%;transform:translateY(-50%);background:none;border:none;padding:4px;cursor:pointer;color:#6b7280;display:flex;align-items:center;">
+              <EyeOff v-if="showPassword" size="1.1em" /><Eye v-else size="1.1em" />
+            </button>
+          </div>
+        </div>
       </div>
       <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:16px;padding:10px;" @click="submit" :disabled="auth.loading">
         {{ auth.loading ? $t('auth.creating') : $t('auth.createSpace') }}
@@ -31,7 +38,7 @@
 </template>
 <script setup>
 import SiteLogo from '../../components/SiteLogo.vue'
-import { CircleX, Gift, ArrowLeft } from 'lucide-vue-next'
+import { CircleX, Gift, ArrowLeft, Eye, EyeOff } from 'lucide-vue-next'
 import { ref, computed } from 'vue'
 import LangSwitcher from '../../components/LangSwitcher.vue'
 import { t, fmtNum } from '../../i18n/index.js'
@@ -43,7 +50,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '../../stores/auth.js'
 const auth = useAuthStore(); const router = useRouter()
 const price = computed(() => `${fmtNum(MONTHLY_PRICE)} ${CURRENCY}`) // reformatted on language change
-const error = ref(''); const form = ref({ pharmacyName:'', pharmacyCountry: DEFAULT_COUNTRY, name:'', email:'', password:'' })
+const error = ref(''); const showPassword = ref(false); const form = ref({ pharmacyName:'', pharmacyCountry: DEFAULT_COUNTRY, name:'', email:'', password:'' })
 async function submit() {
   error.value = ''
   if (!form.value.pharmacyName || !form.value.name || !form.value.email || !form.value.password) { error.value = t('auth.allRequired'); return }
