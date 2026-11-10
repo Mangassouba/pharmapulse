@@ -7,6 +7,9 @@
       <h1 style="font-size:1.35rem;font-weight:800;margin:0 0 6px;">{{ $t('payment.expiredTitle') }}</h1>
       <p v-if="auth.user?.pharmacy?.name" style="color:#6b7280;font-size:.85rem;margin:0 0 16px;">{{ auth.user.pharmacy.name }}</p>
 
+      <p v-if="auth.subscription?.end_date" style="margin:-8px 0 14px;font-size:.82rem;color:#dc2626;font-weight:600;">
+        {{ $t('subscription.expiredOn', { date: fmtDate(auth.subscription.end_date, { day: 'numeric', month: 'long', year: 'numeric' }) }) }}
+      </p>
       <p style="margin:0 0 14px;font-size:.92rem;">{{ $t('payment.expiredIntro') }}</p>
       <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:10px;">
         <span style="font-family:'JetBrains Mono',monospace;font-size:1.8rem;font-weight:800;letter-spacing:.06em;color:#16a34a;direction:ltr;">{{ PAYMENT_NUMBER }}</span>
@@ -41,7 +44,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '../../stores/auth.js'
 import { dashboardApi } from '../../services/api.js'
 import LangSwitcher from '../../components/LangSwitcher.vue'
-import { fmtNum, t } from '../../i18n/index.js'
+import { fmtNum, fmtDate, t } from '../../i18n/index.js'
 import { PAYMENT_NUMBER, PAYMENT_METHODS, MONTHLY_PRICE, CURRENCY } from '../../config/payment.js'
 
 // Shown when the API answers 402 (subscription past its end date), see services/api.js
@@ -52,6 +55,9 @@ const checking = ref(false)
 const error    = ref('')
 
 const price = computed(() => `${fmtNum(MONTHLY_PRICE)} ${CURRENCY}`)
+
+// End date of the expired subscription (this route is still allowed while expired)
+auth.fetchSubscription().catch(() => {})
 
 async function copy() {
   try {

@@ -96,6 +96,8 @@ export default {
         DELETE_PHARMACY:        ['Pharmacie supprimée', 'Pharmacy deleted', 'حذف الصيدلية'],
         TRIAL_REMINDER_J7:      ['Rappel fin d\'essai (J-7)', 'Trial reminder (D-7)', 'تذكير نهاية التجربة (قبل 7 أيام)'],
         TRIAL_REMINDER_J1:      ['Rappel fin d\'essai (J-1)', 'Trial reminder (D-1)', 'تذكير نهاية التجربة (قبل يوم)'],
+        RENEWAL_REMINDER_J7:    ['Rappel fin d\'abonnement (J-7)', 'Subscription reminder (D-7)', 'تذكير نهاية الاشتراك (قبل 7 أيام)'],
+        RENEWAL_REMINDER_J1:    ['Rappel fin d\'abonnement (J-1)', 'Subscription reminder (D-1)', 'تذكير نهاية الاشتراك (قبل يوم)'],
       },
       entities: {
         products:      ['Produit', 'Product', 'منتج'],

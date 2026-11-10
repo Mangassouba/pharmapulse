@@ -1,5 +1,8 @@
 <template>
   <div style="display:flex;flex-direction:column;gap:16px;max-width:680px;">
+    <!-- Subscription (status, countdown, how to renew, payment history) -->
+    <SubscriptionCard />
+
     <!-- Profile -->
     <div class="card card-p">
       <h3 style="font-weight:700;margin:0 0 4px;">{{ $t('settings.profile') }}</h3>
@@ -145,6 +148,7 @@ import { WEEK_DAYS }      from '../utils/duty.js'
 import { pharmacyLogoUrl, resizeImage } from '../utils/logo.js'
 import { getCurrentPosition, countryName } from '../utils/geo.js'
 import PharmacyMap from '../components/PharmacyMap.vue'
+import SubscriptionCard from '../components/SubscriptionCard.vue'
 import { t, te } from '../i18n/index.js'
 
 const auth   = useAuthStore()

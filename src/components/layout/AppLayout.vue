@@ -102,6 +102,12 @@
             </div>
           </div>
 
+          <!-- Subscription countdown, from 7 days before the end date -->
+          <RouterLink v-if="subDaysLeft != null" to="/app/parametres" class="btn btn-sm" :title="$t('subscription.badgeTitle', { n: subDaysLeft })"
+            style="text-decoration:none;font-weight:700;"
+            :style="subDaysLeft <= 1 ? 'background:#fef2f2;color:#dc2626;border:1px solid #fecaca;' : 'background:#fffbeb;color:#b45309;border:1px solid #fde68a;'">
+            <CalendarClock size="1em" /> {{ $t('subscription.badge', { n: subDaysLeft }) }}
+          </RouterLink>
           <RouterLink v-if="store.alertCount > 0" to="/app/alertes" class="btn btn-sm btn-danger" style="text-decoration:none;">
             <TriangleAlert size="1em" /> {{ $t('nav.alertCount', { n: store.alertCount }) }}
           </RouterLink>
@@ -160,7 +166,20 @@ const showNotifs = ref(false)
 const NOTIF_ROUTES = {
   online_order:    '/app/commandes-en-ligne',
   order_picked_up: '/app/commandes-en-ligne',
+  trial_ending:                 '/app/parametres',
+  trial_ending_tomorrow:        '/app/parametres',
+  subscription_ending:          '/app/parametres',
+  subscription_ending_tomorrow: '/app/parametres',
+  subscription_renewed:         '/app/parametres',
+  subscription_activated:       '/app/parametres',
 }
+
+// Days left on the subscription, only when it ends within a week (topbar badge)
+const subDaysLeft = computed(() => {
+  const s = auth.subscription
+  if (!s || !['TRIAL', 'ACTIVE'].includes(s.status)) return null
+  return s.days_left > 0 && s.days_left <= 7 ? s.days_left : null
+})
 function openNotif(n) {
   showNotifs.value = false
   store.markRead(n).catch(() => {})
@@ -204,6 +223,7 @@ onMounted(async () => {
     store.fetchDashboard().catch(() => {}),
     store.fetchNotifications().catch(() => {}),
     fetchOnlineCount(),
+    auth.fetchSubscription().catch(() => {}),
   ])
 })
 </script>

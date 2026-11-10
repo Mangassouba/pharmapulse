@@ -7,6 +7,13 @@ export const useAuthStore = defineStore('auth', () => {
   const token = ref(localStorage.getItem('pharma_token') || null)
   const loading = ref(false)
   const justRegistered = ref(null) // { trialEnd } right after a successful registration
+  const subscription   = ref(null) // GET /auth/subscription: plan, status, end_date, days_left (+ payments for ADMIN)
+
+  async function fetchSubscription() {
+    const res = await authApi.subscription()
+    subscription.value = res.data?.id ? res.data : null
+    return subscription.value
+  }
 
   const isLoggedIn = computed(() => !!token.value && !!user.value)
 
@@ -44,10 +51,10 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   function logout() {
-    user.value = null; token.value = null
+    user.value = null; token.value = null; subscription.value = null
     localStorage.removeItem('pharma_user')
     localStorage.removeItem('pharma_token')
   }
 
-  return { user, token, isLoggedIn, loading, justRegistered, login, register, logout, setUser }
+  return { user, token, isLoggedIn, loading, justRegistered, subscription, fetchSubscription, login, register, logout, setUser }
 })
